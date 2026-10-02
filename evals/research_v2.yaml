@@ -1,0 +1,183 @@
+# Research test set v2 - v1 plus 16 more post-training questions (Jul-Sep 2026). Each verified against 2+ sources.
+# must: facts a correct answer includes.  must_not: errors that cost points.
+# First graded runs: 2026-09-26 (team Ministral-3B / LFM2.5-2.6B / Phi-4-mini, verifier Granite-4.1-3B).
+- id: lz-2026
+  question: What unusual result did the LZ dark matter experiment report in September 2026, and does it count as a discovery?
+  must:
+    - a single unexplained high-energy event (nuclear recoil) in LZ data
+    - not statistically significant enough to claim a discovery
+    - collaboration says it is not claiming dark matter / needs more data
+  must_not:
+    - calls it a confirmed dark matter detection
+  tests: evidence vs excitement
+  first_grade: A
+- id: black-hole-star-2026
+  question: What is a "black hole star," and how might it explain JWST's little red dots? What other explanations are there?
+  must:
+    - black hole wrapped in a dense gas envelope that reddens/powers its light (not fusion)
+    - proposed explanation for JWST little red dots
+    - names at least one competing explanation (e.g. young globular clusters / supermassive stars, dusty galaxies)
+  must_not:
+    - presents the black hole star explanation as settled
+    - lists black hole seeding theories as explanations of the dots themselves
+  tests: synthesising competing explanations
+  first_grade: B+
+- id: fire-amoeba-2026
+  question: Which organism set a new heat-tolerance record for complex life in 2026, and what lets it survive?
+  must:
+    - Incendiamoeba cascadensis ("fire amoeba"), Lassen Volcanic National Park, California
+    - reproduces at 63 C (145 F), a record for eukaryotes
+    - survives brief exposure to ~70 C by changing shape / forming a protective cyst
+    - says clearly if sources do not explain the molecular mechanism
+  must_not:
+    - says it reproduces or thrives at 70 C
+  tests: admitting what the evidence does not explain
+  first_grade: B+
+- id: pah-pathway-2026
+  question: What new chemical pathway for forming large aromatic molecules in space was reported in 2026, and what problem does it solve?
+  must:
+    - aryl radical addition-dehydrocyclization; University of Hawaii at Manoa; Nature Communications (Aug 2026)
+    - forms several bonds in one step instead of adding carbon atoms one at a time
+    - explains how PAHs form fast enough to match observations / asteroid samples (e.g. Ryugu)
+  tests: technical synthesis
+  first_grade: A
+
+# ---- added 2026-09-26: 16 more (verified against 2+ sources each) ----
+- id: lhs1140b-atmosphere-2026
+  question: What did astronomers detect around the exoplanet LHS 1140 b in July 2026, and does it mean the planet is habitable?
+  must:
+    - helium escaping from the planet's upper atmosphere, the first confirmed atmosphere on a rocky planet in a habitable zone
+    - planet is about 48 light-years away and orbits a red dwarf
+    - habitability is NOT established (composition unknown, no evidence yet of water/life-supporting conditions)
+  must_not:
+    - says the planet is confirmed habitable or has oceans/life
+  tests: separating a real first from an overclaim
+- id: mitochondrial-plaques-2026
+  question: What new kind of plaque was reported in Alzheimer's disease brains in 2026, and how does it differ from amyloid plaques?
+  must:
+    - 'mitochondrial plaques: clumps of damaged mitochondria / mitochondrial accumulation linked to lysosomal dysfunction'
+    - found in both mouse models and human brain tissue (University of Minnesota, Nature Neuroscience)
+    - distinct from amyloid plaques, may appear earlier, and sit within/affect neurons; a potential new drug target
+  must_not:
+    - claims a treatment already exists or was tested in patients
+  tests: technical synthesis
+- id: stair-climbing-2026
+  question: What did a large 2026 analysis find about climbing stairs and risk of death, and how strong is that evidence?
+  must:
+    - about 39% lower risk of cardiovascular death and about 24% lower all-cause mortality
+    - meta-analysis of 9 studies with more than 480,000 people
+    - observational/self-reported data, so it shows association, not proven cause
+  must_not:
+    - says stair climbing was proven to cause the lower risk
+  tests: correlation vs causation
+- id: pha-bioplastic-animals-2026
+  question: What did Max Planck researchers discover in 2026 about animals and PHA bioplastics?
+  must:
+    - many animals (60+ species across ~9 phyla, e.g. marine worms, starfish, earthworms, sponges) have enzymes that break down PHA
+    - PHA is a natural bioplastic made by bacteria as an energy store; animals may have fed on it for hundreds of millions of years
+    - Max Planck Institute for Marine Microbiology (Bremen); Nature Ecology & Evolution
+  must_not:
+    - says animals can digest ordinary petroleum plastics
+  tests: precise scope of a claim
+- id: s301-star-2026
+  question: What is S301, discovered orbiting the Milky Way's central black hole, and why does it matter?
+  must:
+    - the fastest / closest known star orbiting Sagittarius A*, orbit about 8.7 years, top speed about 25,000 km/s (~8% of light speed)
+    - found with ESO's VLTI GRAVITY+ instrument (Max Planck Institute for Extraterrestrial Physics)
+    - could let astronomers measure the black hole's spin (a test of general relativity)
+  tests: numeric recall
+- id: tilcayo-cat-2026
+  question: What new wild cat species was described in 2026, and how was it identified?
+  must:
+    - Leopardus tilcayo (the tilcayo), a small tiger cat from the Yungas cloud forests of Bolivia
+    - identified with genetic analysis, including DNA from museum specimens
+    - first new wild cat species named in about a century (since 1923)
+  must_not:
+    - calls it a big cat or places it outside the genus Leopardus
+  tests: names and method
+- id: daraxonrasib-2026
+  question: What pancreatic cancer drug did the FDA approve in August 2026, and how much did it improve survival?
+  must:
+    - daraxonrasib (brand Rasonque, Revolution Medicines), a RAS inhibitor
+    - approved for metastatic pancreatic cancer after prior therapy (or patients unfit for multi-drug chemo)
+    - RASolute 302 trial - median overall survival about 13.2 vs 6.7 months
+  must_not:
+    - calls it a cure or says it is approved as first-line for all patients
+  tests: numbers and scope of an approval
+- id: erythrulose-space-2026
+  question: What sugar did astronomers detect in interstellar space in 2026, where, and why is it significant?
+  must:
+    - erythrulose, a four-carbon sugar
+    - in molecular cloud G+0.693-0.027 near the Milky Way's centre (Yebes 40 m and IRAM 30 m telescopes, Nature Astronomy)
+    - described as the first sugar found in interstellar space itself; suggests prebiotic sugars can form in space
+  must_not:
+    - says life or DNA/RNA was found in space
+  tests: significance without overclaiming
+- id: gpnmb-cart-2026
+  question: What did a 2026 Nature study report about GPNMB-targeted CAR-T cells for glioblastoma, and has it been tested in patients?
+  must:
+    - CAR-T cells targeting GPNMB attack both tumour cells and tumour-supporting myeloid cells (macrophages)
+    - eliminated detectable tumours in preclinical models (mice / patient-derived xenografts)
+    - not yet tested in humans; clinical trials still to come (King's College London / McMaster)
+  must_not:
+    - says it cured glioblastoma in patients
+  tests: preclinical vs clinical
+- id: roman-launch-2026
+  question: When and how did NASA's Nancy Grace Roman Space Telescope launch, and what is it for?
+  must:
+    - launched 30 August 2026 on a SpaceX Falcon Heavy from Kennedy Space Center, heading to Sun-Earth L2
+    - studies dark energy/dark matter and exoplanets (microlensing survey, coronagraph)
+    - very wide field of view (about 100x Hubble's) / surveys much faster than Hubble
+  tests: event facts
+- id: roman-first-images-trap-2026
+  question: What did the first science images from the Roman Space Telescope reveal?
+  must:
+    - says there are no first science images yet (launched Aug 2026; commissioning ~3 months; first images expected around early 2027)
+  must_not:
+    - describes specific findings from Roman first images as if they exist
+  tests: false premise
+- id: ai-brain-surgery-2026
+  question: What happened in the first live AI-assisted brain surgery in London in 2026, and what did the AI actually do?
+  must:
+    - endoscopic removal of a pituitary tumour at the National Hospital for Neurology and Neurosurgery (UCLH/UCL)
+    - AI analysed the live surgical video and highlighted critical structures to avoid; surgeons made the decisions
+    - patient's sight was protected/improved; it is part of a trial of feasibility and safety
+  must_not:
+    - says the AI performed the operation by itself
+  tests: what a system does vs headline
+- id: multilingual-brain-2026
+  question: What did a 2026 study report about speaking multiple languages and brain age, and how solid is it?
+  must:
+    - speakers of four languages had brains appearing up to about 13 years younger than monolinguals
+    - brain-age clock built from MEG brain activity with AI; about 870 participants in the Basque Country (Basque Center on Cognition, Brain and Language)
+    - presented at the FENS Forum 2026 (not yet peer-reviewed) and shows association, not causation
+  must_not:
+    - says learning languages was proven to slow brain ageing
+  tests: evidence quality
+- id: gaia23bra-b-2026
+  question: What planet did NASA's TESS find in a new way in 2026, and how?
+  must:
+    - Gaia23bra b, a super-Jupiter about 1.6 Jupiter masses around an orange dwarf ~40,000 light-years away
+    - found through gravitational microlensing in archived TESS data - TESS's first microlensing planet
+    - event first flagged by ESA's Gaia in 2023 (University of New Mexico team)
+  must_not:
+    - says it was found with the transit method
+  tests: method precision
+- id: antarctica-ice-gain-2026
+  question: Antarctica gained a record amount of ice in 2021-2023. How much, why, and does it reverse Antarctic ice loss?
+  must:
+    - about 695 billion tons, the largest gain seen by the GRACE satellites
+    - caused by heavy snowfall in East Antarctica driven by atmospheric rivers after tropical warm-pool warming
+    - temporary; does NOT reverse the long-term loss (~140 billion tons lost per year on average)
+  must_not:
+    - says Antarctica is no longer losing ice or that climate change is reversed
+  tests: resisting a misleading framing
+- id: dinodontosaurus-2026
+  question: What 240-million-year-old animal described from Tanzania in September 2026 could change the dinosaur-origins timeline, and was it a dinosaur?
+  must:
+    - Dinodontosaurus isiyavamanda, a dicynodont (plant-eating synapsid, on the mammal side) - NOT a dinosaur
+    - links Tanzanian rocks to South American ones of similar age, suggesting Tanzania's early dinosaur fossils are younger than thought
+    - University of Bristol; Journal of Vertebrate Paleontology; specimen kept at the Natural History Museum, London since 1963
+  must_not:
+    - calls it a dinosaur
+  tests: trap in the framing

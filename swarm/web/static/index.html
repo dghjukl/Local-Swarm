@@ -1,0 +1,484 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Local Swarm</title>
+<style>
+:root {
+  --bg: #f6f7f9; --panel: #ffffff; --ink: #1b1f24; --muted: #5f6b78; --line: #e2e6eb;
+  --accent: #2f6fdf; --accent-ink: #ffffff; --soft: #eef3fd;
+  --ok: #1f8a4c; --ok-bg: #e5f5ec; --warn: #a86400; --warn-bg: #fdf1dc; --bad: #c0392b; --bad-bg: #fbe7e5;
+  --chip: #eef0f3; --shadow: 0 1px 2px rgba(16,24,40,.06), 0 1px 3px rgba(16,24,40,.08);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #111418; --panel: #191d23; --ink: #e7eaee; --muted: #9aa5b1; --line: #2a3038;
+    --accent: #6b9cff; --accent-ink: #0b1020; --soft: #1c2638;
+    --ok: #5fd08f; --ok-bg: #16301f; --warn: #f0b458; --warn-bg: #33270f; --bad: #ff8a7a; --bad-bg: #3a1c19;
+    --chip: #232932; --shadow: none;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink);
+  font: 15px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+header { display: flex; align-items: center; gap: 16px; padding: 12px 20px; border-bottom: 1px solid var(--line);
+  background: var(--panel); position: sticky; top: 0; z-index: 5; flex-wrap: wrap; }
+header h1 { font-size: 17px; margin: 0; letter-spacing: .2px; }
+.chips { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-left: auto; }
+.chip { background: var(--chip); border-radius: 999px; padding: 3px 10px; font-size: 12.5px; color: var(--muted); white-space: nowrap; }
+.chip.ok { color: var(--ok); } .chip.bad { color: var(--bad); }
+.vram { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--muted); }
+.vram .bar { width: 120px; height: 8px; background: var(--chip); border-radius: 99px; overflow: hidden; }
+.vram .bar i { display: block; height: 100%; background: var(--accent); width: 0; transition: width .3s; }
+main { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 18px; padding: 18px 20px 40px;
+  max-width: 1500px; margin: 0 auto; }
+@media (max-width: 980px) { main { grid-template-columns: 1fr; } }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px; box-shadow: var(--shadow); }
+.panel + .panel { margin-top: 14px; }
+.panel h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .6px; color: var(--muted); margin: 0 0 10px; }
+textarea { width: 100%; min-height: 76px; resize: vertical; border: 1px solid var(--line); border-radius: 10px;
+  padding: 10px 12px; font: inherit; background: var(--bg); color: var(--ink); }
+textarea:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+.row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 10px; }
+button { font: inherit; border: 1px solid var(--line); background: var(--panel); color: var(--ink); border-radius: 9px;
+  padding: 7px 14px; cursor: pointer; }
+button.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 600; }
+button:disabled { opacity: .5; cursor: default; }
+button.mic { display: inline-flex; align-items: center; gap: 6px; }
+button.mic.rec { background: var(--bad); border-color: var(--bad); color: #fff; }
+button.small { padding: 3px 10px; font-size: 12.5px; }
+label.opt { font-size: 13.5px; color: var(--muted); display: inline-flex; gap: 6px; align-items: center; cursor: pointer; }
+.spacer { flex: 1; }
+#answer { min-height: 60px; }
+#answer p { margin: 0 0 10px; } #answer ul, #answer ol { margin: 0 0 10px; padding-left: 22px; }
+#answer h3, #answer h4 { margin: 12px 0 6px; font-size: 15.5px; }
+#answer code { background: var(--chip); padding: 1px 5px; border-radius: 5px; font-size: 13px; }
+#answer pre { background: var(--chip); padding: 10px; border-radius: 8px; overflow: auto; }
+a.cite { display: inline-block; font-size: 11.5px; font-weight: 600; background: var(--soft); color: var(--accent);
+  border-radius: 6px; padding: 0 5px; margin: 0 1px; text-decoration: none; vertical-align: 1px; }
+.placeholder { color: var(--muted); font-style: italic; }
+.stats { font-size: 12.5px; color: var(--muted); margin-top: 8px; }
+.sources { list-style: none; padding: 0; margin: 0; }
+.sources li { padding: 8px 0; border-top: 1px solid var(--line); }
+.sources li:first-child { border-top: 0; }
+.sources .sid { font-weight: 700; color: var(--accent); margin-right: 6px; font-size: 13px; }
+.sources a.t { color: var(--ink); text-decoration: none; font-weight: 600; }
+.sources a.t:hover { text-decoration: underline; }
+.sources .dom { color: var(--muted); font-size: 12.5px; margin-left: 6px; }
+.sources .snip { color: var(--muted); font-size: 13px; margin-top: 2px; }
+.sources li.flash { background: var(--soft); }
+.steps { display: flex; gap: 6px; flex-wrap: wrap; }
+.step { flex: 1; min-width: 90px; border: 1px solid var(--line); border-radius: 9px; padding: 6px 9px; font-size: 12.5px; color: var(--muted); }
+.step b { display: block; color: var(--ink); font-size: 13px; }
+.step.active { border-color: var(--accent); background: var(--soft); }
+.step.done b::after { content: " ✓"; color: var(--ok); }
+.step.skip { opacity: .45; }
+.kv { font-size: 13.5px; margin: 6px 0; }
+.kv .k { color: var(--muted); }
+.qchips { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px; }
+.qchips span { background: var(--chip); border-radius: 6px; padding: 2px 8px; font-size: 12.5px; }
+ol.subqs { margin: 4px 0 0; padding-left: 20px; font-size: 14px; }
+details { margin-top: 6px; } summary { cursor: pointer; color: var(--muted); font-size: 13px; }
+.fetches { list-style: none; padding: 0; margin: 6px 0 0; font-size: 12.5px; }
+.fetches li { padding: 2px 0; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fetches .y { color: var(--ok); } .fetches .n { color: var(--bad); }
+.worker { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; margin-top: 10px; }
+.worker .head { display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+.worker .name { font-weight: 700; }
+.worker .lab { font-size: 12px; color: var(--muted); background: var(--chip); border-radius: 6px; padding: 1px 7px; }
+.worker .score { margin-left: auto; font-size: 12.5px; font-weight: 600; }
+.sq { border-top: 1px dashed var(--line); margin-top: 8px; padding-top: 6px; font-size: 13.5px; }
+.sq .st { font-size: 12px; color: var(--muted); }
+.sq .ans { margin: 3px 0; }
+.claims { list-style: none; margin: 4px 0 0; padding: 0; }
+.claims li { font-size: 13px; padding: 2px 0 2px 0; display: flex; gap: 6px; }
+.v { flex: none; font-size: 11px; font-weight: 700; border-radius: 5px; padding: 0 6px; height: 18px; line-height: 18px; }
+.v.supported { color: var(--ok); background: var(--ok-bg); }
+.v.partial { color: var(--warn); background: var(--warn-bg); }
+.v.unsupported, .v.uncited { color: var(--bad); background: var(--bad-bg); }
+.v.pending, .v.unchecked { color: var(--muted); background: var(--chip); }
+.err { color: var(--bad); font-size: 13px; }
+.models { list-style: none; padding: 0; margin: 0; font-size: 13.5px; }
+.models li { display: flex; gap: 8px; align-items: center; padding: 4px 0; border-top: 1px solid var(--line); }
+.models li:first-child { border-top: 0; }
+.models .mb { margin-left: auto; color: var(--muted); font-size: 12.5px; }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--line); flex: none; }
+.dot.busy { background: var(--accent); animation: pulse 1s infinite; } .dot.idle { background: var(--ok); }
+@keyframes pulse { 50% { opacity: .35; } }
+.spin { display: inline-block; width: 11px; height: 11px; border: 2px solid var(--line); border-top-color: var(--accent);
+  border-radius: 50%; animation: sp .8s linear infinite; vertical-align: -1px; }
+@keyframes sp { to { transform: rotate(360deg); } }
+#log { list-style: none; padding: 0; margin: 0; font-size: 12.5px; max-height: 180px; overflow: auto; }
+#log li { padding: 2px 0; color: var(--muted); }
+#log li.warn { color: var(--warn); } #log li.bad { color: var(--bad); }
+.muted { color: var(--muted); }
+</style>
+</head>
+<body>
+<header>
+  <h1>Local Swarm</h1>
+  <div class="chips">
+    <div class="vram"><span>GPU</span><div class="bar"><i id="vramBar"></i></div><span id="vramTxt">–</span></div>
+    <span class="chip" id="chipWeb">web search …</span>
+    <span class="chip" id="chipVoice">voice …</span>
+    <span class="chip" id="chipConn">connecting…</span>
+    <button class="small" id="btnUnload" title="Free GPU memory">Unload models</button>
+  </div>
+</header>
+
+<main>
+  <section>
+    <div class="panel">
+      <textarea id="q" placeholder="Ask a research question… (Enter to send, Shift+Enter for a new line)"></textarea>
+      <div class="row">
+        <button class="mic" id="btnMic" title="Click to talk, click again to send">🎤 <span>Talk</span></button>
+        <label class="opt"><input type="checkbox" id="optResearch"> Always research</label>
+        <label class="opt"><input type="checkbox" id="optSpeak"> Read answers aloud</label>
+        <span class="spacer"></span>
+        <button id="btnStop" disabled>Stop</button>
+        <button class="primary" id="btnAsk">Ask</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Answer</h2>
+      <div id="answer"><p class="placeholder">The final answer will appear here, with numbered citations to its sources.</p></div>
+      <div class="row" id="audioRow" style="display:none">
+        <button class="small" id="btnReplay">▶ Read aloud</button>
+        <button class="small" id="btnHush">■ Stop voice</button>
+      </div>
+      <div class="stats" id="stats"></div>
+    </div>
+
+    <div class="panel">
+      <h2>Sources</h2>
+      <ul class="sources" id="sources"><li class="muted">Sources the answer cites will be listed here.</li></ul>
+    </div>
+  </section>
+
+  <section>
+    <div class="panel">
+      <h2>Swarm activity</h2>
+      <div class="steps" id="steps"></div>
+      <div id="plan"></div>
+      <div id="gather"></div>
+    </div>
+    <div class="panel">
+      <h2>Team</h2>
+      <div id="team" class="muted" style="font-size:13.5px">Worker models and their fact-checked answers appear here during a research question.</div>
+    </div>
+    <div class="panel">
+      <h2>Models on the GPU</h2>
+      <ul class="models" id="models"><li class="muted">None loaded yet.</li></ul>
+    </div>
+    <div class="panel">
+      <h2>Log</h2>
+      <ul id="log"></ul>
+    </div>
+  </section>
+</main>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const domain = (u) => { try { return new URL(u).hostname.replace(/^www\./, ""); } catch { return ""; } };
+
+// ---------------------------------------------------------------- markdown (small, safe)
+function inline(s) {
+  s = esc(s);
+  s = s.replace(/`([^`]+)`/g, "<code>$1</code>");
+  s = s.replace(/\*\*([^*]+)\*\*/g, "<b>$1</b>");
+  s = s.replace(/(^|[^*])\*([^*\n]+)\*/g, "$1<i>$2</i>");
+  s = s.replace(/\[((?:E\d+[,\s]*)+)\]/g, (m, ids) =>
+    ids.split(/[,\s]+/).filter(Boolean).map(id => `<a class="cite" href="#src-${id}" data-id="${id}">${id}</a>`).join(""));
+  return s;
+}
+function md(text) {
+  const lines = String(text || "").replace(/\r/g, "").split("\n");
+  let html = "", list = null, para = [], code = null;
+  const flushPara = () => { if (para.length) { html += `<p>${inline(para.join(" "))}</p>`; para = []; } };
+  const closeList = () => { if (list) { html += `</${list}>`; list = null; } };
+  for (const raw of lines) {
+    if (code !== null) {
+      if (raw.trim().startsWith("```")) { html += `<pre><code>${esc(code)}</code></pre>`; code = null; } else code += raw + "\n";
+      continue;
+    }
+    const line = raw.trimEnd();
+    if (line.trim().startsWith("```")) { flushPara(); closeList(); code = ""; continue; }
+    let m;
+    if (!line.trim()) { flushPara(); closeList(); continue; }
+    if ((m = line.match(/^\s*#{1,6}\s+(.*)$/))) { flushPara(); closeList(); html += `<h4>${inline(m[1])}</h4>`; continue; }
+    if ((m = line.match(/^\s*[-*•]\s+(.*)$/))) { flushPara(); if (list !== "ul") { closeList(); html += "<ul>"; list = "ul"; } html += `<li>${inline(m[1])}</li>`; continue; }
+    if ((m = line.match(/^\s*\d+[.)]\s+(.*)$/))) { flushPara(); if (list !== "ol") { closeList(); html += "<ol>"; list = "ol"; } html += `<li>${inline(m[1])}</li>`; continue; }
+    closeList(); para.push(line.trim());
+  }
+  if (code !== null) html += `<pre><code>${esc(code)}</code></pre>`;
+  flushPara(); closeList();
+  return html;
+}
+
+// ---------------------------------------------------------------- state
+const STAGES = [["plan", "Plan"], ["gather", "Gather"], ["work", "Work"], ["verify", "Verify"], ["synthesize", "Answer"]];
+let S = { answer: "", stageTimes: {}, current: null, fetches: [], searches: [], workers: {}, team: [], subqs: [], final: null };
+function resetRun(question) {
+  S = { answer: "", stageTimes: {}, current: null, fetches: [], searches: [], workers: {}, team: [], subqs: [], roles: {}, final: null, question };
+  $("answer").innerHTML = `<p class="placeholder"><span class="spin"></span> Working on: ${esc(question)}</p>`;
+  $("sources").innerHTML = `<li class="muted">Waiting for sources…</li>`;
+  $("stats").textContent = ""; $("plan").innerHTML = ""; $("gather").innerHTML = "";
+  $("team").innerHTML = `<span class="muted">Waiting for the plan…</span>`;
+  $("audioRow").style.display = "none";
+  renderSteps();
+}
+function renderSteps() {
+  const order = STAGES.map(s => s[0]);
+  const ci = order.indexOf(S.current);
+  $("steps").innerHTML = STAGES.map(([k, label], i) => {
+    let cls = "step";
+    if (S.direct && ["gather", "work", "verify"].includes(k)) cls += " skip";
+    else if (k === S.current && !S.final) cls += " active";
+    else if (S.stageTimes[k] !== undefined && (i < ci || S.final)) cls += " done";
+    const t = S.stageDur && S.stageDur[k] !== undefined ? `${S.stageDur[k]}s` : (k === S.current && !S.final ? "…" : "");
+    return `<div class="${cls}"><b>${label}</b>${t}</div>`;
+  }).join("");
+}
+function log(msg, cls = "") {
+  const li = document.createElement("li"); li.className = cls;
+  li.textContent = new Date().toLocaleTimeString() + "  " + msg;
+  $("log").prepend(li);
+}
+
+// ---------------------------------------------------------------- team view
+function wkey(model, subq) { return model + "|" + subq; }
+function renderTeam() {
+  if (!S.team.length) return;
+  $("team").innerHTML = S.team.map(w => {
+    const rows = S.subqs.map((sq, i) => {
+      const r = S.workers[wkey(w.model, i)] || { status: "waiting" };
+      let body = "";
+      if (r.status === "running") body = `<span class="st"><span class="spin"></span> answering…</span>`;
+      else if (r.status === "waiting") body = `<span class="st">queued</span>`;
+      else if (r.error) body = `<div class="err">${esc(r.error)}</div>`;
+      else {
+        const claims = (r.claims || []).map(c => {
+          const v = c.verdict || "pending";
+          return `<li><span class="v ${v}" title="${esc(c.reason || "")}">${v === "pending" ? "checking" : v}</span><span>${inline(c.claim)} ${(c.evidence || []).map(e => `<a class="cite" href="#src-${e}">${e}</a>`).join("")}</span></li>`;
+        }).join("");
+        const meta = [r.seconds ? `${r.seconds}s` : "", r.tokens_per_second ? `${r.tokens_per_second} tok/s` : "",
+                      r.support_rate != null ? `${Math.round(r.support_rate * 100)}% supported` : ""].filter(Boolean).join(" · ");
+        body = `<div class="ans">${inline(r.answer || "(no answer)")}</div>${claims ? `<ul class="claims">${claims}</ul>` : ""}<div class="st">${meta}</div>`;
+      }
+      return `<div class="sq"><div class="st">Q${i + 1}: ${esc(sq)}</div>${body}</div>`;
+    }).join("");
+    const rates = S.subqs.map((_, i) => (S.workers[wkey(w.model, i)] || {}).support_rate).filter(x => x != null);
+    const avg = rates.length ? Math.round(100 * rates.reduce((a, b) => a + b, 0) / rates.length) + "% supported" : "";
+    return `<div class="worker"><div class="head"><span class="name">${esc(w.model)}</span><span class="lab">${esc(w.lab)}</span><span class="score">${avg}</span></div>${rows}</div>`;
+  }).join("") + renderRoles() + `<div class="kv" style="margin-top:10px"><span class="k">Fact checker:</span> ${esc(S.verifier || "")} · <span class="k">Coordinator:</span> ${esc(S.coordinator || "")}</div>`;
+}
+
+const ROLE_LABELS = { facts: "Fact sheet", premise: "Premise check", skeptic: "Skeptic" };
+function renderRoles() {
+  const cites = ids => (ids || []).map(e => `<a class="cite" href="#src-${e}">${e}</a>`).join("");
+  return Object.entries(S.roles || {}).map(([role, r]) => {
+    let body;
+    if (r.status === "running") body = `<span class="st"><span class="spin"></span> working…</span>`;
+    else if (r.status === "waiting") body = `<span class="st">${role === "skeptic" ? "waits for the fact check" : "queued"}</span>`;
+    else if (r.error) body = `<div class="err">${esc(r.error)}</div>`;
+    else {
+      const d = r.data || {};
+      if (role === "facts") body = `<ul class="claims">${(d.facts || []).map(f => `<li><span>${inline(f.fact || "")} ${cites(f.evidence)}</span></li>`).join("")}</ul>` +
+        ((d.not_to_confuse || []).length ? `<div class="st">Not to confuse with: ${esc(d.not_to_confuse.join("; "))}</div>` : "");
+      else if (role === "premise") body = d.premise_ok === false
+        ? `<div class="ans"><span class="v unsupported">false premise</span> ${inline(d.problem || "")} ${cites(d.evidence)}</div>`
+        : `<div class="st">No problem with the question's premise.</div>`;
+      else body = (d.flags || []).length
+        ? `<ul class="claims">${d.flags.map(f => `<li><span class="v partial">${esc(f.issue)}</span><span>${inline(f.claim)} → ${inline(f.fix || "")}</span></li>`).join("")}</ul>`
+        : `<div class="st">Reviewed ${d.reviewed ?? 0} claim(s): none overstated.</div>`;
+      if (r.seconds) body += `<div class="st">${r.seconds}s</div>`;
+    }
+    return `<div class="worker"><div class="head"><span class="name">${ROLE_LABELS[role] || esc(role)}</span><span class="lab">${esc(r.model || "")}</span></div><div class="sq">${body}</div></div>`;
+  }).join("");
+}
+
+function renderGather() {
+  const ok = S.fetches.filter(f => f.ok).length;
+  const searches = S.searches.map(s => `<li><span class="${s.error ? "n" : "y"}">${s.error ? "✗" : "✓"}</span> ${esc(s.backend)}: “${esc(s.query)}” → ${s.error ? esc(s.error) : s.results.length + " results"}</li>`).join("");
+  const fetches = S.fetches.map(f => `<li><span class="${f.ok ? "y" : "n"}">${f.ok ? "✓" : "✗"}</span> ${esc(domain(f.url))} ${f.ok ? "" : "— " + esc(f.error || "no text")}</li>`).join("");
+  $("gather").innerHTML = `<div class="kv"><span class="k">Sources:</span> ${S.fetches.length ? `${ok} of ${S.fetches.length} web pages read` : S.passages != null ? "no web pages read (Wikipedia only)" : "searching…"}${S.passages ? ` · ${S.passages} evidence passages selected` : ""}</div>
+    <details><summary>Searches and pages</summary><ul class="fetches">${searches}${fetches}</ul></details>`;
+}
+
+// ---------------------------------------------------------------- events
+let pending = false;
+function scheduleAnswer() {
+  if (pending) return; pending = true;
+  requestAnimationFrame(() => { pending = false; $("answer").innerHTML = md(S.answer) || `<p class="placeholder"><span class="spin"></span> Writing…</p>`; });
+}
+function handle(e) {
+  switch (e.type) {
+    case "pool": renderPool(e); break;
+    case "run_start": resetRun(e.question); setBusy(true); break;
+    case "stage":
+      S.current = e.stage; S.stageTimes[e.stage] = e.t; renderSteps();
+      if (e.stage === "synthesize") { S.answer = ""; scheduleAnswer(); }
+      break;
+    case "plan":
+      S.subqs = e.subquestions || []; S.direct = e.mode === "direct"; renderSteps();
+      $("plan").innerHTML = e.mode === "direct"
+        ? `<div class="kv"><span class="k">Plan:</span> answer directly (no research needed)</div>`
+        : `<div class="kv"><span class="k">Sub-questions</span><ol class="subqs">${S.subqs.map(s => `<li>${esc(s)}</li>`).join("")}</ol></div>
+           <div class="kv"><span class="k">Searches</span><div class="qchips">${(e.search_queries || []).map(q => `<span>${esc(q)}</span>`).join("")}</div></div>`;
+      break;
+    case "search": S.searches.push(e); renderGather(); break;
+    case "fetch": S.fetches.push(e); renderGather(); break;
+    case "evidence": S.passages = e.passages.length; renderGather(); break;
+    case "team":
+      S.team = e.workers; S.verifier = e.verifier; S.coordinator = e.coordinator;
+      S.team.forEach(w => S.subqs.forEach((_, i) => S.workers[wkey(w.model, i)] = { status: "waiting" }));
+      renderTeam(); break;
+    case "roles": S.roles = {}; (e.roles || []).forEach(r => S.roles[r.role] = { model: r.model, status: "waiting" }); renderTeam(); break;
+    case "role_start": S.roles[e.role] = { model: e.model, status: "running" }; renderTeam(); break;
+    case "role_result": S.roles[e.role] = { ...e, status: "done" }; renderTeam(); break;
+    case "worker_start": S.workers[wkey(e.model, e.subq)] = { status: "running" }; renderTeam(); break;
+    case "worker_result": S.workers[wkey(e.model, e.subq)] = { ...e, status: "done" }; renderTeam(); break;
+    case "verdicts": Object.assign(S.workers[wkey(e.model, e.subq)] || {}, { claims: e.claims, support_rate: e.support_rate }); renderTeam(); break;
+    case "answer_delta": S.answer += e.text; scheduleAnswer(); break;
+    case "final": onFinal(e); break;
+    case "model":
+      if (e.event === "loading") log(`loading ${e.model} (~${(e.est_mb / 1024).toFixed(1)} GB)`);
+      else if (e.event === "ready") log(`${e.model} ready in ${e.seconds}s, using ${(e.vram_mb / 1024).toFixed(1)} GB`);
+      else if (e.event === "failed") log(`${e.model} failed to load: ${e.error}`, "bad");
+      else if (e.event === "unloaded") log(`unloaded ${e.model} (${e.reason})`);
+      break;
+    case "warning": case "waiting": log(e.message, "warn"); break;
+    case "error": log(e.message, "bad"); if (S.question) { $("answer").innerHTML = `<p class="err">${esc(e.message)}</p>`; } setBusy(false); break;
+    case "cancelled": log("stopped", "warn"); setBusy(false); $("answer").innerHTML = `<p class="placeholder">Stopped.</p>`; break;
+  }
+}
+function onFinal(e) {
+  S.final = e; S.answer = e.answer;
+  $("answer").innerHTML = md(e.answer);
+  const st = e.stats || {};
+  S.stageDur = st.stages || {};
+  renderSteps();
+  $("stats").textContent = `Finished in ${st.total_seconds ?? "?"}s` + (st.stages ? " · " + Object.entries(st.stages).map(([k, v]) => `${k} ${v}s`).join(", ") : "") + (e.trace ? ` · saved as runs/${e.trace}` : "");
+  $("sources").innerHTML = e.sources.length
+    ? e.sources.map(s => `<li id="src-${s.id}"><span class="sid">${s.id}</span><a class="t" href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.title || s.url)}</a><span class="dom">${esc(domain(s.url))}</span><div class="snip">${esc(s.snippet)}…</div></li>`).join("")
+    : `<li class="muted">${S.direct ? "Answered directly, without web sources." : "The answer did not cite any sources."}</li>`;
+  $("audioRow").style.display = voice.tts ? "flex" : "none";
+  setBusy(false);
+  if ($("optSpeak").checked) speak(e.answer);
+}
+function renderPool(p) {
+  const used = p.used_mb || 0, budget = p.budget_mb || 1;
+  $("vramBar").style.width = Math.min(100, 100 * used / budget) + "%";
+  $("vramTxt").textContent = `${(used / 1024).toFixed(1)} / ${(budget / 1024).toFixed(1)} GB`;
+  const items = (p.models || []).map(m => `<li><span class="dot ${m.busy ? "busy" : "idle"}"></span><span>${esc(m.model)}</span><span class="lab muted" style="font-size:12px">${esc(m.lab)}</span><span class="mb">${(m.vram_mb / 1024).toFixed(1)} GB${m.measured ? "" : " est."}${m.pinned ? " · kept loaded" : ""}</span></li>`);
+  Object.entries(p.reservations || {}).forEach(([k, v]) => items.push(`<li><span class="dot idle"></span><span>${esc(k)}</span><span class="mb">${(v / 1024).toFixed(1)} GB</span></li>`));
+  $("models").innerHTML = items.join("") || `<li class="muted">None loaded.</li>`;
+}
+
+// ---------------------------------------------------------------- socket
+let ws;
+function connect() {
+  ws = new WebSocket(`ws://${location.host}/ws`);
+  ws.onopen = () => { $("chipConn").textContent = "connected"; $("chipConn").className = "chip ok"; refreshStatus(); };
+  ws.onclose = () => { $("chipConn").textContent = "reconnecting…"; $("chipConn").className = "chip bad"; setBusy(false); setTimeout(connect, 1500); };
+  ws.onmessage = (m) => { try { handle(JSON.parse(m.data)); } catch (err) { console.error(err); } };
+}
+function setBusy(b) { $("btnAsk").disabled = b; $("btnStop").disabled = !b; }
+function ask(text) {
+  const q = (text ?? $("q").value).trim();
+  if (!q || !ws || ws.readyState !== 1) return;
+  ws.send(JSON.stringify({ type: "ask", question: q, force_research: $("optResearch").checked }));
+  setBusy(true);
+}
+$("btnAsk").onclick = () => ask();
+$("q").addEventListener("keydown", (e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); ask(); } });
+$("btnStop").onclick = () => ws && ws.send(JSON.stringify({ type: "cancel" }));
+$("btnUnload").onclick = async () => { const r = await fetch("/api/unload", { method: "POST" }); if (!r.ok) log("can't unload while a question is running", "warn"); };
+document.addEventListener("click", (e) => {
+  const a = e.target.closest("a.cite"); if (!a) return;
+  const li = document.querySelector(a.getAttribute("href")); if (!li) return;
+  e.preventDefault(); li.scrollIntoView({ behavior: "smooth", block: "center" });
+  li.classList.add("flash"); setTimeout(() => li.classList.remove("flash"), 1400);
+});
+
+const voice = { stt: false, tts: false };
+async function refreshStatus() {
+  try {
+    const s = await (await fetch("/api/status")).json();
+    $("chipWeb").textContent = s.web_search ? (s.web_search_backend === "built-in" ? "web search on (built-in)" : "web search on") : "web search off (Wikipedia only)";
+    $("chipWeb").title = (s.notices || []).join("\n");
+    $("chipWeb").className = "chip " + (s.web_search ? "ok" : "bad");
+    Object.assign(voice, s.speech || {});
+    $("chipVoice").textContent = voice.stt && voice.tts ? "voice ready" : voice.stt ? "voice input only" : voice.tts ? "voice output only" : "voice unavailable";
+    $("chipVoice").className = "chip " + (voice.stt && voice.tts ? "ok" : "bad");
+    $("btnMic").disabled = !voice.stt;
+    renderPool(s.pool);
+    if (s.busy) setBusy(true);
+  } catch (err) { console.error(err); }
+}
+
+// ---------------------------------------------------------------- voice in (16 kHz mono WAV recorded in the browser)
+let rec = null;
+async function startRec() {
+  const stream = await navigator.mediaDevices.getUserMedia({ audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true } });
+  const ctx = new AudioContext({ sampleRate: 16000 });
+  const src = ctx.createMediaStreamSource(stream);
+  const proc = ctx.createScriptProcessor(4096, 1, 1);
+  const chunks = [];
+  proc.onaudioprocess = (ev) => chunks.push(new Float32Array(ev.inputBuffer.getChannelData(0)));
+  src.connect(proc); proc.connect(ctx.destination);
+  rec = { stream, ctx, proc, src, chunks };
+  $("btnMic").classList.add("rec"); $("btnMic").querySelector("span").textContent = "Listening… click to send";
+}
+function wav(chunks, rate) {
+  const n = chunks.reduce((a, c) => a + c.length, 0);
+  const buf = new ArrayBuffer(44 + n * 2), v = new DataView(buf);
+  const w = (o, s) => [...s].forEach((ch, i) => v.setUint8(o + i, ch.charCodeAt(0)));
+  w(0, "RIFF"); v.setUint32(4, 36 + n * 2, true); w(8, "WAVE"); w(12, "fmt "); v.setUint32(16, 16, true);
+  v.setUint16(20, 1, true); v.setUint16(22, 1, true); v.setUint32(24, rate, true); v.setUint32(28, rate * 2, true);
+  v.setUint16(32, 2, true); v.setUint16(34, 16, true); w(36, "data"); v.setUint32(40, n * 2, true);
+  let o = 44; for (const c of chunks) for (let i = 0; i < c.length; i++, o += 2) { const s = Math.max(-1, Math.min(1, c[i])); v.setInt16(o, s < 0 ? s * 0x8000 : s * 0x7fff, true); }
+  return new Blob([buf], { type: "audio/wav" });
+}
+async function stopRec() {
+  const r = rec; rec = null;
+  r.proc.disconnect(); r.src.disconnect(); r.stream.getTracks().forEach(t => t.stop());
+  const rate = r.ctx.sampleRate; await r.ctx.close();
+  $("btnMic").classList.remove("rec"); $("btnMic").querySelector("span").textContent = "Transcribing…"; $("btnMic").disabled = true;
+  try {
+    const res = await fetch("/api/stt", { method: "POST", headers: { "Content-Type": "audio/wav" }, body: wav(r.chunks, rate) });
+    const j = await res.json();
+    if (!res.ok) throw new Error(j.error || res.statusText);
+    if (j.text) { $("q").value = j.text; $("optSpeak").checked = true; ask(j.text); }
+    else log("didn't catch any speech", "warn");
+  } catch (err) { log("speech-to-text failed: " + err.message, "bad"); }
+  finally { $("btnMic").disabled = !voice.stt; $("btnMic").querySelector("span").textContent = "Talk"; }
+}
+$("btnMic").onclick = async () => {
+  try { if (rec) await stopRec(); else await startRec(); }
+  catch (err) { log("microphone: " + err.message, "bad"); rec = null; $("btnMic").classList.remove("rec"); }
+};
+
+// ---------------------------------------------------------------- voice out
+let audio = null;
+async function speak(text) {
+  if (!voice.tts || !text) return;
+  hush();
+  try {
+    const r = await fetch("/api/tts", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text }) });
+    if (!r.ok) throw new Error((await r.json()).error || r.statusText);
+    audio = new Audio(URL.createObjectURL(await r.blob())); audio.play();
+  } catch (err) { log("text-to-speech failed: " + err.message, "bad"); }
+}
+function hush() { if (audio) { audio.pause(); audio = null; } }
+$("btnReplay").onclick = () => S.final && speak(S.final.answer);
+$("btnHush").onclick = hush;
+
+renderSteps();
+connect();
+</script>
+</body>
+</html>

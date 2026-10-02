@@ -1,0 +1,29 @@
+[project]
+name = "local-swarm"
+version = "0.1.0"
+description = "Local cooperative swarm of small models: coordinator + specialists + critics"
+requires-python = ">=3.13,<3.14"
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.30",
+    "websockets>=13",
+    "httpx>=0.27",
+    "pydantic>=2.8",
+    "pydantic-settings>=2.4",
+    "pyyaml>=6.0",
+    # research-mcp (MCP/research-mcp) and the MCP client that talks to it
+    "mcp>=1.20,<2",   # research-mcp is written for the v1 API (mcp.server.fastmcp)
+    "html2text>=2024.2.26",
+    "ddgs>=9.0",
+    "trafilatura>=2.0",   # article text extraction (drops menus, teaser rails, footers)
+]
+
+[dependency-groups]
+dev = ["pytest>=8", "pytest-asyncio>=0.24"]
+
+[tool.uv]
+package = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"

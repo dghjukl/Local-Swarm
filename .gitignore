@@ -1,0 +1,16 @@
+# Large local assets - fetched by scripts, never committed
+/Models/**/*.gguf
+/Bin/
+/runtime/
+/tools/
+/.venv/
+__pycache__/
+.pytest_cache/
+*.pyc
+
+# MCP library: ignore everything, whitelist only the servers the swarm uses
+/MCP/*
+!/MCP/research-mcp/
+
+# Reference docs kept locally
+*.docx

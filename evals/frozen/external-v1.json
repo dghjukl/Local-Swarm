@@ -1,0 +1,136 @@
+{
+  "name": "external-v1",
+  "frozen_at": "2026-09-28T16:10:50-05:00",
+  "purpose": "configurations fixed before any GAIA/FRAMES results were seen",
+  "configs": {
+    "coordinator-only": {
+      "description": "Qwen3.5-4B alone reads the evidence and answers",
+      "overrides": {
+        "mode": "solo"
+      },
+      "hash": "c89354618faf2e97ee31e888bbcc64c8428c744b1d0cd40c8c21ce8365e43eec"
+    },
+    "solo-x8-Qwen3.5-4B": {
+      "description": "Qwen3.5-4B alone, 8 drafts merged into one answer",
+      "overrides": {
+        "mode": "solo",
+        "solo_samples": 8
+      },
+      "hash": "0b2a681c1fe4513e3cadcaab02827c799869ab46871c1d52682d0adfb01fdb3d"
+    },
+    "solo-Qwen3.5-9B": {
+      "description": "Qwen3.5-9B alone reads the evidence and answers",
+      "overrides": {
+        "mode": "solo",
+        "coordinator": {
+          "model": "Qwen3.5-9B",
+          "ctx_per_slot": 12288,
+          "parallel": 1
+        }
+      },
+      "hash": "60a736d4750a35c0d9e701ec4d60dd92f3d73fd5dffec756eca1ff8ff658ca1e"
+    },
+    "solo-Qwen3.6-35B-A3B": {
+      "description": "Qwen3.6-35B-A3B alone reads the evidence and answers",
+      "overrides": {
+        "mode": "solo",
+        "coordinator": {
+          "model": "Qwen3.6-35B-A3B",
+          "ctx_per_slot": 12288,
+          "parallel": 1
+        }
+      },
+      "hash": "de7f1be2bcd1eefd72a06a6623e9a62d1db09662b97fd840f8176f244cb88c21"
+    },
+    "roles-2ways-split": {
+      "description": "roles-2ways (answerers thinking 2 ways + fact sheet + premise + skeptic) with per-part web research",
+      "overrides": {
+        "research": {
+          "split_by_subquestion": true
+        },
+        "workers": {
+          "roles": [
+            {
+              "role": "answerer",
+              "model": "Ministral-3-3B-Instruct",
+              "strategy": "self_ask"
+            },
+            {
+              "role": "answerer",
+              "model": "LFM2.5-2.6B",
+              "strategy": "tree_of_thoughts"
+            },
+            {
+              "role": "facts",
+              "model": "LFM2.5-2.6B"
+            },
+            {
+              "role": "premise",
+              "model": "Ministral-3-3B-Instruct"
+            },
+            {
+              "role": "skeptic",
+              "model": "Granite-4.1-3B"
+            }
+          ]
+        }
+      },
+      "hash": "728a428834bc9cef25259af4e7b3716b6bf3eb7a909538268da519a6c7e7d35d"
+    },
+    "bigcoord-qwen36": {
+      "description": "fact sheet + skeptic team, Qwen3.6-35B-A3B (GPU + RAM) writes the final answer",
+      "overrides": {
+        "research": {
+          "split_by_subquestion": true
+        },
+        "coordinator": {
+          "model": "Qwen3.6-35B-A3B",
+          "ctx_per_slot": 12288,
+          "parallel": 1
+        },
+        "workers": {
+          "roles": [
+            {
+              "role": "answerer",
+              "model": "Ministral-3-3B-Instruct"
+            },
+            {
+              "role": "answerer",
+              "model": "LFM2.5-2.6B"
+            },
+            {
+              "role": "facts",
+              "model": "LFM2.5-2.6B"
+            },
+            {
+              "role": "skeptic",
+              "model": "Granite-4.1-3B"
+            }
+          ]
+        }
+      },
+      "hash": "3f7f3eddc2026748d5a3fbdf53c3ff4f506f210d03135825ac2058636a0d658b"
+    }
+  },
+  "code_hash": "91d0e8066c2504322106bbdbc716232608f0072af4388c0701f838c42dccebb1",
+  "code_files": {
+    "__init__.py": "0bae0ad2b89f65bd",
+    "__main__.py": "d6e80d32fd1c34e5",
+    "benchmarks.py": "58ea037793e6659c",
+    "config.py": "adfd1d48c89cf0c7",
+    "evals.py": "7f880314ac27c3df",
+    "evidence.py": "8af2dc50d780f1ec",
+    "llm.py": "168a7bcc61547b50",
+    "orchestrator.py": "2fc6392613eb6755",
+    "paths.py": "e6e097bbd641403a",
+    "pool.py": "f748c7520e245faf",
+    "procs.py": "514c5caa32e55890",
+    "registry.py": "aae68a034fa0e6f5",
+    "scholar.py": "dc90b08156cc1bf9",
+    "selftest.py": "c4022e3f54d18e3c",
+    "speech.py": "4ab60e66bea73c98",
+    "strategies.py": "bdb7858b533d4460",
+    "tools.py": "bbed2c132f01f070"
+  },
+  "manifest_hash": "51132dfd5140548f3ec88efead534d2124aa68d8f95b24f926393b2b15d26a99"
+}

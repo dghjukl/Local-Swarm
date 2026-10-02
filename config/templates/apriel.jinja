@@ -1,0 +1,14 @@
+{#- Simplified Apriel chat format. The model's own template fails to parse in llama.cpp b10152
+    ("Unable to generate parser for this template"), so llama-server is given this one instead. -#}
+{%- for message in messages -%}
+{%- if message['role'] == 'system' -%}
+{{ '<|begin_system|>\n' + message['content'] + '\n' }}
+{%- elif message['role'] == 'user' -%}
+{{ '<|begin_user|>\n' + message['content'] + '\n' }}
+{%- elif message['role'] == 'assistant' -%}
+{{ '\n<|begin_assistant|>\n' + message['content'] + '\n<|end|>\n' }}
+{%- endif -%}
+{%- endfor -%}
+{%- if add_generation_prompt -%}
+{{ '\n<|begin_assistant|>\n' }}
+{%- endif -%}

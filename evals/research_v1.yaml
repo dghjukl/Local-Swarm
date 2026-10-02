@@ -1,0 +1,43 @@
+# Research test set v1 - questions about events after the models' training data.
+# must: facts a correct answer includes.  must_not: errors that cost points.
+# First graded runs: 2026-09-26 (team Ministral-3B / LFM2.5-2.6B / Phi-4-mini, verifier Granite-4.1-3B).
+- id: lz-2026
+  question: What unusual result did the LZ dark matter experiment report in September 2026, and does it count as a discovery?
+  must:
+    - a single unexplained high-energy event (nuclear recoil) in LZ data
+    - not statistically significant enough to claim a discovery
+    - collaboration says it is not claiming dark matter / needs more data
+  must_not:
+    - calls it a confirmed dark matter detection
+  tests: evidence vs excitement
+  first_grade: A
+- id: black-hole-star-2026
+  question: What is a "black hole star," and how might it explain JWST's little red dots? What other explanations are there?
+  must:
+    - black hole wrapped in a dense gas envelope that reddens/powers its light (not fusion)
+    - proposed explanation for JWST little red dots
+    - names at least one competing explanation (e.g. young globular clusters / supermassive stars, dusty galaxies)
+  must_not:
+    - presents the black hole star explanation as settled
+    - lists black hole seeding theories as explanations of the dots themselves
+  tests: synthesising competing explanations
+  first_grade: B+
+- id: fire-amoeba-2026
+  question: Which organism set a new heat-tolerance record for complex life in 2026, and what lets it survive?
+  must:
+    - Incendiamoeba cascadensis ("fire amoeba"), Lassen Volcanic National Park, California
+    - reproduces at 63 C (145 F), a record for eukaryotes
+    - survives brief exposure to ~70 C by changing shape / forming a protective cyst
+    - says clearly if sources do not explain the molecular mechanism
+  must_not:
+    - says it reproduces or thrives at 70 C
+  tests: admitting what the evidence does not explain
+  first_grade: B+
+- id: pah-pathway-2026
+  question: What new chemical pathway for forming large aromatic molecules in space was reported in 2026, and what problem does it solve?
+  must:
+    - aryl radical addition-dehydrocyclization; University of Hawaii at Manoa; Nature Communications (Aug 2026)
+    - forms several bonds in one step instead of adding carbon atoms one at a time
+    - explains how PAHs form fast enough to match observations / asteroid samples (e.g. Ryugu)
+  tests: technical synthesis
+  first_grade: A

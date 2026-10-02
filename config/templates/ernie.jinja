@@ -1,0 +1,19 @@
+{#- Simplified ERNIE-4.5-Thinking chat format. With the model's own template, llama.cpp b10152 builds
+    a strict output parser that rejects many of ERNIE's replies ("does not match the expected
+    peg-native format"), so llama-server is given this one: same prompt format, but the answer is
+    read as plain text after </think> (llm.strip_think removes ERNIE's <response> tags). -#}
+{{- '<|im_start|>system\n' -}}
+{%- if messages[0]['role'] == 'system' -%}
+{{- '<system_setting>\n' + messages[0]['content'] + '\n</system_setting>\n\n' -}}
+{%- endif -%}
+{{- '<global_setting>\nthink_mode=True\n</global_setting><|im_end|>\n\n' -}}
+{%- for message in messages -%}
+{%- if message['role'] == 'user' -%}
+{{- '<|im_start|>user\n' + message['content'] + '<|im_end|>\n\n' -}}
+{%- elif message['role'] == 'assistant' -%}
+{{- '<|im_start|>assistant\n' + message['content'] + '<|im_end|>\n\n' -}}
+{%- endif -%}
+{%- endfor -%}
+{%- if add_generation_prompt -%}
+{{- '<|im_start|>assistant\n<think>\n' -}}
+{%- endif -%}

@@ -1,0 +1,67 @@
+# Local Swarm configuration.
+# Every role here is PROVISIONAL. The qualification tests (next milestone) decide
+# which models actually belong in which role. Model names = folder names in Models/.
+
+server:
+  host: 127.0.0.1
+  port: 8700
+  open_browser: true
+
+gpu:
+  # Total VRAM the swarm may use for models. The card has ~16300 MiB; Windows
+  # and open apps use roughly 1000-1500, so leave headroom.
+  vram_budget_mb: 14500
+  llama_server: Bin/llama-cuda/llama-server.exe
+  port_range: [8200, 8299]
+  # extra llama-server flags for every model. Reasoning off: small models otherwise
+  # spend their whole budget "thinking" (Ministral did) instead of answering.
+  extra_args: ["--reasoning-budget", "0"]
+
+coordinator:
+  model: Qwen3.5-4B
+  ctx_per_slot: 16384
+  parallel: 1
+
+workers:
+  team_size: 3            # workers per question, picked from different model lineages
+  ctx_per_slot: 4096      # evidence for one sub-question fits in ~2500 tokens
+  parallel: 2             # sub-questions a worker can answer at the same time
+  pool:                   # candidates, in preference order
+    - Ministral-3-3B-Instruct
+    - LFM2.5-2.6B
+    - Phi-4-mini-instruct
+    - Gemma-4-E2B-it
+    - SmolLM3-3B
+    - NVIDIA-Nemotron-3-Nano-4B
+    - MiniCPM5-2B
+
+verifier:
+  model: Granite-4.1-3B
+  ctx_per_slot: 6144
+  parallel: 2
+
+research:
+  backend: builtin        # builtin (web + news search, article extraction) | research-mcp
+  max_search_queries: 4
+  results_per_query: 5
+  news_results_per_query: 4   # DuckDuckGo News for the first 2 queries
+  wikipedia_results: 2
+  scholarly: true         # OpenAlex, arXiv, PubMed, Crossref (free, no key): journal, date, preprint or not
+  scholarly_results: 2    # per source
+  scholarly_queries: 1    # how many of the plan's searches also go to the scholarly sources (OpenAlex allows ~100 searches/day without a key)
+  scholarly_sources: [openalex, arxiv, pubmed, crossref, ads]   # ads needs a free token (runtime/secrets.json)
+  max_papers: 6
+  max_pages: 10           # web + news pages fetched per question (Wikipedia and papers are extra)
+  split_by_subquestion: false  # swarm-style research: each sub-question also gets its own searches
+  split_max_pages: 4           # pages per sub-question when split
+  passages_per_subquestion: 6
+  passage_chars: 900
+  fetch_workers: 3        # research-mcp processes (each fetches one page at a time)
+
+speech:
+  whisper_server: Bin/Whisper-CUDA/Release/whisper-server.exe
+  whisper_model: Bin/Whisper/ggml-large-v3-turbo.bin
+  whisper_port: 8180
+  whisper_vram_mb: 1800
+  piper: Bin/Piper/piper.exe
+  piper_voice: Bin/Piper/en_US-amy-medium.onnx

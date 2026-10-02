@@ -1,0 +1,11 @@
+{#- Simplified OLMo 3 Instruct chat format (ChatML, as the model's own template, without the
+    function-calling parts that llama.cpp b10152 cannot analyse: "Unable to generate parser"). -#}
+{%- if messages[0]['role'] != 'system' -%}
+{{- '<|im_start|>system\nYou are a helpful AI assistant.<|im_end|>\n' -}}
+{%- endif -%}
+{%- for message in messages -%}
+{{- '<|im_start|>' + message['role'] + '\n' + message['content'] + '<|im_end|>\n' -}}
+{%- endfor -%}
+{%- if add_generation_prompt -%}
+{{- '<|im_start|>assistant\n' -}}
+{%- endif -%}

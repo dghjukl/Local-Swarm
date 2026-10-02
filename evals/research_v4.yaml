@@ -1,0 +1,780 @@
+# Research test set v4 - the 20 v3 questions + 43 new ones (March-September 2026 discoveries, 3 more false-premise traps).
+# Each item checks ONE fact.
+#   must:      essential facts (count double) - a good answer cannot leave these out
+#   details:   supporting facts (count once)  - nice to have
+#   must_not:  errors; each one found costs 25 points
+# Wording is flexible: the judge checks meaning, not phrasing.
+
+- id: lz-2026
+  question: What unusual result did the LZ dark matter experiment report in September 2026, and does it count as a discovery?
+  must:
+  - LZ saw a single unexplained event (a high-energy nuclear recoil)
+  - it is not a discovery / not statistically significant enough
+  details:
+  - the team says more data is needed and is not claiming to have seen dark matter
+  - the significance was about 2-3 sigma
+  - the event could fit a heavy WIMP (dark matter) interaction
+  must_not:
+  - calls it a confirmed dark matter detection
+- id: black-hole-star-2026
+  question: What is a "black hole star," and how might it explain JWST's little red dots? What other explanations are there?
+  must:
+  - a black hole star is a black hole wrapped in a dense gas envelope/cocoon
+  - it is proposed as an explanation for JWST's little red dots
+  - names at least one competing explanation for the little red dots
+  details:
+  - mentions young globular clusters with a supermassive star as an alternative
+  - the gas makes the light red / powers the glow (not nuclear fusion)
+  - the idea is not settled; research is ongoing
+  must_not:
+  - presents the black hole star explanation as proven
+  - presents black-hole seeding theories as explanations of the dots themselves
+- id: fire-amoeba-2026
+  question: Which organism set a new heat-tolerance record for complex life in 2026, and what lets it survive?
+  must:
+  - the organism is the amoeba Incendiamoeba cascadensis ("fire amoeba")
+  - it reproduces (divides) at about 63 C, a record for complex (eukaryotic) life
+  - it survives brief higher heat (~70 C) by changing shape / forming a protective cyst or outer layer
+  details:
+  - found in hot springs in Lassen Volcanic National Park, California
+  - says the sources do not explain the molecular mechanism, if they don't
+  must_not:
+  - says it reproduces or thrives at 70 C
+- id: pah-pathway-2026
+  question: What new chemical pathway for forming large aromatic molecules in space was reported in 2026, and what problem
+    does it solve?
+  must:
+  - the pathway is aryl radical addition-dehydrocyclization
+  - it forms several bonds in one step instead of adding carbon atoms one at a time
+  - it explains how PAHs (large aromatic molecules) form fast enough to match what is observed in space
+  details:
+  - University of Hawaii at Manoa team
+  - published in Nature Communications
+  - mentions asteroid samples such as Ryugu
+- id: lhs1140b-atmosphere-2026
+  question: What did astronomers detect around the exoplanet LHS 1140 b in July 2026, and does it mean the planet is habitable?
+  must:
+  - they detected helium escaping from the planet (an atmosphere)
+  - it is described as the first evidence of an atmosphere on a rocky planet in a habitable zone
+  - habitability is NOT established
+  details:
+  - about 48 light-years away
+  - orbits a red dwarf star
+  - the atmosphere's full composition is still unknown
+  must_not:
+  - says the planet is confirmed habitable or has oceans/life
+- id: mitochondrial-plaques-2026
+  question: What new kind of plaque was reported in Alzheimer's disease brains in 2026, and how does it differ from amyloid
+    plaques?
+  must:
+  - they are called mitochondrial plaques
+  - they are distinct from amyloid plaques
+  details:
+  - built from accumulated damaged mitochondria
+  - linked to lysosomal dysfunction
+  - found in both mouse models and human brain tissue
+  - may appear before amyloid plaques / affect neurons directly
+  - suggested as a possible new drug target
+  - University of Minnesota; Nature Neuroscience
+  must_not:
+  - claims a treatment already exists or was tested in patients
+- id: stair-climbing-2026
+  question: What did a large 2026 analysis find about climbing stairs and risk of death, and how strong is that evidence?
+  must:
+  - about 39% lower risk of cardiovascular death
+  - the evidence shows an association, not proven cause (observational data)
+  details:
+  - about 24% lower all-cause mortality
+  - meta-analysis of about 9 studies with 480,000+ people
+  - stair climbing was self-reported
+  must_not:
+  - says stair climbing was proven to cause the lower risk
+- id: pha-bioplastic-animals-2026
+  question: What did Max Planck researchers discover in 2026 about animals and PHA bioplastics?
+  must:
+  - many animals have enzymes that can break down PHA bioplastic
+  - PHA is a natural bioplastic made by bacteria
+  details:
+  - more than 60 species across about 9 phyla
+  - examples such as marine worms, starfish, earthworms or sponges
+  - animals may have fed on PHA for hundreds of millions of years
+  - Max Planck Institute for Marine Microbiology; Nature Ecology & Evolution
+  must_not:
+  - says animals can digest ordinary petroleum plastics
+- id: s301-star-2026
+  question: What is S301, discovered orbiting the Milky Way's central black hole, and why does it matter?
+  must:
+  - the fastest / closest known star orbiting the central black hole (Sagittarius A*)
+  - could let astronomers measure the black hole's spin
+  details:
+  - orbit of about 8.7 years
+  - top speed about 25,000 km/s (~8% of light speed)
+  - found with ESO's VLTI GRAVITY+ instrument
+  - a test of general relativity
+- id: tilcayo-cat-2026
+  question: What new wild cat species was described in 2026, and how was it identified?
+  must:
+  - Leopardus tilcayo (the tilcayo), a small tiger cat
+  - lives in Bolivia (Yungas cloud forests)
+  - identified by genetic analysis
+  details:
+  - used DNA from museum specimens
+  - first new wild cat species named in about a century
+  must_not:
+  - calls it a big cat or places it outside the genus Leopardus
+- id: daraxonrasib-2026
+  question: What pancreatic cancer drug did the FDA approve in August 2026, and how much did it improve survival?
+  must:
+  - the drug is daraxonrasib (Rasonque)
+  - median overall survival about 13.2 months vs 6.7 months
+  details:
+  - it is a RAS inhibitor from Revolution Medicines
+  - approved for metastatic pancreatic cancer after prior therapy
+  - RASolute 302 trial
+  must_not:
+  - calls it a cure or says it is approved first-line for all patients
+- id: erythrulose-space-2026
+  question: What sugar did astronomers detect in interstellar space in 2026, where, and why is it significant?
+  must:
+  - the sugar is erythrulose
+  - found near the Milky Way's centre (molecular cloud G+0.693-0.027)
+  - it is described as the first sugar found in interstellar space itself
+  details:
+  - a four-carbon sugar
+  - suggests prebiotic sugars can form in space
+  - detected with radio telescopes (Yebes 40 m / IRAM 30 m)
+  must_not:
+  - says life or DNA/RNA was found in space
+- id: gpnmb-cart-2026
+  question: What did a 2026 Nature study report about GPNMB-targeted CAR-T cells for glioblastoma, and has it been tested
+    in patients?
+  must:
+  - the CAR-T cells eliminated detectable tumours in preclinical (animal) models
+  - it has not been tested in patients yet
+  details:
+  - they target both tumour cells and tumour-supporting myeloid cells/macrophages
+  - clinical trials are still to come
+  must_not:
+  - says it cured glioblastoma in patients
+- id: roman-launch-2026
+  question: When and how did NASA's Nancy Grace Roman Space Telescope launch, and what is it for?
+  must:
+  - launched on 30 August 2026
+  - on a SpaceX rocket
+  - its goals include dark energy and exoplanets
+  details:
+  - the rocket was a Falcon Heavy
+  - from Kennedy Space Center
+  - heading to the Sun-Earth L2 point
+  - very wide field of view compared with Hubble
+- id: roman-first-images-trap-2026
+  question: What did the first science images from the Roman Space Telescope reveal?
+  must:
+  - says there are no first science images yet
+  details:
+  - explains why (launched Aug 2026; commissioning takes months; first images expected around early 2027)
+  must_not:
+  - describes specific findings from Roman first images as if they exist
+- id: ai-brain-surgery-2026
+  question: What happened in the first live AI-assisted brain surgery in London in 2026, and what did the AI actually do?
+  must:
+  - surgeons removed a brain tumour with AI assistance
+  - the AI analysed the live surgical video and highlighted structures to avoid; surgeons made the decisions
+  details:
+  - it was a pituitary tumour
+  - at the National Hospital for Neurology and Neurosurgery (UCLH / UCL)
+  - the patient's sight was protected or improved
+  - it is part of a trial of feasibility and safety
+  must_not:
+  - says the AI performed the operation by itself
+- id: multilingual-brain-2026
+  question: What did a 2026 study report about speaking multiple languages and brain age, and how solid is it?
+  must:
+  - speakers of four languages had brains appearing up to about 13 years younger
+  - the result is an association, not proof that languages cause slower ageing
+  details:
+  - brain-age clock from MEG brain recordings analysed with AI
+  - several hundred participants in the Basque Country
+  - presented at a conference (FENS Forum), not yet peer-reviewed
+  must_not:
+  - says learning languages was proven to slow brain ageing
+- id: gaia23bra-b-2026
+  question: What planet did NASA's TESS find in a new way in 2026, and how?
+  must:
+  - the planet is Gaia23bra b
+  - found by gravitational microlensing (not the transit method)
+  details:
+  - a super-Jupiter about 1.6 Jupiter masses
+  - found in archived TESS data; TESS's first microlensing planet
+  - the event was first flagged by ESA's Gaia in 2023
+  must_not:
+  - names a different planet as the discovery
+  - says it was found with the transit method
+- id: antarctica-ice-gain-2026
+  question: Antarctica gained a record amount of ice in 2021-2023. How much, why, and does it reverse Antarctic ice loss?
+  must:
+  - about 695 billion tons
+  - caused by extra snowfall in East Antarctica
+  - it does NOT reverse the long-term ice loss
+  details:
+  - the snow was delivered by atmospheric rivers
+  - the largest gain measured by the GRACE satellites
+  - linked to warming in the tropical warm pool
+  must_not:
+  - says Antarctica is no longer losing ice or that climate change is reversed
+- id: dinodontosaurus-2026
+  question: What 240-million-year-old animal described from Tanzania in September 2026 could change the dinosaur-origins timeline,
+    and was it a dinosaur?
+  must:
+  - the animal is Dinodontosaurus isiyavamanda
+  - it was NOT a dinosaur (a dicynodont / synapsid)
+  - it suggests Tanzania's early dinosaur-bearing rocks are younger than thought
+  details:
+  - it links the Tanzanian rocks to similar-age South American ones
+  - University of Bristol; Journal of Vertebrate Paleontology
+  must_not:
+  - calls it a dinosaur
+- id: gj-887-d-2026
+  question: Was a new habitable-zone planet confirmed around the nearby red dwarf GJ 887 in 2026, and what is known about
+    it?
+  must:
+  - the planet is GJ 887 d, a super-Earth in the star's habitable zone
+  - only a minimum mass is known, about 6 Earth masses (found by the radial-velocity method)
+  - it is the second-closest known habitable-zone planet, after Proxima Centauri b
+  details:
+  - the star is about 10.7 light-years away
+  - it orbits about every 51 days
+  - its size and composition are unknown
+  - HARPS and ESPRESSO spectrographs were used
+  must_not:
+  - says it is the closest habitable-zone planet
+  - says the planet is confirmed rocky, Earth-like or habitable
+- id: gaia20ehk-collision-2026
+  question: Did astronomers see two planets collide around a distant star, as reported in March 2026?
+  must:
+  - the star is Gaia20ehk, about 11,000 light-years away
+  - visible light dimmed while infrared brightened, pointing to hot debris
+  - a planetary collision is the most likely explanation, not a confirmed or directly seen event
+  details:
+  - led by Anastasios (Andy) Tzanidakis of the University of Washington
+  - the dimming began around 2016 and became extreme around 2021
+  - compared to the impact that formed Earth's Moon
+  must_not:
+  - describes the collision as directly imaged or certain
+  - says the collision happened in 2026
+- id: lhcb-xicc-plus-2026
+  question: What new particle did CERN's LHCb experiment announce in March 2026?
+  must:
+  - the particle is the doubly charmed baryon Xi_cc+ (quarks c, c, d)
+  - the signal is above 7 sigma, enough to claim a discovery
+  - it is the partner of the Xi_cc++ that LHCb found in 2017
+  details:
+  - it came from 2024 data of the upgraded LHCb detector
+  - mass about 3620 MeV
+  - an older SELEX claim of a lighter particle is not supported
+  must_not:
+  - presents it as the 2017 Xi_cc++ discovery
+  - calls it a new fundamental (elementary) particle
+- id: kuiper-atmosphere-2002xv93-2026
+  question: Has an atmosphere been found on a small Kuiper Belt object other than Pluto?
+  must:
+  - the object is 2002 XV93, about 500 km across
+  - the atmosphere was detected by a stellar occultation (it passed in front of a star)
+  - the atmosphere is extremely thin and its origin is unexplained
+  details:
+  - the occultation happened on 10 January 2024
+  - led by Ko Arimatsu (NAOJ Ishigakijima observatory)
+  - one idea is that a comet impact released the gas
+  - JWST sees no surface ices on it
+  must_not:
+  - says the atmosphere is nitrogen like Pluto's or gives a known composition
+  - says JWST discovered the atmosphere
+- id: ross-318-b-2026
+  question: Was a temperate super-Earth reported around the nearby red dwarf Ross 318 in 2026, and how solid is the claim?
+  must:
+  - the planet is Ross 318 b, found by the radial-velocity method
+  - minimum mass about 6 Earth masses, orbit about 40 days
+  - it is a preprint, not yet a peer-reviewed confirmed discovery
+  details:
+  - the star (Gliese 48) is about 28 light-years away
+  - it does not transit, so its size is unknown
+  - it lies in the habitable zone
+  must_not:
+  - calls it a confirmed, peer-reviewed discovery
+  - says it is habitable or gives its radius
+- id: toi-791-super-puffs-2026
+  question: What are the extremely low-density 'super-puff' planets announced in June 2026?
+  must:
+  - the planets are TOI-791 b and TOI-791 c
+  - both are about Jupiter-sized but have extremely low density (a few hundredths of a gram per cubic centimetre)
+  - found with NASA's TESS plus the ASTEP telescope in Antarctica
+  details:
+  - led by George Dransfield (Oxford)
+  - the two planets are in a 5:3 orbital resonance
+  - transits last more than 11 hours
+  must_not:
+  - confuses them with the Kepler-51 super-puffs
+  - says the telescope is in the Arctic or Chile
+- id: mit-dioxaborirane-2026
+  question: What new boron-oxygen molecule did MIT chemists isolate in 2026?
+  must:
+  - the molecule is a dioxaborirane
+  - it is a strained three-membered ring of one boron and two oxygen atoms
+  - it forms at room temperature when a designed boron compound reacts with oxygen
+  details:
+  - from the labs of Christopher Cummins and Robert Gilliard
+  - published in Nature Chemistry
+  - one form can react with carbon dioxide
+  must_not:
+  - claims it is already a practical carbon-capture technology
+- id: youngest-planet-2026
+  question: What is the youngest known planet, announced in September 2026?
+  must:
+  - the planet is Elias 2-24 b
+  - it is less than 1 million years old
+  - it replaces the earlier record holders (PDS 70 and WISPIT 2 planets, over 5 million years old)
+  details:
+  - about Jupiter's mass
+  - found with the Keck telescope's NIRC2 camera
+  - it is still gathering material from its surroundings
+  - the star is about 450 light-years away
+  must_not:
+  - says JWST found it
+  - says a PDS 70 planet is still the youngest
+- id: pluto-liquid-nitrogen-2026
+  question: Is there evidence of liquid flowing on Pluto's surface?
+  must:
+  - dark features in Sputnik Planitia suggest liquid nitrogen rising through cracks
+  - the evidence is tentative (possible liquid), not a direct observation
+  - it is based on old New Horizons images, not a new mission
+  details:
+  - led by Alan Stern (Southwest Research Institute)
+  - the surface there is geologically young
+  must_not:
+  - says liquid water flows on Pluto
+  - says liquid was directly observed or confirmed
+- id: nist-big-g-2026
+  question: What value did NIST's long blinded measurement of the gravitational constant G give in 2026, and did it settle
+    the disagreement?
+  must:
+  - G = 6.67387 x 10^-11 (m^3 kg^-1 s^-2)
+  - it is lower than the earlier French (BIPM) result using a similar method
+  - it does not resolve the disagreement between measurements of G
+  details:
+  - led by Stephan Schlamminger
+  - the analysis was blinded
+  - a torsion balance was used
+  must_not:
+  - claims it settled or solved the value of G
+  - confuses G with g (9.8 m/s^2)
+- id: lhc-disconnection-2026
+  question: Is CERN shutting down the Large Hadron Collider in 2026?
+  must:
+  - no - it is the disconnection for the High-Luminosity LHC upgrade, not a permanent shutdown
+  - focusing magnets next to the ATLAS and CMS experiments are being replaced
+  - the new magnets are niobium-tin and stronger than the old ones
+  details:
+  - 28 superconducting magnets are being removed
+  - first new magnet expected around 2029
+  must_not:
+  - says the LHC is being permanently closed or replaced by the Future Circular Collider
+- id: mcgetchin-crater-2026
+  question: How big is the newly formed crater that NASA's Lunar Reconnaissance Orbiter spotted on the Moon, and when did
+    it form?
+  must:
+  - it is named McGetchin crater
+  - about 222 m wide (about 728 ft)
+  - it formed between April and May 2024, found by comparing LRO images
+  details:
+  - about 43 m deep
+  - described as the largest newly formed crater found in the solar system
+  - impacts this size happen about once a century
+  must_not:
+  - says it formed in 2026
+  - says the impact flash was observed
+- id: inductive-effect-2026
+  question: What chemistry concept have textbooks reportedly been getting wrong for nearly 100 years, according to a 2026
+    study?
+  must:
+  - the inductive effect
+  - in neutral molecules it only reaches about one bond, not three or four as textbooks say
+  details:
+  - researchers from Cardiff University and Australian universities
+  - published in the Journal of Chemical Education
+  - exam boards announced reviews
+  must_not:
+  - says the inductive effect does not exist
+- id: tianwen-2-samples-trap-2026
+  question: What did scientists find when they analysed the asteroid samples that China's Tianwen-2 brought back to Earth?
+  must:
+  - no samples have been returned or analysed yet (the premise is false)
+  - Tianwen-2 reached the asteroid Kamo'oalewa in 2026 and is still studying it
+  details:
+  - the sample return is planned for late 2027
+  - it launched in May 2025
+  must_not:
+  - describes findings from Tianwen-2 samples
+  - presents OSIRIS-REx, Hayabusa2 or Chang'e-6 results as Tianwen-2's
+- id: ccz-amphipods-2026
+  question: What new deep-sea animals were described from the Clarion-Clipperton Zone in 2026, and what rare higher-level
+    group did they include?
+  must:
+  - 24 new amphipod species
+  - they include a new superfamily (Mirabestioidea)
+  - the Clarion-Clipperton Zone is a deep Pacific area targeted for seabed mining
+  details:
+  - led by the University of Lodz and the UK National Oceanography Centre
+  - published in ZooKeys
+  - most species in the zone are still unnamed
+  must_not:
+  - calls it a new phylum or new branch of life
+- id: young-microbiome-liver-2026
+  question: Did scientists reverse liver aging with gut bacteria in 2026, and was it in humans?
+  must:
+  - the study was in mice only, not humans
+  - old mice received their own youthful gut microbiome, stored earlier (fecal transplant)
+  - signs of liver aging were reversed and liver cancer was prevented in treated mice
+  details:
+  - University of Texas Medical Branch team
+  - presented at Digestive Disease Week 2026 (not yet peer-reviewed)
+  - small groups of 8 mice
+  must_not:
+  - says it works in humans or is an available treatment
+- id: ocean-census-2026
+  question: How many new marine species did the Ocean Census announce in May 2026?
+  must:
+  - 1,121 previously unknown marine species
+  - announced by the Nippon Foundation-Nekton Ocean Census
+  details:
+  - found between April 2025 and March 2026
+  - examples include a ghost shark and a carnivorous 'death ball' sponge
+  - most are not yet formally described
+  must_not:
+  - says all of them are formally named and described
+  - uses an older total such as 866
+- id: infigratinib-achondroplasia-2026
+  question: What did the 2026 phase 3 PROPEL 3 trial of an oral achondroplasia drug show, and is the drug approved?
+  must:
+  - the drug is infigratinib (oral, from BridgeBio)
+  - children grew about 1.7 cm per year more than with placebo
+  - it was not yet approved; the FDA filing was planned for later in 2026
+  details:
+  - published in the New England Journal of Medicine
+  - side effects were mild, such as brief high phosphate
+  must_not:
+  - says infigratinib is FDA-approved
+  - confuses it with vosoritide
+- id: organoid-mice-2026
+  question: What did Stanford scientists do by putting human brain organoids into mice in September 2026?
+  must:
+  - Sergiu Pasca's lab at Stanford
+  - mice bred without most of their cortex had the space filled by human brain organoids
+  - human cells made up about half the brain by volume
+  details:
+  - the mice did better on maze memory tests than untreated engineered mice
+  - published in Nature
+  - Pasca says doing this in primates is a red line
+  must_not:
+  - says the mice have human brains or human-level thinking
+  - says half the neurons were human
+- id: ptau217-blood-test-2026
+  question: Can a blood test predict Alzheimer's-related decline years before symptoms? What did a study at AAIC 2026 find?
+  must:
+  - the blood test measures p-tau217
+  - about 2,700 people without symptoms were followed for up to 10 years
+  - very high p-tau217 meant about a 78% risk of cognitive impairment within 10 years
+  details:
+  - Mass General Brigham / Harvard team (Rachel Buckley, Reisa Sperling)
+  - published in JAMA
+  - the test alone cannot fully predict an individual's future
+  must_not:
+  - says the test diagnoses Alzheimer's or predicts it with certainty
+  - says 78% will get Alzheimer's disease
+- id: lazarus-marsupials-2026
+  question: Which two marsupials known only from fossils were found alive in New Guinea in 2026?
+  must:
+  - the pygmy long-fingered possum (Dactylonax kambuayai)
+  - the ring-tailed glider (Tous ayamaruensis)
+  - they were thought extinct for thousands of years (about 6,000)
+  details:
+  - found on the Bird's Head (Vogelkop) Peninsula of Indonesian New Guinea
+  - Tim Flannery and the Australian Museum
+  - worked with local Indigenous communities
+  must_not:
+  - calls them newly evolved or never-before-known species
+- id: wwox-gene-therapy-2026
+  question: What world-first gene therapy for a severe genetic epilepsy was given to a baby in Israel in 2026?
+  must:
+  - the disease is WOREE syndrome (caused by WWOX gene defects)
+  - an 8-month-old baby received the WWOX gene directly into the brain
+  - early results are encouraging but it is one patient and long-term follow-up is needed
+  details:
+  - Schneider Children's Medical Center and Hebrew University (Rami Aqeilan)
+  - delivered with an AAV9 virus
+  must_not:
+  - calls it a proven cure or a multi-patient trial
+- id: hiv-apex-antibodies-2026
+  question: Did an experimental HIV vaccine produce broadly neutralizing antibodies in 2026, and in whom?
+  must:
+  - in rhesus macaques (monkeys), all six of them
+  - not yet tested in humans
+  - Scripps Research led the work
+  details:
+  - sequential nanoparticle immunogens were used
+  - a full vaccine likely needs to target several sites on the virus
+  - published in Nature
+  must_not:
+  - says a human HIV vaccine works or human trials succeeded
+  - confuses it with lenacapavir
+- id: daylight-dementia-2026
+  question: Is more daytime light exposure linked to lower dementia risk? What did a 2026 wearable-device study find?
+  must:
+  - about 87,000 adults wore light sensors on the wrist
+  - daytime light above 1,000 lux was linked to about 16% lower dementia risk
+  - it is an observational association, not proof that light prevents dementia
+  details:
+  - median follow-up about 8 years
+  - nighttime light showed no clear link
+  - published in General Psychiatry
+  must_not:
+  - says sunlight prevents or causes lower dementia
+- id: haplodiploidy-2026
+  question: Does haplodiploidy explain why ants, bees and wasps became social? What did a 2026 study of about 69,000 insect
+    species conclude?
+  must:
+  - about 69,000 insect species were analysed
+  - no real link between haplodiploidy and social living once evolutionary relationships are accounted for
+  - 'the apparent link came from one group: ants, bees and stinging wasps'
+  details:
+  - Arizona State University (Sachin Suresh, Timothy Linksvayer)
+  - published in Current Biology
+  - ecology and traits like stingers and nesting matter more
+  must_not:
+  - says the study overturned kin selection entirely
+- id: pig-kidney-bridge-2026
+  question: Who was the first pig-kidney recipient to go on to a human kidney transplant, and how long did the pig kidney
+    last?
+  must:
+  - the patient is Tim Andrews
+  - the gene-edited pig kidney kept him off dialysis for 271 days
+  - he then received a human kidney in January 2026
+  details:
+  - Mass General Brigham (Dr. Leonardo Riella)
+  - the pig kidney was from eGenesis
+  - the pig kidney failed after immunosuppression was reduced for an infection
+  must_not:
+  - confuses him with Richard Slayman
+  - says the pig kidney is still working
+- id: brain-two-origins-2026
+  question: What did Stanford researchers report in 2026 about the brain developing from two separate origins?
+  must:
+  - the front of the brain (forebrain and midbrain) and the hindbrain come from different progenitor cells
+  - Kyle Loh's lab at Stanford
+  details:
+  - published in Nature Neuroscience
+  - human hindbrain motor neurons were grown from stem cells
+  - the same pattern was seen in acorn worms
+  must_not:
+  - says the brain is literally two separate organs
+  - claims a proven treatment for ALS or SMA
+- id: long-covid-dopamine-2026
+  question: What did a 2026 brain-imaging study find about dopamine in people with long COVID?
+  must:
+  - PET scans showed lower VMAT2, a marker of dopamine nerve endings, in the striatum
+  - 24 long COVID patients were compared with 24 healthy people
+  - it is a small cross-sectional study; it does not prove the virus kills dopamine neurons
+  details:
+  - reductions of roughly 16-20%
+  - led by Jeffrey Meyer at CAMH, Toronto
+  - lower levels matched symptoms like apathy and slowness
+  must_not:
+  - says long COVID is Parkinson's disease
+  - claims a proven dopamine treatment exists
+- id: retatrutide-approval-trap-2026
+  question: When did the FDA approve Eli Lilly's triple-agonist obesity drug retatrutide in 2026?
+  must:
+  - it has not been approved (the premise is false)
+  - Lilly plans to file for approval in 2027
+  details:
+  - phase 3 results in 2026 showed about 28% weight loss at the highest dose
+  - Lilly and the FDA disagree about whether it counts as a biologic
+  must_not:
+  - gives an FDA approval date
+  - confuses it with tirzepatide (Zepbound)
+- id: dinevenator-2026
+  question: What new bird-like dinosaur did New Mexico scientists announce in August 2026, and what is it known from?
+  must:
+  - the dinosaur is Dinevenator robustus, a troodontid
+  - it is known only from a single skull bone (a frontal bone)
+  - it lived about 73 million years ago in the San Juan Basin of New Mexico
+  details:
+  - Steven Jasinski and Robert Sullivan (New Mexico Museum of Natural History & Science)
+  - the bone was found in 2005 and first thought to be a Saurornitholestes species
+  - the name honours the Dine (Navajo) people
+  must_not:
+  - describes it as a nearly complete skeleton
+  - calls it a dromaeosaur or raptor
+- id: mackenzie-ediacaran-2026
+  question: What did the 567-million-year-old fossils found in Canada's Northwest Territories in 2026 reveal about early animals?
+  must:
+  - more than 100 Ediacaran fossils from the Mackenzie Mountains
+  - about 567 million years old
+  - 5-10 million years older than similar fossil communities found elsewhere
+  details:
+  - includes Dickinsonia and Kimberella
+  - led by Scott Evans (AMNH)
+  - published in Science Advances
+  must_not:
+  - calls them the oldest animals ever found
+- id: antarctica-first-dinosaur-bone-2026
+  question: Which fossil was identified in 2026 as the first dinosaur bone ever found in Antarctica, and why did it take so
+    long?
+  must:
+  - it is a titanosaur (sauropod) tail vertebra
+  - it was collected on James Ross Island in 1985
+  - it sat misidentified in British Antarctic Survey collections for about 40 years
+  details:
+  - studied by Paul Barrett (Natural History Museum) and Mark Evans (BAS)
+  - it was first thought to be marine-reptile bone
+  - about 82-83 million years old
+  must_not:
+  - names Antarctopelta as this 2026 find
+- id: oxyrhynchus-iliad-2026
+  question: What ancient Greek text was found placed on a Roman-era mummy at Oxyrhynchus, Egypt, in 2026?
+  must:
+  - a papyrus with a passage from Homer's Iliad (the Catalogue of Ships in Book 2)
+  - it was placed on the mummy's abdomen during embalming
+  - the mummy is from the Roman period
+  details:
+  - excavated by the University of Barcelona mission
+  - Oxyrhynchus is modern Al-Bahnasa
+  - the novelty is a literary text used in a burial
+  must_not:
+  - calls it the oldest or first copy of the Iliad
+  - says it is from the Odyssey
+- id: danube-iron-bars-2026
+  question: What prehistoric metal hoard found in the Danube in Austria was described in 2026 as Europe's largest of its kind?
+  must:
+  - about 500 double-pointed iron bars weighing over a tonne
+  - Iron Age (La Tene period)
+  - probably lost in a shipwreck while being traded down the Danube
+  details:
+  - found in 2019 during gravel extraction at Deinham, Upper Austria
+  - Peter Trebsche (University of Innsbruck)
+  - published in Antiquity
+  must_not:
+  - says it is Bronze Age or Roman
+  - presents the shipwreck as certain
+- id: dom-van-keulen-2026
+  question: Which ship was identified in 2026 as the source of 400+ gold coins found off Devon in 1995?
+  must:
+  - the Dutch ship Dom van Keulen
+  - it sank off Salcombe, Devon, in 1633
+  - the coins are Moroccan gold (Barbary ducats)
+  details:
+  - identified from National Archives records by historian Ian Friel
+  - the ship carried about 9,000 coins
+  - the crew survived
+  must_not:
+  - calls it a pirate ship
+  - says 9,000 coins were recovered
+- id: titan-ridge-eruption-2026
+  question: Which undersea volcano erupted in the Bismarck Sea near Papua New Guinea in May 2026, and what were its effects?
+  must:
+  - a submarine eruption along the Titan Ridge in the Bismarck Sea
+  - it began around 8-9 May 2026
+  - pumice rafts clogged coasts and cut boat access for communities on Manus
+  details:
+  - about 125 km from Manus
+  - NASA satellites tracked it
+  - near the site of a 1972 undersea eruption
+  must_not:
+  - confuses it with Hunga Tonga or a land volcano such as Manam or Rabaul
+- id: el-nino-2026
+  question: When did NOAA declare that El Nino had begun in 2026, and how strong was it expected to become?
+  must:
+  - NOAA declared El Nino conditions on 11 June 2026
+  - forecasters gave a high chance (about 63%) of a very strong 'super' El Nino
+  - the strength was a forecast, not yet observed
+  details:
+  - El Nino means the central-eastern equatorial Pacific is at least 0.5 C warmer than average
+  - conditions changed fast from La Nina in March
+  - the UK Met Office warned of possible record global heat
+  must_not:
+  - says the Met Office declared it
+  - states the peak strength as a fact
+- id: glacier-loss-2025-2026
+  question: How much ice did the world's glaciers lose in 2025, according to the 2026 assessment?
+  must:
+  - about 408 billion tonnes (Gt) of ice
+  - about 1.1 mm of sea-level rise
+  - 2025 was the sixth-worst year on record, not the worst
+  details:
+  - from the World Glacier Monitoring Service
+  - all 19 glacier regions lost mass
+  - biggest losses in western Canada/US, Iceland and Central Europe
+  must_not:
+  - calls 2025 a record year for glacier loss
+  - confuses glaciers with the Greenland or Antarctic ice sheets
+- id: longi-tandem-record-2026
+  question: What efficiency record did a perovskite-silicon tandem solar cell reach in July 2026, and who set it?
+  must:
+  - 35.5% efficiency
+  - set by LONGi
+  - it is a certified laboratory cell, not a commercial panel
+  details:
+  - certified by the European Commission's ESTI lab
+  - beats LONGi's earlier 34.85% and 35.2% records
+  must_not:
+  - calls it a module or product efficiency
+  - says the panels are on sale
+- id: solid-state-dendrites-2026
+  question: What did Max Planck researchers find in 2026 about why lithium dendrites crack solid-state battery electrolytes?
+  must:
+  - pressure inside the growing lithium dendrite puts the ceramic electrolyte under tension and cracks it
+  - Max Planck Institute for Sustainable Materials team
+  - it explains the failure mechanism; it is not a finished battery product
+  details:
+  - published in Nature (April 2026)
+  - compared to a waterjet cutting rock
+  - used cryogenic sample preparation and simulations
+  must_not:
+  - says solid-state batteries are now solved or on sale
+- id: robot-half-marathon-2026
+  question: What was the winning time of the humanoid robot half marathon in Beijing in April 2026, and how does it compare
+    with the human record?
+  must:
+  - about 50 minutes 26 seconds
+  - the winning robot was Honor's 'Flash'
+  - faster than the human half-marathon world record (about 57 minutes)
+  details:
+  - the winner ran autonomously; remote-controlled robots had time penalties
+  - more than 100 teams entered
+  - the 2025 winner took about 2 hours 40 minutes
+  must_not:
+  - names Tiangong Ultra as the 2026 winner
+- id: india-pfbr-2026
+  question: Which long-delayed Indian nuclear reactor reached first criticality in April 2026?
+  must:
+  - the 500 MWe Prototype Fast Breeder Reactor at Kalpakkam
+  - first criticality was on 6 April 2026
+  - it was many years late (construction began in 2004)
+  details:
+  - run by BHAVINI
+  - uses uranium-plutonium mixed oxide fuel
+  - part of India's plan to eventually use thorium
+  must_not:
+  - says it is already producing power for the grid
+  - calls it the world's first fast breeder reactor
+- id: sparc-first-plasma-trap-2026
+  question: What fusion gain (Q) did Commonwealth Fusion Systems' SPARC tokamak achieve when it produced its first plasma
+    in 2026?
+  must:
+  - SPARC has not produced first plasma yet (the premise is false)
+  - it was still being assembled in 2026 (about 80% complete)
+  details:
+  - first plasma and net energy (Q > 1) are targeted for 2027
+  - CFS raised about $1 billion more in 2026
+  must_not:
+  - gives a Q value achieved by SPARC
+  - presents NIF or other fusion records as SPARC results

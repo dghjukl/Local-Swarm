@@ -1,0 +1,16 @@
+{#- Simplified Cohere Command R7B chat format. The model's own template (tools, citations,
+    thinking) gives llama.cpp b10152 a reply parser that rejects plain replies ("does not match
+    the expected peg-native format"), so llama-server is given this one: same turn tokens, and
+    the reply starts inside <|START_RESPONSE|> (llm.strip_think removes <|END_RESPONSE|>). -#}
+{%- for message in messages -%}
+{%- if message['role'] == 'system' -%}
+{{- '<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>' + message['content'] + '<|END_OF_TURN_TOKEN|>' -}}
+{%- elif message['role'] == 'user' -%}
+{{- '<|START_OF_TURN_TOKEN|><|USER_TOKEN|>' + message['content'] + '<|END_OF_TURN_TOKEN|>' -}}
+{%- elif message['role'] == 'assistant' -%}
+{{- '<|START_OF_TURN_TOKEN|><|CHATBOT_TOKEN|><|START_RESPONSE|>' + message['content'] + '<|END_RESPONSE|><|END_OF_TURN_TOKEN|>' -}}
+{%- endif -%}
+{%- endfor -%}
+{%- if add_generation_prompt -%}
+{{- '<|START_OF_TURN_TOKEN|><|CHATBOT_TOKEN|><|START_RESPONSE|>' -}}
+{%- endif -%}
