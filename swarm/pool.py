@@ -40,6 +40,7 @@ class Running:
     est_mb: int
     pinned: bool = False
     offload: bool = False   # too big for the card: split between GPU and system RAM, runs alone
+    on_cpu: bool = False    # runs entirely on the CPU (gpu.cpu_models): uses no VRAM, never evicted for it
     busy: int = 0
     last_used: float = field(default_factory=time.time)
     load_seconds: float = 0.0
@@ -51,6 +52,8 @@ class Running:
 
     @property
     def vram_mb(self) -> int:
+        if self.on_cpu:
+            return 0
         if self.offload:
             return self.est_mb  # the whole budget: nothing else loads next to it
         return self.measured_mb or self.est_mb
@@ -116,6 +119,10 @@ class ModelPool:
         self.threads = int(g.get("threads_per_model", 2))
         self.no_mmap = bool(g.get("no_mmap", True))
         self.offload_threads = int(g.get("offload_threads", 8))
+        # small models that run on the CPU next to the GPU swarm (model-name prefixes): they take no
+        # VRAM, so they stay loaded and never trigger a swap (Chris, 2026-10-03: LFM2.5-1.2B)
+        self.cpu_models = [str(m).lower() for m in (g.get("cpu_models") or [])]
+        self.cpu_threads = int(g.get("cpu_threads", 6))
         self.fit_margin_mb = int(g.get("fit_margin_mb", 1024))
         self._kill_stale()
 
@@ -133,7 +140,12 @@ class ModelPool:
     def used_mb(self) -> int:
         return sum(r.vram_mb for r in self.running.values()) + sum(self.reservations.values())
 
+    def on_cpu(self, card: ModelCard) -> bool:
+        return any(card.id.lower().startswith(p) for p in self.cpu_models)
+
     def estimate_mb(self, card: ModelCard, ctx_per_slot: int, parallel: int) -> int:
+        if self.on_cpu(card):
+            return 0
         key = f"vram_mb@{ctx_per_slot}x{parallel}"
         if key in card.measured:
             return int(card.measured[key])
@@ -215,7 +227,7 @@ class ModelPool:
                 await self._stop(model_id, reason="restart")
             card = self.cards[model_id]
             need = self.estimate_mb(card, ctx_per_slot, parallel)
-            offload = self.needs_offload(card, ctx_per_slot, parallel)
+            offload = self.needs_offload(card, ctx_per_slot, parallel) and not self.on_cpu(card)
             if offload:
                 # a big model gets the whole card (everything else is unloaded) and llama.cpp's
                 # --fit puts as many layers / experts on the GPU as fit; the rest runs from RAM.
@@ -334,7 +346,7 @@ class ModelPool:
         """Idle, unpinned models; with only_later, just those needed after `for_what`."""
         target = self._next_use(for_what)
         return [r for r in self.running.values()
-                if r.busy == 0 and not r.pinned and r.card.id != for_what
+                if r.busy == 0 and not r.pinned and r.card.id != for_what and not r.on_cpu
                 and (not only_later or self._next_use(r.card.id) > target)]
 
     def _pick_victim(self, candidates: list[Running], shortfall: int) -> Running:
@@ -359,7 +371,7 @@ class ModelPool:
                 await self._stop(mid, reason="crashed")
             gpu = await asyncio.to_thread(procs.gpu_memory_mb)
             short_budget = self.used_mb() + need - self.budget_mb
-            short_card = 0 if gpu is None else (need + 300) - (gpu[1] - gpu[0])
+            short_card = 0 if gpu is None or need <= 0 else (need + 300) - (gpu[1] - gpu[0])
             ram = await asyncio.to_thread(procs.system_ram_mb)
             short_ram = 0 if ram is None else (self.min_free_ram_mb + self.ram_per_server_mb) - ram[0]
             # evicting any one server frees roughly ram_per_server_mb of RAM (and its VRAM)
@@ -473,6 +485,17 @@ class ModelPool:
                 "-t", str(self.offload_threads),
                 *self._extra_for(card),
             ]
+        if self.on_cpu(card):
+            return [
+                str(self._exe_for(card)), "-m", card.path,
+                "--host", "127.0.0.1", "--port", str(port),
+                "-ngl", "0",
+                "-c", str(ctx_per_slot * parallel),
+                "-np", str(parallel),
+                "--jinja",
+                "-t", str(self.cpu_threads),
+                *self._extra_for(card),
+            ]
         return [
             str(self._exe_for(card)), "-m", card.path,
             "--host", "127.0.0.1", "--port", str(port),
@@ -500,9 +523,15 @@ class ModelPool:
         before = await asyncio.to_thread(procs.gpu_memory_mb)
         t0 = time.time()
         log_path = LOGS / "models" / f"{card.id}.log"
-        proc = procs.start(self.build_cmd(card, port, ctx_per_slot, parallel, offload=offload), log_path)
+        env = None
+        if self.on_cpu(card):
+            # hide the GPU: a CUDA build with -ngl 0 still puts compute buffers on the card (and
+            # uses it for prompt processing), which takes VRAM the budget doesn't count
+            import os
+            env = {**os.environ, "CUDA_VISIBLE_DEVICES": "-1"}
+        proc = procs.start(self.build_cmd(card, port, ctx_per_slot, parallel, offload=offload), log_path, env=env)
         r = Running(card=card, proc=proc, port=port, ctx_per_slot=ctx_per_slot,
-                    parallel=parallel, est_mb=est, pinned=pin, offload=offload)
+                    parallel=parallel, est_mb=est, pinned=pin, offload=offload, on_cpu=self.on_cpu(card))
         self.running[card.id] = r
         _write_pids([x.proc.pid for x in self.running.values()])
         try:
@@ -520,7 +549,7 @@ class ModelPool:
         r.load_seconds = time.time() - t0
         await asyncio.sleep(0.3)
         after = await asyncio.to_thread(procs.gpu_memory_mb)
-        if before and after and after[0] > before[0]:
+        if before and after and after[0] > before[0] and not r.on_cpu:
             r.measured_mb = after[0] - before[0]
             record_measurement(card.id, f"vram_mb@{ctx_per_slot}x{parallel}", r.measured_mb)
             card.measured[f"vram_mb@{ctx_per_slot}x{parallel}"] = r.measured_mb

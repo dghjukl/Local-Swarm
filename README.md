@@ -17,6 +17,7 @@ and all packages live inside this folder; nothing is installed on the system.
 | `Run-Evals.bat` | Runs the test questions (`evals/*.yaml`) through several configurations on the real models, grades them with a judge model, opens a report |
 | `Run-Tests.bat` | Runs the automated tests (fake model server, no GPU) |
 | `Probe-System.bat` | Records hardware/driver info to `runtime/probe/` |
+| `Build-Training-Pool.bat` | Builds the separate deterministic LoRA training question pool |
 
 ## How a question flows
 
@@ -43,6 +44,14 @@ Useful options: `--configs a,b`, `--questions id1,id2`, `--repeats 2`, `--reuse-
 `config/swarm.yaml` sets which model plays which role, the VRAM budget, and research limits.
 Model ids are folder names in `Models/`. All role assignments are provisional until the
 qualification tests (next milestone) measure each model.
+
+## Training pool
+
+`Build-Training-Pool.bat` (or `python -m swarm.training_pool build --n 3000 --seed 20261003)`
+builds `runtime/training/pool-v1/` for later strategy-distillation work. It contains source
+questions, shuffled saved evidence, gold supporting-paragraph labels, contamination checks, and
+stratified train/dev shards. The pool is training-only and must never be mixed with the evaluation
+sets or used for evaluation claims. `python -m swarm.training_pool check` reruns its local checks.
 
 ## Layout
 

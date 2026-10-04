@@ -223,3 +223,27 @@ def test_stop_words_reach_the_server(monkeypatch):
     finally:
         llm.STOP_WORDS.pop("http://c", None)
     assert sent["stop"] == ["<|END_OF_TURN_TOKEN|>"]
+
+
+def test_notebook_v2_merging_filters_and_citations():
+    from swarm import notebook as nb
+    # the same fact in two wordings is one note; different numbers never merge
+    assert nb.same_fact("Antarctica gained 695 billion tonnes of ice between 2021 and 2023.",
+                        "Between 2021 and 2023 Antarctica gained about 695 billion tonnes of ice-sheet mass.")
+    assert not nb.same_fact("LZ saw a 2.6 sigma excess in its data.", "LZ saw a 3.4 sigma excess in its data.")
+    # junk notes and fake open questions are dropped
+    assert nb.clean_fact("What new wild cat species was described in 2026?") is None
+    assert nb.clean_fact("Additional details from new passages") is None
+    assert nb.clean_fact("**Problem**") is None
+    assert nb.clean_fact("- The tower was completed in 1889.") == "The tower was completed in 1889."
+    assert nb.clean_question("Genetic data confirmed the species.") is None
+    assert nb.clean_question("Who designed it") == "Who designed it?"
+    book = nb.Notebook({"E1", "E2"})
+    assert book.add("The tower was completed in 1889.", ["E1"], "a")
+    assert book.add("The Eiffel Tower was completed in the year 1889.", ["E2"], "b").readers == ["a", "b"]
+    assert book.add("Additional details from new passages", ["E1"], "a") is None and book.rejected == 1
+    view = book.render_for_writer()
+    assert "N1" not in view and "[E1, E2]" in view and "verified" not in view.lower().split("(")[0]
+    # note ids and status tags a writer copied are removed, E-citations kept
+    out = nb.clean_citations("Shift found [N10, N7]. It was 1889 [VERIFIED; found by 2] [E1, N3]. [E7], [N6]")
+    assert "N1" not in out and "N3" not in out and "VERIFIED" not in out and "[E1]" in out and "[E7]" in out

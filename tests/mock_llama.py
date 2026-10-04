@@ -46,6 +46,24 @@ def reply(body: dict) -> str:
     if user.startswith("<guardian>"):  # Granite Guardian: 'yes' if the claim mentions 1889
         claim = next((m["content"] for m in reversed(body["messages"]) if m["role"] == "assistant"), "")
         return "<think>\n</think>\n<score>" + ("yes" if "1889" in claim else "no") + "</score>"
+    if "notes" in props and "open_questions" in props:  # notebook mode: running notes
+        e1, e2 = (ids[0], ids[-1]) if ids else ("E99", "E99")
+        notes = [{"fact": "The tower was completed in 1889.", "sources": [e1]},
+                 {"fact": "A note without a real source.", "sources": ["E999"]},
+                 {"fact": "Additional details from new passages", "sources": [e1]},   # filler: dropped
+                 {"fact": "Who designed the Eiffel Tower in Paris?", "sources": [e1]}]  # a question: dropped
+        if "Ministral" in MODEL:  # a fact only one worker found
+            notes.insert(1, {"fact": "It stands about 330 metres tall today.", "sources": [e2]})
+        return json.dumps({"notes": notes,
+                           "open_questions": ["Who designed the tower?"]})
+    if "agree" in props and "new_notes" in props:  # notebook mode: review the shared notebook
+        e1 = ids[0] if ids else "E99"
+        return json.dumps({"agree": ["N1", "N2"], "dispute": [{"id": "N2", "reason": "mock disagreement"}]
+                           if "Phi" in MODEL else [],
+                           "new_notes": [{"fact": "Gustave Eiffel's company designed and built it.", "sources": [e1]}]})
+    if "ok" in props and "problems" in props:  # notebook mode: review a teammate's draft
+        bad = "LFM" in MODEL
+        return json.dumps({"ok": not bad, "problems": ["The designer is missing."] if bad else []})
     thinking = (body.get("chat_template_kwargs") or {}).get("enable_thinking")
     if "answer" in props or (thinking and '"answer"' in body["messages"][0]["content"]):
         e1 = ids[0] if ids else "E99"

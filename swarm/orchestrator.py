@@ -336,7 +336,7 @@ class Swarm:
         for role in ("coordinator", "verifier"):
             if self.cfg[role]["model"] not in self.cards:
                 problems.append(f"{role} model '{self.cfg[role]['model']}' not found in Models/")
-        if self.mode() == "swarm" and not self.team():
+        if self.mode() in ("swarm", "notebook") and not self.team():
             problems.append("no usable worker models found (check workers.pool in config/swarm.yaml)")
         return problems
 
@@ -352,9 +352,16 @@ class Swarm:
         docs = await self._gather(plan["search_queries"], send)
         return {"plan": plan, "docs": [d.__dict__ for d in docs]}
 
+    def leaderless(self) -> bool:
+        return self.mode() == "notebook" and str((self.cfg.get("notebook") or {}).get("leader")) == "none"
+
     async def _plan(self, question: str, force_research: bool) -> dict:
         coord = self.role("coordinator")
-        async with self.pool.use(coord["model"], coord["ctx_per_slot"], coord["parallel"], pin=True) as url:
+        if self.leaderless():  # no coordinator: the first team member makes the search plan
+            m = self.team()[0]
+            coord = {"model": m, "ctx_per_slot": max(8192, self.role("workers")["ctx_per_slot"]), "parallel": 1}
+        async with self.pool.use(coord["model"], coord["ctx_per_slot"], coord["parallel"],
+                                 pin=not self.leaderless()) as url:
             plan_res = await llm.chat_json(url, [
                 {"role": "system", "content": PLAN_SYSTEM.format(today=_today())},
                 {"role": "user", "content": question},
@@ -393,8 +400,9 @@ class Swarm:
         self.pool.emit = send
         coord = self.role("coordinator")
         today = _today()
-        if self.mode() == "swarm":
-            self.pool.plan_ahead([coord["model"], *[m for _, m in self.team_slots()], self.cfg["verifier"]["model"]])
+        if self.mode() in ("swarm", "notebook"):
+            lead = [] if self.leaderless() else [coord["model"]]
+            self.pool.plan_ahead([*lead, *[m for _, m in self.team_slots()], self.cfg["verifier"]["model"]])
         else:
             self.pool.plan_ahead([coord["model"]])
         await send({"type": "run_start", "question": question})
@@ -415,7 +423,7 @@ class Swarm:
             # ---------------- 2. gather evidence
             await stage("gather", "Searching and reading sources")
             k = self.cfg["research"]["passages_per_subquestion"]
-            split = (not prepared and self.mode() == "swarm" and len(subqs) > 1
+            split = (not prepared and self.mode() in ("swarm", "notebook") and len(subqs) > 1
                      and bool(self.cfg["research"].get("split_by_subquestion")))
             if prepared:
                 docs = [Doc(**d) for d in prepared["docs"]]
@@ -448,6 +456,11 @@ class Swarm:
             if not evidence:
                 await send({"type": "warning", "message": "No usable sources were found; answering without evidence."})
                 return await self._finish_direct(question, send, stage, trace, t_start, today, no_sources=True)
+
+            if self.mode() == "notebook":  # the team shares a notebook (swarm/notebook.py)
+                from swarm.notebook import run_notebook
+                return await run_notebook(self, question, subqs, groups, evidence, send, stage, trace,
+                                          t_start, stage_times, today)
 
             if self.mode() == "solo":  # baseline: the coordinator alone reads the evidence and answers
                 return await self._finish_solo(question, subqs, groups, evidence, send, stage, trace,
@@ -868,7 +881,8 @@ class Swarm:
                 res = await llm.chat_json(url, [{"role": "system", "content": WORKER_SYSTEM + strat.instruction(how)},
                                                 {"role": "user", "content": user}],
                                           WORKER_SCHEMA_REASONED if how else WORKER_SCHEMA,
-                                          max_tokens=950 if how else 600, temperature=temp)
+                                          max_tokens=int(self.role("workers").get("answer_tokens")
+                                                         or (950 if how else 600)), temperature=temp)
             data = res.data if isinstance(res.data, dict) else {}
             claims = []
             for c in data.get("claims", [])[:5]:

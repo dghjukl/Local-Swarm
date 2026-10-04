@@ -40,8 +40,8 @@ def models_for(variant: dict, cards: dict, econf: dict | None = None, judge2: bo
     """Every model a (resolved) configuration will load, in the order it first needs them."""
     from swarm.orchestrator import Swarm
     sw = Swarm(variant, None, cards, None)
-    out = [variant["coordinator"]["model"]]
-    if sw.mode() == "swarm":
+    out = [] if sw.leaderless() else [variant["coordinator"]["model"]]
+    if sw.mode() in ("swarm", "notebook"):
         out += sw.team() + [r["model"] for r in sw.roles()]
     out.append(variant["verifier"]["model"])
     if (variant.get("research") or {}).get("reranker"):
@@ -126,7 +126,7 @@ async def preflight(models: list[str], pool, cards: dict, keep_reasoning: list[s
         if cards[m].size_mb > pool.budget_mb:  # would load partly into RAM: slow, and it restarted this PC
             say(f"Preflight: {m} not tested (bigger than the GPU budget)")
             continue
-        sig = _sig(cards[m], pool)
+        sig = _sig(cards[m], pool) + ("-cpu" if pool.on_cpu(cards[m]) else "")  # CPU and GPU runs differ
         hit = cache.get(m)
         if not force and hit and hit.get("sig") == sig and hit.get("ok"):
             continue

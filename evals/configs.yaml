@@ -164,6 +164,120 @@ configs:
           - {role: premise,  model: Ministral-3-3B-Instruct}
           - {role: skeptic,  model: Granite-4.1-3B}
 
+  # ---- MID-SIZE SWARM v2 (2026-10-03): built from the coordinator bake-off (MiMo), worker rounds
+  # 1-3 (best model + way of thinking, four different families) and the verifier bench (Gemma-4-E4B,
+  # already loaded as a worker). Answers may be up to 2000 tokens (Apertus ran out at 1425).
+  # Frozen as external-v2 before any results; compared with MiMo alone and the bake-off winner.
+  v2-swarm:
+    description: "v2: MiMo-9B coordinator; answerers MiMo (step back), Apertus-8B (self-ask), EXAONE-1.2B, Gemma-4-E4B; Gemma verifier; per-part research"
+    overrides:
+      coordinator: {model: MiMo-V2.6-Distill-Qwen-9B, ctx_per_slot: 16384, parallel: 1}
+      research: {split_by_subquestion: true}
+      verifier: {model: Gemma-4-E4B-it}
+      workers:
+        answer_tokens: 2000
+        roles:
+          - {role: answerer, model: MiMo-V2.6-Distill-Qwen-9B, strategy: step_back}
+          - {role: answerer, model: Apertus-v1.5-8B, strategy: self_ask}
+          - {role: answerer, model: EXAONE-4.0-1.2B}
+          - {role: answerer, model: Gemma-4-E4B-it}
+  v2-swarm-rerank4b:
+    description: "v2 swarm, passages chosen by Qwen3-Reranker-4B"
+    overrides:
+      coordinator: {model: MiMo-V2.6-Distill-Qwen-9B, ctx_per_slot: 16384, parallel: 1}
+      research: {split_by_subquestion: true, reranker: Qwen3-Reranker-4B}
+      verifier: {model: Gemma-4-E4B-it}
+      workers:
+        answer_tokens: 2000
+        roles:
+          - {role: answerer, model: MiMo-V2.6-Distill-Qwen-9B, strategy: step_back}
+          - {role: answerer, model: Apertus-v1.5-8B, strategy: self_ask}
+          - {role: answerer, model: EXAONE-4.0-1.2B}
+          - {role: answerer, model: Gemma-4-E4B-it}
+
+  # ---- NOTEBOOK STUDY (2026-10-03, development run on saved evidence; not frozen yet) ----
+  # The workers share a notebook (swarm/notebook.py): independent reading with running notes, a merged
+  # and fact-checked notebook, one review round, and the answer written from the notebook.
+  # Two questions: (1) does the gain come from diverse models collaborating? (2) does that team need a
+  # big leader, a tiny one, or none? GPU memory is about equal: the big coordinator's ~7 GB goes to
+  # the 4th member (none) or to a 0.8B leader plus a 4th member (tiny).
+  nb-big:
+    description: "notebook; MiMo-9B leads (plans + writes); Apertus-8B, EXAONE-1.2B, Gemma-4-E4B take notes"
+    overrides:
+      mode: notebook
+      notebook: {leader: coordinator, reads_per_passage: 2, chunk_passages: 4, rounds: 1}
+      coordinator: {model: MiMo-V2.6-Distill-Qwen-9B, ctx_per_slot: 16384, parallel: 1}
+      verifier: {model: Gemma-4-E4B-it}
+      workers: {team: [Apertus-v1.5-8B, EXAONE-4.0-1.2B, Gemma-4-E4B-it]}
+  nb-none:
+    description: "notebook; no leader: MiMo-9B joins as a 4th member; the best note-taker writes, the rest review"
+    overrides:
+      mode: notebook
+      notebook: {leader: none, reads_per_passage: 2, chunk_passages: 4, rounds: 1}
+      verifier: {model: Gemma-4-E4B-it}
+      workers: {team: [MiMo-V2.6-Distill-Qwen-9B, Apertus-v1.5-8B, EXAONE-4.0-1.2B, Gemma-4-E4B-it]}
+  nb-tiny:
+    description: "notebook; tiny leader Qwen3.5-0.8B; its memory buys a 4th member (Falcon-H1R-7B)"
+    overrides:
+      mode: notebook
+      notebook: {leader: coordinator, reads_per_passage: 2, chunk_passages: 4, rounds: 1}
+      coordinator: {model: Qwen3.5-0.8B, ctx_per_slot: 16384, parallel: 1}
+      verifier: {model: Gemma-4-E4B-it}
+      workers: {team: [Apertus-v1.5-8B, EXAONE-4.0-1.2B, Gemma-4-E4B-it, Falcon-H1R-7B]}
+  nb-same3:
+    description: "notebook without diversity: 3 copies of Apertus-8B take notes; MiMo-9B leads"
+    overrides:
+      mode: notebook
+      notebook: {leader: coordinator, reads_per_passage: 2, chunk_passages: 4, rounds: 1}
+      coordinator: {model: MiMo-V2.6-Distill-Qwen-9B, ctx_per_slot: 16384, parallel: 1}
+      verifier: {model: Gemma-4-E4B-it}
+      workers: {team: [Apertus-v1.5-8B, Apertus-v1.5-8B, Apertus-v1.5-8B]}
+  diverse-separate:
+    description: "diversity without collaboration: MiMo-9B leads; Apertus-8B, EXAONE-1.2B, Gemma-4-E4B answer separately (v2-style, bigger context)"
+    overrides:
+      coordinator: {model: MiMo-V2.6-Distill-Qwen-9B, ctx_per_slot: 16384, parallel: 1}
+      verifier: {model: Gemma-4-E4B-it}
+      workers: {team: [Apertus-v1.5-8B, EXAONE-4.0-1.2B, Gemma-4-E4B-it], ctx_per_slot: 8192, answer_tokens: 2000}
+
+  # Notebook v2 (2026-10-03): looser merging of the same fact, junk-note filter, verifier retry,
+  # writer sees no note ids. Same team in every config; ONLY the leader (who writes the answer) changes.
+  # CPU leaders run in system RAM (gpu.cpu_models) so they never take VRAM or force a swap.
+  nb2-big:
+    description: "notebook v2; MiMo-9B leads on the GPU; Apertus-8B, EXAONE-1.2B, Gemma-4-E4B take notes"
+    overrides:
+      mode: notebook
+      notebook: {leader: coordinator, reads_per_passage: 2, chunk_passages: 4, rounds: 1}
+      verifier: {model: Gemma-4-E4B-it}
+      workers: {team: [Apertus-v1.5-8B, EXAONE-4.0-1.2B, Gemma-4-E4B-it]}
+      coordinator: {model: MiMo-V2.6-Distill-Qwen-9B, ctx_per_slot: 16384, parallel: 1}
+  nb2-cpu-lfm:
+    description: "notebook v2; LFM2.5-1.2B leads on the CPU (whole GPU for the note-takers)"
+    overrides:
+      mode: notebook
+      notebook: {leader: coordinator, reads_per_passage: 2, chunk_passages: 4, rounds: 1}
+      verifier: {model: Gemma-4-E4B-it}
+      workers: {team: [Apertus-v1.5-8B, EXAONE-4.0-1.2B, Gemma-4-E4B-it]}
+      coordinator: {model: LFM2.5-1.2B-Instruct, ctx_per_slot: 8192, parallel: 1}
+      gpu: {cpu_models: [LFM2.5-1.2B-Instruct]}
+  nb2-cpu-qwen2b:
+    description: "notebook v2; Qwen3.5-2B leads on the CPU (whole GPU for the note-takers)"
+    overrides:
+      mode: notebook
+      notebook: {leader: coordinator, reads_per_passage: 2, chunk_passages: 4, rounds: 1}
+      verifier: {model: Gemma-4-E4B-it}
+      workers: {team: [Apertus-v1.5-8B, EXAONE-4.0-1.2B, Gemma-4-E4B-it]}
+      coordinator: {model: Qwen3.5-2B, ctx_per_slot: 8192, parallel: 1}
+      gpu: {cpu_models: [Qwen3.5-2B]}
+  nb2-cpu-qwen4b:
+    description: "notebook v2; Qwen3.5-4B leads on the CPU (whole GPU for the note-takers)"
+    overrides:
+      mode: notebook
+      notebook: {leader: coordinator, reads_per_passage: 2, chunk_passages: 4, rounds: 1}
+      verifier: {model: Gemma-4-E4B-it}
+      workers: {team: [Apertus-v1.5-8B, EXAONE-4.0-1.2B, Gemma-4-E4B-it]}
+      coordinator: {model: Qwen3.5-4B, ctx_per_slot: 8192, parallel: 1}
+      gpu: {cpu_models: [Qwen3.5-4B]}
+
 # Templates filled in once per value; each also becomes a group of the same name.
 matrices:
   # Every general chat model alone, reading the same evidence and writing the answer:
@@ -417,6 +531,13 @@ groups:
                 roles-2ways-split, bigcoord-qwen36]
   round2-screen: [strategy-screen-round2]
   round3-screen: [strategy-screen-round3]
+  notebook-study: [nb-big, nb-none, nb-tiny, nb-same3, diverse-separate, solo-MiMo-V2.6-Distill-Qwen-9B, coordinator-only]
+  notebook-v2: [nb2-big, nb2-cpu-qwen4b, nb2-cpu-qwen2b, nb2-cpu-lfm, solo-MiMo-V2.6-Distill-Qwen-9B, coordinator-only]
+  # v2 vs its best member alone and vs the bake-off winner (MiMo coordinating the old roles team)
+  # plus coordinator-only as an in-session anchor: live scores drift by day (roles-2ways-split 65% on
+  # 9-30 vs 53% on 10-03 on the same questions), so v2 must be compared within its own run
+  external-v2: [v2-swarm, v2-swarm-rerank4b, solo-MiMo-V2.6-Distill-Qwen-9B, coord-MiMo-V2.6-Distill-Qwen-9B,
+                coordinator-only]
   coordinator-bakeoff2: [coordinator-bakeoff2-swarms, coordinator-bakeoff2-solos]
   reranker-study: [coordinator-only, rerank06-coordinator-only, rerank4b-coordinator-only, roles-2ways-split, rerank4b-roles-2ways-split]
   # coordinator bake-off: current best swarm (4B coordinator) vs the same swarm with each candidate

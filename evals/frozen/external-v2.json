@@ -1,0 +1,171 @@
+{
+  "name": "external-v2",
+  "frozen_at": "2026-10-03T12:55:01-05:00",
+  "purpose": "configurations fixed before any GAIA/FRAMES results were seen",
+  "configs": {
+    "v2-swarm": {
+      "description": "v2: MiMo-9B coordinator; answerers MiMo (step back), Apertus-8B (self-ask), EXAONE-1.2B, Gemma-4-E4B; Gemma verifier; per-part research",
+      "overrides": {
+        "coordinator": {
+          "model": "MiMo-V2.6-Distill-Qwen-9B",
+          "ctx_per_slot": 16384,
+          "parallel": 1
+        },
+        "research": {
+          "split_by_subquestion": true
+        },
+        "verifier": {
+          "model": "Gemma-4-E4B-it"
+        },
+        "workers": {
+          "answer_tokens": 2000,
+          "roles": [
+            {
+              "role": "answerer",
+              "model": "MiMo-V2.6-Distill-Qwen-9B",
+              "strategy": "step_back"
+            },
+            {
+              "role": "answerer",
+              "model": "Apertus-v1.5-8B",
+              "strategy": "self_ask"
+            },
+            {
+              "role": "answerer",
+              "model": "EXAONE-4.0-1.2B"
+            },
+            {
+              "role": "answerer",
+              "model": "Gemma-4-E4B-it"
+            }
+          ]
+        }
+      },
+      "hash": "07c5339716d66e6837a29e65fbff7e9d01dfe8d4f60466a062d6960dc301dec8"
+    },
+    "v2-swarm-rerank4b": {
+      "description": "v2 swarm, passages chosen by Qwen3-Reranker-4B",
+      "overrides": {
+        "coordinator": {
+          "model": "MiMo-V2.6-Distill-Qwen-9B",
+          "ctx_per_slot": 16384,
+          "parallel": 1
+        },
+        "research": {
+          "split_by_subquestion": true,
+          "reranker": "Qwen3-Reranker-4B"
+        },
+        "verifier": {
+          "model": "Gemma-4-E4B-it"
+        },
+        "workers": {
+          "answer_tokens": 2000,
+          "roles": [
+            {
+              "role": "answerer",
+              "model": "MiMo-V2.6-Distill-Qwen-9B",
+              "strategy": "step_back"
+            },
+            {
+              "role": "answerer",
+              "model": "Apertus-v1.5-8B",
+              "strategy": "self_ask"
+            },
+            {
+              "role": "answerer",
+              "model": "EXAONE-4.0-1.2B"
+            },
+            {
+              "role": "answerer",
+              "model": "Gemma-4-E4B-it"
+            }
+          ]
+        }
+      },
+      "hash": "59a6acd5c1f49c5098d3c71074a4a5c8e6a5a7ac5a36697ba78d320ba785764e"
+    },
+    "solo-MiMo-V2.6-Distill-Qwen-9B": {
+      "description": "MiMo-V2.6-Distill-Qwen-9B alone reads the evidence and answers",
+      "overrides": {
+        "mode": "solo",
+        "coordinator": {
+          "model": "MiMo-V2.6-Distill-Qwen-9B",
+          "ctx_per_slot": 12288,
+          "parallel": 1
+        }
+      },
+      "hash": "f8e0ae56a7228338f8f61fd1b0fb151660297de2697de1e8ffdafa07a71a09bc"
+    },
+    "coord-MiMo-V2.6-Distill-Qwen-9B": {
+      "description": "best small swarm (roles-2ways-split) with MiMo-V2.6-Distill-Qwen-9B as coordinator",
+      "overrides": {
+        "coordinator": {
+          "model": "MiMo-V2.6-Distill-Qwen-9B",
+          "ctx_per_slot": 16384,
+          "parallel": 1
+        },
+        "research": {
+          "split_by_subquestion": true
+        },
+        "workers": {
+          "roles": [
+            {
+              "role": "answerer",
+              "model": "Ministral-3-3B-Instruct",
+              "strategy": "self_ask"
+            },
+            {
+              "role": "answerer",
+              "model": "LFM2.5-2.6B",
+              "strategy": "tree_of_thoughts"
+            },
+            {
+              "role": "facts",
+              "model": "LFM2.5-2.6B"
+            },
+            {
+              "role": "premise",
+              "model": "Ministral-3-3B-Instruct"
+            },
+            {
+              "role": "skeptic",
+              "model": "Granite-4.1-3B"
+            }
+          ]
+        }
+      },
+      "hash": "8c258ee616c3ee351123819d683fad4069231c3568550e56fd2f68e23ba04f5b"
+    },
+    "coordinator-only": {
+      "description": "Qwen3.5-4B alone reads the evidence and answers",
+      "overrides": {
+        "mode": "solo"
+      },
+      "hash": "c89354618faf2e97ee31e888bbcc64c8428c744b1d0cd40c8c21ce8365e43eec"
+    }
+  },
+  "code_hash": "2c788356102dd94985863df3e9092e2f8a3444f71da226962461c087a2505ae9",
+  "code_files": {
+    "__init__.py": "0bae0ad2b89f65bd",
+    "__main__.py": "d6e80d32fd1c34e5",
+    "benchmarks.py": "0779776890f2341c",
+    "config.py": "adfd1d48c89cf0c7",
+    "evals.py": "0bbd1e11d36e0e54",
+    "evidence.py": "8af2dc50d780f1ec",
+    "json_gbnf.py": "1a965ca64c761e73",
+    "llm.py": "853080efc4cc5f78",
+    "orchestrator.py": "d9d0d08baf061497",
+    "paths.py": "e6e097bbd641403a",
+    "pool.py": "b72c3ecc88eef481",
+    "preflight.py": "37cd99e7f2b36561",
+    "procs.py": "514c5caa32e55890",
+    "registry.py": "aff7ea255311fa6f",
+    "scholar.py": "557f5d551c7639c0",
+    "selftest.py": "c4022e3f54d18e3c",
+    "speech.py": "4ab60e66bea73c98",
+    "strategies.py": "bdb7858b533d4460",
+    "tools.py": "1d1bdb1a5be79e36",
+    "verifier_bench.py": "d1c645bc39a68b32"
+  },
+  "manifest_hash": "6f5fafe11a3d8b1146d46b92d69a346e2eaa6ff020e34cd34cd77a0d44c952a5"
+}

@@ -387,3 +387,45 @@ async def test_reranker_and_guardian_verifier(cfg, cards, mock_pool_cls, isolate
         await pool.shutdown()
     assert any(e["type"] == "warning" and "reranker" in e["message"] for e in events)
     assert "1889" in trace["final"]["answer"]
+
+
+async def test_notebook_mode_with_and_without_a_coordinator(cfg, cards, mock_pool_cls):
+    """Notebook mode: workers read with running notes, the notes are merged (a fact found by two
+    workers is one note with two readers), verified, reviewed in a round, and the answer is
+    written from the notebook - by the coordinator, or (leader: none) by a worker plus review."""
+    import copy
+    events = []
+
+    async def emit(e):
+        events.append(e)
+
+    c = copy.deepcopy(cfg)
+    c["mode"] = "notebook"
+    c["workers"]["team"] = ["Ministral-3-3B-Instruct", "LFM2.5-2.6B", "Phi-4-mini-instruct"]
+    c["notebook"] = {"leader": "coordinator", "chunk_passages": 2, "reads_per_passage": 2, "rounds": 1}
+    pool = mock_pool_cls(cfg, cards)
+    try:
+        sw = Swarm(c, pool, cards, FakeResearch())
+        prep = await sw.prepare("Tell me about the Eiffel Tower")
+        led = await sw.run("Tell me about the Eiffel Tower", emit, prepared=prep)
+        c2 = copy.deepcopy(c)
+        c2["notebook"]["leader"] = "none"
+        free = await Swarm(c2, pool, cards, FakeResearch()).run("Tell me about the Eiffel Tower", emit, prepared=prep)
+    finally:
+        await pool.shutdown()
+    for t in (led, free):
+        assert not t.get("error"), t.get("error")
+        notes = t["notebook"]["notes"]
+        first = next(n for n in notes if "1889" in n["fact"])
+        assert len(first["readers"]) >= 2                       # found independently by several workers
+        assert not any("E999" in n["sources"] for n in notes)   # unsourced notes are dropped
+        assert any(n["added_in"] == "round 1" for n in notes)    # the review round added a note
+        assert all(n["status"] == "supported" for n in notes)   # every note was fact-checked
+        assert t["stats"]["mode"] == "notebook" and t["stats"]["notebook"]["found_by_2plus"] >= 1
+        assert t["stats"]["notebook"]["rejected_notes"] >= 2 and t["stats"]["notebook"]["unchecked"] == 0
+        assert not any("?" in n["fact"] or "Additional details" in n["fact"] for n in notes)
+        assert t["final"]["answer"]
+    assert not led["drafts"]                                     # the coordinator wrote it directly
+    assert free["writer"] in free["team"] and free["objections"]  # LFM objected ...
+    assert free["drafts"][-1].get("revision")                    # ... so the writer revised once
+    assert any(d["by"] == "Phi-4-mini-instruct" for n in led["notebook"]["notes"] for d in n["disputes"])

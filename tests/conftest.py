@@ -6,7 +6,7 @@ import pytest
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from swarm import orchestrator, pool, preflight, registry  # noqa: E402
+from swarm import orchestrator, pool, preflight, procs, registry  # noqa: E402
 from swarm.config import load_config  # noqa: E402
 
 MOCK = Path(__file__).parent / "mock_llama.py"
@@ -20,6 +20,17 @@ MODELS = ["Qwen3.5-4B", "Granite-4.1-3B", "Ministral-3-3B-Instruct", "LFM2.5-2.6
 @pytest.fixture(autouse=True)
 def extract_in_process(monkeypatch):
     monkeypatch.setenv("SWARM_EXTRACT_INPROCESS", "1")  # no worker processes in tests (one test covers them)
+
+
+@pytest.fixture(autouse=True)
+def no_real_hardware(request, monkeypatch):
+    """Tests must not depend on the machine they run on. On the swarm PC, nvidia-smi reports the real
+    GPU (other programs' VRAM changes became 'measured' model sizes) and the real free RAM can trigger
+    the low-RAM eviction rule, so scheduling tests behaved differently there than in CI (2026-10-03).
+    Tests that need these readings set them explicitly."""
+    if "system_ram_reading" not in request.node.name:
+        monkeypatch.setattr(procs, "gpu_memory_mb", lambda: None)
+        monkeypatch.setattr(procs, "system_ram_mb", lambda: None)
 
 
 @pytest.fixture(autouse=True)

@@ -247,3 +247,47 @@ def test_command_r7b_gets_plain_chat_template(cfg, cards, mock_pool_cls):
     args = mock_pool_cls(cfg, cards)._extra_for(card)
     assert args[args.index("--chat-template-file") + 1].replace("\\", "/").endswith("config/templates/command-r7b.jinja")
     assert llm.strip_think("Paris.<|END_RESPONSE|>") == "Paris."
+
+
+def test_cpu_models_take_no_vram_and_stay_loaded(cfg, cards, mock_pool_cls):
+    from swarm import pool as poolmod
+    c = dict(cfg)
+    c["gpu"] = dict(cfg["gpu"], cpu_models=["LFM2.5"])
+    p = mock_pool_cls(c, cards)
+    lfm, phi = cards["LFM2.5-2.6B"], cards["Phi-4-mini-instruct"]
+    assert p.on_cpu(lfm) and not p.on_cpu(phi)
+    assert p.estimate_mb(lfm, 8192, 1) == 0 and p.estimate_mb(phi, 8192, 1) > 0
+    cmd = poolmod.ModelPool.build_cmd(p, lfm, 8300, 8192, 1)
+    assert cmd[cmd.index("-ngl") + 1] == "0" and "--no-mmap" not in cmd
+    r = poolmod.Running(card=lfm, proc=None, port=1, ctx_per_slot=8192, parallel=1, est_mb=0, on_cpu=True)
+    p.running[lfm.id] = r
+    assert r.vram_mb == 0 and r not in p._evictable("Phi-4-mini-instruct", False)
+    p.running.clear()
+
+
+def test_cpu_models_are_started_without_the_gpu(cfg, cards, mock_pool_cls, monkeypatch):
+    """A CPU-resident model gets CUDA hidden, so it never puts buffers on the card."""
+    import asyncio
+    from swarm import pool as poolmod
+    seen = {}
+    real = poolmod.procs.start
+
+    def spy(cmd, log_path, cwd=None, env=None):
+        seen[cmd[cmd.index("-m") + 1]] = env
+        return real(cmd, log_path, cwd=cwd, env=env)
+    monkeypatch.setattr(poolmod.procs, "start", spy)
+    c = dict(cfg)
+    c["gpu"] = dict(cfg["gpu"], cpu_models=["LFM2.5"])
+    p = mock_pool_cls(c, cards)
+
+    async def go():
+        try:
+            async with p.use("LFM2.5-2.6B", 4096):
+                pass
+            async with p.use("Phi-4-mini-instruct", 4096):
+                pass
+        finally:
+            await p.shutdown()
+    asyncio.run(go())
+    assert seen[cards["LFM2.5-2.6B"].path]["CUDA_VISIBLE_DEVICES"] == "-1"
+    assert seen[cards["Phi-4-mini-instruct"].path] is None

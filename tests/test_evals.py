@@ -28,7 +28,7 @@ async def test_harness_runs_grades_and_reports(cfg, cards, mock_pool_cls, tmp_pa
                            regrade=None, resume=None, no_judge=False, no_open=True)
     out = await evals.run(args)
 
-    results = [json.loads(l) for l in (out / "results.jsonl").read_text().splitlines()]
+    results = [json.loads(l) for l in (out / "results.jsonl").read_text(encoding="utf-8").splitlines()]
     assert len(results) == 8  # 2 questions x 4 configs
     assert {r["config"] for r in results} == {"swarm-mixed", "coordinator-only", "single-large", "same-model-x3"}
     assert all(not r["error"] for r in results), [r["error"] for r in results if r["error"]]
@@ -41,9 +41,9 @@ async def test_harness_runs_grades_and_reports(cfg, cards, mock_pool_cls, tmp_pa
     assert all(r["peak_vram_mb"] == 5000 for r in results)
     assert (out / "evidence" / "lz-2026.json").exists()
     assert all((out / r["trace"]).exists() for r in results)
-    html = (out / "report.html").read_text()
+    html = (out / "report.html").read_text(encoding="utf-8")
     assert "Leaderboard" in html and "single-large" in html and "Phi-4-mini-instruct" in html
-    assert "report" in (out / "report.md").read_text().lower() or "Leaderboard" in (out / "report.md").read_text()
+    assert "report" in (out / "report.md").read_text(encoding="utf-8").lower() or "Leaderboard" in (out / "report.md").read_text(encoding="utf-8")
 
     # evidence reuse: a second run with --reuse-evidence must not touch the web
     class NoWeb(StartableFake):
@@ -52,13 +52,13 @@ async def test_harness_runs_grades_and_reports(cfg, cards, mock_pool_cls, tmp_pa
     monkeypatch.setattr(evals, "ResearchMCP", lambda n=3: NoWeb())
     args2 = SimpleNamespace(**{**vars(args), "configs": "coordinator-only", "reuse_evidence": str(out), "no_judge": True})
     out2 = await evals.run(args2)
-    r2 = [json.loads(l) for l in (out2 / "results.jsonl").read_text().splitlines()]
+    r2 = [json.loads(l) for l in (out2 / "results.jsonl").read_text(encoding="utf-8").splitlines()]
     assert len(r2) == 2 and all(not r["error"] for r in r2)
 
     # regrade an existing folder without new runs
     args3 = SimpleNamespace(**{**vars(args), "regrade": str(out2)})
     await evals.run(args3)
-    r3 = [json.loads(l) for l in (out2 / "results.jsonl").read_text().splitlines()]
+    r3 = [json.loads(l) for l in (out2 / "results.jsonl").read_text(encoding="utf-8").splitlines()]
     assert all("grade" in r for r in r3)
 
 
@@ -74,7 +74,7 @@ async def test_resume_after_interruption(cfg, cards, mock_pool_cls, tmp_path, mo
                            questions="lz-2026,pah-pathway-2026", repeats=1, reuse_evidence=None,
                            regrade=None, resume=None, no_judge=True, no_open=True)
     out = await evals.run(args)
-    lines = (out / "results.jsonl").read_text().splitlines()
+    lines = (out / "results.jsonl").read_text(encoding="utf-8").splitlines()
     # simulate a power cut after 3 runs, with the last line half-written
     (out / "results.jsonl").write_text("\n".join(lines[:3]) + "\n" + lines[3][:40])
 
@@ -90,7 +90,7 @@ async def test_resume_after_interruption(cfg, cards, mock_pool_cls, tmp_path, mo
     out2 = await evals.run(args2)
     assert out2 == out
     assert ran == ["swarm-t1"]  # only the one missing run was redone
-    rs = [json.loads(l) for l in (out / "results.jsonl").read_text().splitlines()]
+    rs = [json.loads(l) for l in (out / "results.jsonl").read_text(encoding="utf-8").splitlines()]
     assert sorted((r["config"], r["question_id"]) for r in rs) == sorted(
         [(c, q) for c in ("coordinator-only", "swarm-t1") for q in ("lz-2026", "pah-pathway-2026")])
 
@@ -146,10 +146,10 @@ async def test_live_mode_each_run_does_its_own_research(cfg, cards, mock_pool_cl
     args = argparse.Namespace(set=str(qfile), configs="coordinator-only", questions=None, repeats=1,
                               reuse_evidence=None, regrade=None, resume=None, no_judge=True, no_open=True, live=True)
     out = await evals.run(args)
-    meta = json.loads((out / "meta.json").read_text())
+    meta = json.loads((out / "meta.json").read_text(encoding="utf-8"))
     assert meta["live"] is True and meta["evidence"].startswith("live")
     assert not list((out / "evidence").glob("*.json")), "nothing shared between configurations"
-    r = json.loads((out / "results.jsonl").read_text().splitlines()[0])
+    r = json.loads((out / "results.jsonl").read_text(encoding="utf-8").splitlines()[0])
     assert not r.get("error") and "1889" in r["answer"]
 
 
@@ -170,7 +170,7 @@ async def test_strategy_screen(cfg, cards, mock_pool_cls, tmp_path, monkeypatch)
                            questions="lz-2026,pah-pathway-2026,fire-amoeba-2026", repeats=1, reuse_evidence=None,
                            regrade=None, resume=None, no_judge=False, no_open=True)
     out = await evals.run(args)
-    results = [json.loads(l) for l in (out / "results.jsonl").read_text().splitlines()]
+    results = [json.loads(l) for l in (out / "results.jsonl").read_text(encoding="utf-8").splitlines()]
     assert len(results) == 9 and all(not r["error"] for r in results), [r["error"] for r in results]
     assert all(r["stats"]["mode"] == "screen" for r in results)
     assert all("Qwen3.5-9B says" in r["answer"] and "When was the Eiffel Tower built?" in r["answer"] for r in results)
@@ -178,7 +178,7 @@ async def test_strategy_screen(cfg, cards, mock_pool_cls, tmp_path, monkeypatch)
     assert native and all(w["strategy"] == "native" and w["thought_chars"] > 20 for w in native)
     direct = [w for r in results if r["config"].endswith("direct") for w in r["workers"]]
     assert all(w["strategy"] is None and w["support_rate"] is not None for w in direct)
-    md = (out / "report.md").read_text()
+    md = (out / "report.md").read_text(encoding="utf-8")
     assert "Strategy screen" in md and "Built-in thinking" in md and "Self-ask" in md and "Δ vs direct" in md
 
 
@@ -228,8 +228,8 @@ async def test_benchmark_set_budget_and_freeze(cfg, cards, mock_pool_cls, tmp_pa
                            reuse_evidence=None, regrade=None, resume=None, no_judge=False, no_open=True, live=True,
                            budget_tokens=3000, budget_seconds=None, frozen="t1")
     out = await evals.run(args)
-    results = [json.loads(l) for l in (out / "results.jsonl").read_text().splitlines()]
-    meta = json.loads((out / "meta.json").read_text())
+    results = [json.loads(l) for l in (out / "results.jsonl").read_text(encoding="utf-8").splitlines()]
+    meta = json.loads((out / "meta.json").read_text(encoding="utf-8"))
     assert meta["frozen"]["name"] == "t1" and meta["budget"]["max_output_tokens"] == 3000
     assert meta["block_domains"] == ["huggingface.co"] and meta["grading"] == "exact"
     assert len(results) == 4 and all(not r["error"] for r in results)
@@ -238,7 +238,7 @@ async def test_benchmark_set_budget_and_freeze(cfg, cards, mock_pool_cls, tmp_pa
     b2 = [r for r in results if r["question_id"] == "b2"]
     assert all(r["grade"]["score"] == 0.0 for r in b2)  # the mock never names Eiffel as designer
     assert all(r["stats"]["budget"]["max_output_tokens"] == 3000 and r["stats"]["budget"]["used"] <= 3000 for r in results)
-    assert "Benchmark accuracy" in (out / "report.md").read_text()
+    assert "Benchmark accuracy" in (out / "report.md").read_text(encoding="utf-8")
 
     # a changed configuration is refused
     cfg["coordinator"]["ctx_per_slot"] = 1234
@@ -304,11 +304,11 @@ async def test_second_judge_and_model_servers(cfg, cards, mock_pool_cls, tmp_pat
                            questions="lz-2026,pah-pathway-2026", repeats=1, reuse_evidence=None,
                            regrade=None, resume=None, no_judge=False, no_open=True, judge2=True)
     out = await evals.run(args)
-    results = [json.loads(l) for l in (out / "results.jsonl").read_text().splitlines()]
+    results = [json.loads(l) for l in (out / "results.jsonl").read_text(encoding="utf-8").splitlines()]
     assert all(r["grade"]["judge"] == "Ministral-3-14B-Instruct" and r["grade2"]["judge"] == "gpt-oss-20b"
                and r["grade2"]["score"] is not None for r in results)
-    assert json.loads((out / "meta.json").read_text())["judge2"] == "gpt-oss-20b"
-    assert "second judge" in (out / "report.md").read_text()
+    assert json.loads((out / "meta.json").read_text(encoding="utf-8"))["judge2"] == "gpt-oss-20b"
+    assert "second judge" in (out / "report.md").read_text(encoding="utf-8")
 
     from swarm import pool as poolmod
     p = poolmod.ModelPool(cfg, cards)
@@ -332,9 +332,9 @@ async def test_verifier_bench(cfg, cards, mock_pool_cls, tmp_path, monkeypatch):
     args = SimpleNamespace(source=str(src), n=10, verifiers=["Qwen3.5-4B", "Granite-Guardian-4.1-8B", "Not-A-Model"],
                            refs=["Ministral-3-14B-Instruct", "gpt-oss-20b"])
     out = await vb.run(args)
-    md = (out / "report.md").read_text()
+    md = (out / "report.md").read_text(encoding="utf-8")
     assert "Granite-Guardian-4.1-8B" in md and "Qwen3.5-4B" in md and "2 real worker claims" in md
-    answers = json.loads((out / "answers.json").read_text())
+    answers = json.loads((out / "answers.json").read_text(encoding="utf-8"))
     assert sorted(answers["Granite-Guardian-4.1-8B"]) == ["supported", "unsupported"]
     assert all(answers["Ministral-3-14B-Instruct"])      # answered through the plain JSON grammar
 
@@ -348,7 +348,7 @@ async def test_preflight_skips_configs_whose_model_fails(cfg, cards, mock_pool_c
     monkeypatch.setattr(evals, "research_mcp_available", lambda cfg=None: True)
     monkeypatch.setattr(evals, "ResearchMCP", lambda n=3: StartableFake())
     monkeypatch.setattr(evals, "swarm_already_running", lambda c: False)
-    econf = evals.expand_configs(evals.yaml.safe_load((evals.REPO / "evals" / "configs.yaml").read_text()))
+    econf = evals.expand_configs(evals.yaml.safe_load((evals.REPO / "evals" / "configs.yaml").read_text(encoding="utf-8")))
     t1 = evals._merge(evals.copy.deepcopy(cfg), econf["configs"]["swarm-t1"]["overrides"])
     worker = [m for m in preflight.models_for(t1, cards) if m not in (cfg["coordinator"]["model"], cfg["verifier"]["model"])][0]
     monkeypatch.setenv("MOCK_LLAMA_FAIL", worker)
@@ -356,6 +356,6 @@ async def test_preflight_skips_configs_whose_model_fails(cfg, cards, mock_pool_c
                            questions="lz-2026", repeats=1, reuse_evidence=None,
                            regrade=None, resume=None, no_judge=True, no_open=True)
     out = await evals.run(args)
-    rs = [json.loads(l) for l in (out / "results.jsonl").read_text().splitlines()]
+    rs = [json.loads(l) for l in (out / "results.jsonl").read_text(encoding="utf-8").splitlines()]
     assert {r["config"] for r in rs} == {"coordinator-only"}          # swarm-t1 skipped, nothing wasted
-    assert worker in json.loads((out / "meta.json").read_text())["preflight_failed"]
+    assert worker in json.loads((out / "meta.json").read_text(encoding="utf-8"))["preflight_failed"]

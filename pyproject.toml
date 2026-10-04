@@ -16,6 +16,7 @@ dependencies = [
     "html2text>=2024.2.26",
     "ddgs>=9.0",
     "trafilatura>=2.0",   # article text extraction (drops menus, teaser rails, footers)
+    "pyarrow>=18.0",
 ]
 
 [dependency-groups]

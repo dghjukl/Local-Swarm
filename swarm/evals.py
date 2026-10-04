@@ -864,6 +864,11 @@ async def run(args) -> Path:
                 if not args.no_judge:
                     need += pf.judge_models(econf, bool(meta.get("judge2")))
                 need = [m for m in dict.fromkeys(need) if m in cards]
+                # preflight CPU-resident models the way they will run (on the CPU)
+                pool.cpu_models = list(dict.fromkeys(
+                    str(m).lower() for name in names for m in
+                    ((_merge(copy.deepcopy(cfg), econf["configs"][name].get("overrides") or {}).get("gpu") or {})
+                     .get("cpu_models") or [])))
                 bad_models = await pf.preflight(
                     need, pool, cards, [m.lower() for m in cfg["gpu"].get("keep_reasoning_models", ["gpt-oss"])],
                     say=rec.say)
@@ -931,6 +936,8 @@ async def run(args) -> Path:
                 # models allowed to think (llama-server started without --reasoning-budget 0)
                 pool.keep_reasoning = [m.lower() for m in
                                        (variant.get("gpu") or {}).get("keep_reasoning_models", ["gpt-oss"])]
+                # models this configuration runs on the CPU (e.g. a resident leader); one pool serves all
+                pool.cpu_models = [str(m).lower() for m in (variant.get("gpu") or {}).get("cpu_models") or []]
                 rec.say(f"== {name}: {c.get('description', '')}")
                 fails = 0
                 for q in questions:
@@ -972,6 +979,7 @@ async def run(args) -> Path:
                         rec.say(f"  {q['id']}{' #' + str(rep + 1) if args.repeats > 1 else ''}: {status}")
 
         # 3. grade
+        pool.cpu_models = [str(m).lower() for m in cfg["gpu"].get("cpu_models") or []]
         if not args.no_judge and results:
             await judge_all(results, qmap, pool, judge_cfg, rec, force=bool(args.regrade),
                             save=lambda: write_results(out / "results.jsonl", results))
