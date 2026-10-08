@@ -291,3 +291,36 @@ def test_cpu_models_are_started_without_the_gpu(cfg, cards, mock_pool_cls, monke
     asyncio.run(go())
     assert seen[cards["LFM2.5-2.6B"].path]["CUDA_VISIBLE_DEVICES"] == "-1"
     assert seen[cards["Phi-4-mini-instruct"].path] is None
+
+
+async def test_remote_model_is_used_by_address_not_started(cfg, cards, mock_pool_cls):
+    """gpu.remote_models: a model served by another machine is never started or counted here; the
+    pool hands out its address after a health check, and a model that only exists over there gets a
+    card of its own. An unreachable machine gives a clear error."""
+    from swarm import llm
+    from swarm.pool import ModelLoadError
+    other = mock_pool_cls(cfg, cards)          # stands in for the laptop: really runs a (mock) server
+    here = mock_pool_cls(cfg, dict(cards))
+    try:
+        async with other.use("Phi-4-mini-instruct", 4096) as laptop_url:
+            here.set_remote({"Phi-4-mini-instruct": {"url": laptop_url, "ctx_per_slot": 6144, "parallel": 2},
+                             "Laptop-Only-Model": laptop_url})
+            async with here.use("Phi-4-mini-instruct", 4096) as url:
+                assert url == laptop_url.rstrip("/")
+                res = await llm.chat(url, [{"role": "user", "content": "hello"}], max_tokens=20)
+                assert res.text
+            assert "Phi-4-mini-instruct" not in here.running and here.used_mb() == 0
+            st = here.status()
+            assert any(m.get("remote") == laptop_url.rstrip("/") for m in st["models"])
+            assert "Laptop-Only-Model" in here.cards and here.cards["Laptop-Only-Model"].size_mb == 0
+            async with here.use("Laptop-Only-Model", 4096) as url2:
+                assert url2 == laptop_url.rstrip("/")
+            await here.unload_all()                       # nothing to stop for remote models
+            here.set_remote({"Granite-4.1-3B": "http://127.0.0.1:9"})  # nothing listens there
+            with pytest.raises(ModelLoadError, match="isn't answering"):
+                async with here.use("Granite-4.1-3B", 4096):
+                    pass
+            assert "Granite-4.1-3B" not in here.running   # it did not fall back to loading it here
+    finally:
+        await here.shutdown()
+        await other.shutdown()

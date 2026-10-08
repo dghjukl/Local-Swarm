@@ -41,9 +41,15 @@ def models_for(variant: dict, cards: dict, econf: dict | None = None, judge2: bo
     from swarm.orchestrator import Swarm
     sw = Swarm(variant, None, cards, None)
     out = [] if sw.leaderless() else [variant["coordinator"]["model"]]
-    if sw.mode() in ("swarm", "notebook"):
+    if sw.mode() in ("swarm", "notebook", "manager"):
         out += sw.team() + [r["model"] for r in sw.roles()]
     out.append(variant["verifier"]["model"])
+    expert = ((variant.get("manager") or {}).get("expert") or {}).get("model") if sw.mode() == "manager" else None
+    if expert:
+        out.append(expert)
+    if sw.mode() == "manager":  # worker pairs of extra attempts (manager.attempts.runs[].team)
+        for r in (((variant.get("manager") or {}).get("attempts") or {}).get("runs") or []):
+            out += list(r.get("team") or [])
     if (variant.get("research") or {}).get("reranker"):
         out.append(variant["research"]["reranker"])
     return [m for m in dict.fromkeys(out) if m in cards]
@@ -127,6 +133,8 @@ async def preflight(models: list[str], pool, cards: dict, keep_reasoning: list[s
             say(f"Preflight: {m} not tested (bigger than the GPU budget)")
             continue
         sig = _sig(cards[m], pool) + ("-cpu" if pool.on_cpu(cards[m]) else "")  # CPU and GPU runs differ
+        if pool.is_remote(m):  # served by another machine: what matters is where
+            sig = "remote:" + pool.remote_models[m]["url"]
         hit = cache.get(m)
         if not force and hit and hit.get("sig") == sig and hit.get("ok"):
             continue

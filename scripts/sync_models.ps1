@@ -63,6 +63,20 @@ $Downloads = @(
     @{ Name = 'MiMo-V2.6-Distill-Qwen-9B'; File = 'MiMo-V2.6-Distill-Qwen-9B-Q5_K_M.gguf'; Size = 6876124704; Optional = $false
        Why  = 'Xiaomi: worker / coordinator candidate'
        Url  = 'https://huggingface.co/bartowski/MiMo-V2.6-Distill-Qwen-9B-GGUF/resolve/main/MiMo-V2.6-Distill-Qwen-9B-Q5_K_M.gguf' },
+    # expert-worker candidates (2026-10-05): stronger models MiMo can hand a stuck step to; Q5 or better
+    @{ Name = 'Gemma-4-12B-it-Q5'; File = 'gemma-4-12b-it-Q5_K_M.gguf'; Size = 8413576000; Optional = $false
+       Why  = "expert worker: Google's Gemma-4-12B instruct at Q5 (the QAT 4-bit copy stays too)"
+       Url  = 'https://huggingface.co/unsloth/gemma-4-12b-it-GGUF/resolve/main/gemma-4-12b-it-Q5_K_M.gguf' },
+    @{ Name = 'Ornith-1.5-9B'; File = 'Ornith-1.5-9B-Q5_K_M.gguf'; Size = 6642544576; Optional = $false
+       Why  = 'expert worker: Ornith AI 9B trained as a research/search agent (Aug 2026)'
+       Url  = 'https://huggingface.co/ornith-ai/Ornith-1.5-9B-GGUF/resolve/main/Ornith-1.5-9B-Q5_K_M.gguf' },
+    # distillation teachers (2026-10-05): run ALONE, split between graphics card and RAM (slow is fine)
+    @{ Name = 'Qwen3.8-27B-Q5'; File = 'Qwen3.8-27B-UD-Q5_K_M.gguf'; Size = 19771509664; Optional = $false
+       Why  = 'teacher candidate: newest Qwen 27B at Q5 (the 3-bit copy stays for the old bake-off)'
+       Url  = 'https://huggingface.co/unsloth/Qwen3.8-27B-GGUF/resolve/main/Qwen3.8-27B-UD-Q5_K_M.gguf' },
+    @{ Name = 'Trinity-Mini'; File = 'arcee-ai_Trinity-Mini-Q5_K_M.gguf'; Size = 18637071200; Optional = $true
+       Why  = 'teacher candidate: Arcee 26B MoE (3B active), an independent lineage'
+       Url  = 'https://huggingface.co/bartowski/arcee-ai_Trinity-Mini-GGUF/resolve/main/arcee-ai_Trinity-Mini-Q5_K_M.gguf' },
     @{ Name = 'Kanana-2-3B-Instruct'; File = 'kanana-2-3b-instruct.Q5_K_M.gguf'; Size = 2512165760; Optional = $false
        Why  = 'Kakao: small worker candidate'
        Url  = 'https://huggingface.co/mradermacher/kanana-2-3b-instruct-GGUF/resolve/main/kanana-2-3b-instruct.Q5_K_M.gguf' },

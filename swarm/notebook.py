@@ -105,6 +105,20 @@ def clean_citations(text: str) -> str:
     text = re.sub(r"[ \t]+([.,;:])", r"\1", re.sub(r"[ \t]{2,}", " ", text))
     return re.sub(r"(?:,\s*)+(?=[.;:]|\s*$)", "", text, flags=re.M).strip()
 
+WRITE_OVERLAY_SYSTEM = """You write the final answer to the user's question. Today is {today}.
+You have two things:
+1. Evidence passages (E1, E2, ...). Read them yourself.
+2. The research team's notebook: facts your teammates found while reading MORE passages than you
+   were given, each with the passage ids that state it and whether a fact-checker confirmed it.
+   Some cited passages are added after the notebook so you can check them.
+- Answer the question directly in the first sentence, then the key supporting details.
+- Use facts from the passages and from VERIFIED notes. Treat notes marked NOT supported or disputed with
+  suspicion; never use a fact that neither a passage nor a verified note gives.
+- Multi-step questions: work through each step (who/what/when) and use the notebook to fill steps
+  your passages don't cover.
+- If the question rests on something false, say so. If something cannot be determined, say so; never guess.
+- Cite passage ids after each fact, like [E3]. Only E-numbers are citations. Keep it under 200 words."""
+
 DRAFT_REVIEW_SYSTEM = """You review a teammate's draft answer against the team notebook and the passages.
 Object only to real problems: a claim the notes or passages do not support, a contradiction with a
 verified note, an important verified fact that is missing, or a direct answer that is missing.
@@ -286,7 +300,8 @@ async def run_notebook(sw, question: str, subqs: list[str], groups: list[list[ev
     by_id = {p.id: p for p in evidence}
     book = Notebook(set(by_id))
     trace["team"] = labels
-    trace["notebook_config"] = {"leader": leader, "chunk_passages": chunk, "reads_per_passage": reads,
+    trace["notebook_config"] = {"leader": leader, "writer": nb_cfg.get("writer", "notes"),
+                                "chunk_passages": chunk, "reads_per_passage": reads,
                                 "rounds": rounds}
     await send({"type": "team", "coordinator": coord["model"] if leader != "none" else None,
                 "verifier": ver["model"], "workers": [{"model": lab, "lab": sw.cards[m].lab,
@@ -442,11 +457,27 @@ async def run_notebook(sw, question: str, subqs: list[str], groups: list[list[ev
     # ---------------- 4. write the answer from the notebook
     await stage("synthesize", "Writing the answer from the notebook")
     good = [n for n in book.ordered() if n.status in ("supported", "partial", "unchecked")]
-    cite_ids = sorted({s for n in good[:20] for s in n.sources}, key=lambda x: int(x[1:]))[:10]
-    write_user = (f"User question: {question}\nParts to cover:\n{parts}\n\n=== Team notebook ===\n"
-                  f"{book.render_for_writer(limit=30)}\n\n=== Passages the notes cite ===\n"
-                  f"{_fmt_passages([by_id[i] for i in cite_ids], limit=700)}")
-    msgs = [{"role": "system", "content": WRITE_SYSTEM.format(today=today)}, {"role": "user", "content": write_user}]
+    writer_ids = getattr(sw, "_writer_ids", None)
+    if nb_cfg.get("writer") == "evidence+notes":
+        # v3: the writer reads what a solo model reads (or all evidence), PLUS the notebook. The notebook
+        # can only add (facts from passages the writer didn't get, checks, disputes), never take away.
+        own = [by_id[i] for i in (writer_ids or [p.id for p in evidence]) if i in by_id]
+        have = {p.id for p in own}
+        extra = [i for i in dict.fromkeys(s for n in good[:20] if n.status != "unsupported" for s in n.sources)
+                 if i not in have][:8]
+        write_user = (f"User question: {question}\nParts to cover:\n{parts}\n\n=== Evidence ===\n"
+                      f"{_fmt_passages(own, limit=900)}\n\n=== Team notebook ===\n{book.render_for_writer(limit=30)}"
+                      + (f"\n\n=== Passages the notebook cites that you were not given ===\n"
+                         f"{_fmt_passages([by_id[i] for i in extra], limit=600)}" if extra else ""))
+        trace["writer_view"] = {"passages": [p.id for p in own], "extra_cited": extra}
+        system = WRITE_OVERLAY_SYSTEM
+    else:
+        cite_ids = sorted({s for n in good[:20] for s in n.sources}, key=lambda x: int(x[1:]))[:10]
+        write_user = (f"User question: {question}\nParts to cover:\n{parts}\n\n=== Team notebook ===\n"
+                      f"{book.render_for_writer(limit=30)}\n\n=== Passages the notes cite ===\n"
+                      f"{_fmt_passages([by_id[i] for i in cite_ids], limit=700)}")
+        system = WRITE_SYSTEM
+    msgs = [{"role": "system", "content": system.format(today=today)}, {"role": "user", "content": write_user}]
 
     async def delta(txt: str) -> None:
         await send({"type": "answer_delta", "text": txt})

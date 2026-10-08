@@ -41,7 +41,8 @@ FRAMES_URL = "https://huggingface.co/datasets/google/frames-benchmark/resolve/ma
 GAIA_ROWS = "https://datasets-server.huggingface.co/rows"
 # where the answer keys are published; never read these during a benchmark run
 BLOCK = ["huggingface.co", "hf.co", "github.com", "githubusercontent.com", "gist.github.com", "kaggle.com",
-         "paperswithcode.com"]
+         "paperswithcode.com",
+         "artificialanalysis.ai"]  # its "microevals" pages repeat benchmark questions (found in FRAMES evidence, 2026-10-07)
 
 
 # ---------------------------------------------------------------------- answer matching (GAIA style)

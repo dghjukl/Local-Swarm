@@ -70,6 +70,9 @@ def cfg(tmp_path):
     c = load_config(ROOT / "config" / "swarm.yaml")
     c["gpu"]["llama_server"] = sys.executable  # must exist
     c["gpu"]["vram_budget_mb"] = 100000
+    # never share ports with a live run (an eval running in the background uses 8200-8299): a test's mock
+    # server losing a port race to a real llama-server looked like a scheduling bug (2026-10-06)
+    c["gpu"]["port_range"] = [18200, 18299]
     return c
 
 

@@ -338,6 +338,10 @@ class Swarm:
                 problems.append(f"{role} model '{self.cfg[role]['model']}' not found in Models/")
         if self.mode() in ("swarm", "notebook") and not self.team():
             problems.append("no usable worker models found (check workers.pool in config/swarm.yaml)")
+        if self.mode() == "manager":
+            expert = ((self.cfg.get("manager") or {}).get("expert") or {}).get("model")
+            if expert and expert not in self.cards:
+                problems.append(f"expert model '{expert}' not found in Models/ (run Sync-Models)")
         return problems
 
     # ------------------------------------------------------------ run
@@ -400,9 +404,12 @@ class Swarm:
         self.pool.emit = send
         coord = self.role("coordinator")
         today = _today()
-        if self.mode() in ("swarm", "notebook"):
+        if self.mode() in ("swarm", "notebook", "manager"):
             lead = [] if self.leaderless() else [coord["model"]]
-            self.pool.plan_ahead([*lead, *[m for _, m in self.team_slots()], self.cfg["verifier"]["model"]])
+            expert = ((self.cfg.get("manager") or {}).get("expert") or {}).get("model") \
+                if self.mode() == "manager" else None
+            self.pool.plan_ahead([*lead, *[m for _, m in self.team_slots()], self.cfg["verifier"]["model"],
+                                  *([expert] if expert else [])])
         else:
             self.pool.plan_ahead([coord["model"]])
         await send({"type": "run_start", "question": question})
@@ -447,7 +454,16 @@ class Swarm:
             else:
                 passages = ev.build_passages(docs, size=self.cfg["research"]["passage_chars"])
                 groups = [await self._pick(passages, [sq, question], k, send) for sq in subqs]
-            evidence = ev.assign_ids(groups)
+            # notebook v3: the writer reads exactly what a solo model would read (the top
+            # writer_passages_per_subquestion), while the team reads the wider `groups`
+            wk = int((self.cfg.get("notebook") or {}).get("writer_passages_per_subquestion") or 0)
+            self._writer_ids = None
+            if self.mode() == "notebook" and wk and not split:
+                writer_groups = [await self._pick(passages, [sq, question], wk, send) for sq in subqs]
+                evidence = ev.assign_ids(writer_groups + groups)
+                self._writer_ids = list(dict.fromkeys(p.id for g in writer_groups for p in g))
+            else:
+                evidence = ev.assign_ids(groups)
             trace["evidence"] = [p.to_dict() for p in evidence]
             trace["sources_fetched"] = [{"url": d.url, "title": d.title, "source": d.source,
                                          "error": d.error, "chars": len(d.text)} for d in docs]
@@ -456,6 +472,15 @@ class Swarm:
             if not evidence:
                 await send({"type": "warning", "message": "No usable sources were found; answering without evidence."})
                 return await self._finish_direct(question, send, stage, trace, t_start, today, no_sources=True)
+
+            if self.mode() == "manager":  # the coordinator directs teammates turn by turn (swarm/manager.py)
+                from swarm.manager import run_manager
+                if (self.cfg.get("manager") or {}).get("attempts"):  # several attempts + a vote
+                    from swarm.attempts import run_attempts
+                    return await run_attempts(self, question, subqs, groups, evidence, send, stage, trace,
+                                              t_start, stage_times, today)
+                return await run_manager(self, question, subqs, groups, evidence, send, stage, trace,
+                                         t_start, stage_times, today)
 
             if self.mode() == "notebook":  # the team shares a notebook (swarm/notebook.py)
                 from swarm.notebook import run_notebook

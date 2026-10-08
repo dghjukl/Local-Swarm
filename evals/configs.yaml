@@ -278,6 +278,359 @@ configs:
       coordinator: {model: Qwen3.5-4B, ctx_per_slot: 8192, parallel: 1}
       gpu: {cpu_models: [Qwen3.5-4B]}
 
+  # Notebook v3 (2026-10-04): wide reading. The team reads 15 passages per part (2.5x what a solo
+  # model gets); the MiMo writer reads exactly the solo model's 6 per part PLUS the notebook, so the
+  # notebook can only add. Compare with MiMo alone on 6 (solo) and on the same 15 (solo-wide).
+  solo-MiMo-wide:
+    description: "MiMo-9B alone reads the same wide evidence the team reads (15 passages per part)"
+    overrides:
+      mode: solo
+      research: {passages_per_subquestion: 15}
+      coordinator: {model: MiMo-V2.6-Distill-Qwen-9B, ctx_per_slot: 24576, parallel: 1}
+  nb3-wide:
+    description: "notebook v3: Apertus-8B, EXAONE-1.2B, Gemma-4-E4B read 15/part and take notes; MiMo writes from its own 6/part + the notebook"
+    overrides:
+      mode: notebook
+      notebook: {leader: coordinator, writer: "evidence+notes", writer_passages_per_subquestion: 6,
+                 reads_per_passage: 2, chunk_passages: 4, rounds: 1, ctx_per_slot: 6144}
+      research: {passages_per_subquestion: 15}
+      coordinator: {model: MiMo-V2.6-Distill-Qwen-9B, ctx_per_slot: 16384, parallel: 1}
+      verifier: {model: Gemma-4-E4B-it}
+      workers: {team: [Apertus-v1.5-8B, EXAONE-4.0-1.2B, Gemma-4-E4B-it]}
+  nb3-wide-same3:
+    description: "notebook v3 without diversity: 3 copies of Apertus-8B read 15/part; MiMo writes from its own 6/part + the notebook"
+    overrides:
+      mode: notebook
+      notebook: {leader: coordinator, writer: "evidence+notes", writer_passages_per_subquestion: 6,
+                 reads_per_passage: 2, chunk_passages: 4, rounds: 1, ctx_per_slot: 6144}
+      research: {passages_per_subquestion: 15}
+      coordinator: {model: MiMo-V2.6-Distill-Qwen-9B, ctx_per_slot: 16384, parallel: 1}
+      verifier: {model: Gemma-4-E4B-it}
+      workers: {team: [Apertus-v1.5-8B, Apertus-v1.5-8B, Apertus-v1.5-8B]}
+  diverse-separate-wide:
+    description: "diversity without collaboration: the same 3 models each answer from the wide evidence; MiMo merges"
+    overrides:
+      research: {passages_per_subquestion: 15}
+      coordinator: {model: MiMo-V2.6-Distill-Qwen-9B, ctx_per_slot: 16384, parallel: 1}
+      verifier: {model: Gemma-4-E4B-it}
+      workers: {team: [Apertus-v1.5-8B, EXAONE-4.0-1.2B, Gemma-4-E4B-it], ctx_per_slot: 8192, answer_tokens: 2000}
+
+  # Manager mode (2026-10-04, Chris's design): MiMo acts like a person directing assistants. It starts
+  # with the same wide evidence as solo-MiMo-wide, then turn by turn gives ONE teammate one task (with an
+  # optional web search), can hand the same task to the other teammate, and stops when satisfied.
+  mgr-alone:
+    description: "manager loop, no team: MiMo-9B searches and reads every step itself (up to 6 turns)"
+    overrides:
+      mode: manager
+      manager: {max_cycles: 6, passages_per_task: 6, pages_per_search: 3}
+      research: {passages_per_subquestion: 15}
+      coordinator: {model: MiMo-V2.6-Distill-Qwen-9B, ctx_per_slot: 16384, parallel: 1}
+      verifier: {model: MiMo-V2.6-Distill-Qwen-9B}
+      workers: {team: [MiMo-V2.6-Distill-Qwen-9B], ctx_per_slot: 8192}
+  mgr-same2:
+    description: "manager loop: MiMo-9B directs two copies of Qwen3.5-4B (no diversity)"
+    overrides:
+      mode: manager
+      manager: {max_cycles: 6, passages_per_task: 6, pages_per_search: 3}
+      research: {passages_per_subquestion: 15}
+      coordinator: {model: MiMo-V2.6-Distill-Qwen-9B, ctx_per_slot: 16384, parallel: 1}
+      verifier: {model: MiMo-V2.6-Distill-Qwen-9B}
+      workers: {team: [Qwen3.5-4B, Qwen3.5-4B], ctx_per_slot: 8192}
+  mgr-duo:
+    description: "manager loop: MiMo-9B directs Qwen3.5-4B and Gemma-4-E4B (two different teammates)"
+    overrides:
+      mode: manager
+      manager: {max_cycles: 6, passages_per_task: 6, pages_per_search: 3}
+      research: {passages_per_subquestion: 15}
+      coordinator: {model: MiMo-V2.6-Distill-Qwen-9B, ctx_per_slot: 16384, parallel: 1}
+      verifier: {model: MiMo-V2.6-Distill-Qwen-9B}
+      workers: {team: [Qwen3.5-4B, Gemma-4-E4B-it], ctx_per_slot: 8192}
+
+  # Manager "both" (2026-10-04): every task goes to BOTH teammates at once; MiMo sees two independent
+  # answers and whether they agree. The real diversity test: different pair vs identical pair.
+  mgr-both-same:
+    description: "manager loop, every task to both: MiMo-9B + two copies of Qwen3.5-4B (no diversity)"
+    overrides:
+      mode: manager
+      manager: {max_cycles: 6, passages_per_task: 6, pages_per_search: 3, dispatch: both}
+      research: {passages_per_subquestion: 15}
+      coordinator: {model: MiMo-V2.6-Distill-Qwen-9B, ctx_per_slot: 16384, parallel: 1}
+      verifier: {model: MiMo-V2.6-Distill-Qwen-9B}
+      workers: {team: [Qwen3.5-4B, Qwen3.5-4B], ctx_per_slot: 8192}
+  mgr-both-duo:
+    description: "manager loop, every task to both: MiMo-9B + Qwen3.5-4B and Gemma-4-E4B (diverse pair)"
+    overrides:
+      mode: manager
+      manager: {max_cycles: 6, passages_per_task: 6, pages_per_search: 3, dispatch: both}
+      research: {passages_per_subquestion: 15}
+      coordinator: {model: MiMo-V2.6-Distill-Qwen-9B, ctx_per_slot: 16384, parallel: 1}
+      verifier: {model: MiMo-V2.6-Distill-Qwen-9B}
+      workers: {team: [Qwen3.5-4B, Gemma-4-E4B-it], ctx_per_slot: 8192}
+
+  # How MiMo thinks in the coordinator role (2026-10-04): same team as mgr-both-same, only the
+  # coordinator's way of deciding and writing changes.
+  mgr-both-same-stepback:
+    description: "as mgr-both-same, but MiMo steps back before each decision and before writing (its best strategy in the strategy study)"
+    overrides:
+      mode: manager
+      research: {passages_per_subquestion: 15}
+      coordinator: {model: MiMo-V2.6-Distill-Qwen-9B, ctx_per_slot: 16384, parallel: 1}
+      verifier: {model: MiMo-V2.6-Distill-Qwen-9B}
+      workers: {team: [Qwen3.5-4B, Qwen3.5-4B], ctx_per_slot: 8192}
+      manager: {max_cycles: 6, passages_per_task: 6, pages_per_search: 3, dispatch: both, coordinator_style: step_back}
+  mgr-both-same-think:
+    description: "as mgr-both-same, but MiMo uses its built-in thinking (up to ~1000 tokens) for each decision and for the answer"
+    overrides:
+      mode: manager
+      research: {passages_per_subquestion: 15}
+      coordinator: {model: MiMo-V2.6-Distill-Qwen-9B, ctx_per_slot: 16384, parallel: 1}
+      verifier: {model: MiMo-V2.6-Distill-Qwen-9B}
+      workers: {team: [Qwen3.5-4B, Qwen3.5-4B], ctx_per_slot: 8192}
+      manager: {max_cycles: 6, passages_per_task: 6, pages_per_search: 3, dispatch: both, coordinator_style: think, think_tokens: 1000}
+      gpu: {keep_reasoning_models: [gpt-oss, MiMo]}
+
+  # Combined (2026-10-05): thinking coordinator x (identical vs diverse pair) x (with / without a
+  # fact-checker for facts only ONE teammate found). Granite-4.1-3B checks (98% on the verifier bench;
+  # not Gemma, so Gemma's own finds aren't checked by Gemma).
+  mgr-duo-think:
+    description: "thinking MiMo + Qwen3.5-4B and Gemma-4-E4B, every task to both"
+    overrides:
+      mode: manager
+      research: {passages_per_subquestion: 15}
+      coordinator: {model: MiMo-V2.6-Distill-Qwen-9B, ctx_per_slot: 16384, parallel: 1}
+      verifier: {model: MiMo-V2.6-Distill-Qwen-9B}
+      workers: {team: [Qwen3.5-4B, Gemma-4-E4B-it], ctx_per_slot: 8192}
+      manager: {max_cycles: 6, passages_per_task: 6, pages_per_search: 3, dispatch: both, coordinator_style: think, think_tokens: 1000, verify: false}
+      gpu: {keep_reasoning_models: [gpt-oss, MiMo]}
+  mgr-same-think-verify:
+    description: "thinking MiMo + 2x Qwen3.5-4B, every task to both; Granite fact-checks facts only one found"
+    overrides:
+      mode: manager
+      research: {passages_per_subquestion: 15}
+      coordinator: {model: MiMo-V2.6-Distill-Qwen-9B, ctx_per_slot: 16384, parallel: 1}
+      verifier: {model: Granite-4.1-3B}
+      workers: {team: [Qwen3.5-4B, Qwen3.5-4B], ctx_per_slot: 8192}
+      manager: {max_cycles: 6, passages_per_task: 6, pages_per_search: 3, dispatch: both, coordinator_style: think, think_tokens: 1000, verify: true}
+      gpu: {keep_reasoning_models: [gpt-oss, MiMo]}
+  mgr-duo-think-verify:
+    description: "thinking MiMo + Qwen3.5-4B and Gemma-4-E4B, every task to both; Granite fact-checks facts only one found"
+    overrides:
+      mode: manager
+      research: {passages_per_subquestion: 15}
+      coordinator: {model: MiMo-V2.6-Distill-Qwen-9B, ctx_per_slot: 16384, parallel: 1}
+      verifier: {model: Granite-4.1-3B}
+      workers: {team: [Qwen3.5-4B, Gemma-4-E4B-it], ctx_per_slot: 8192}
+      manager: {max_cycles: 6, passages_per_task: 6, pages_per_search: 3, dispatch: both, coordinator_style: think, think_tokens: 1000, verify: true}
+      gpu: {keep_reasoning_models: [gpt-oss, MiMo]}
+
+  # Experts (2026-10-06): base = thinking MiMo + Qwen3.5-4B and Gemma-4-E4B (every task to both; Chris
+  # keeps Gemma for its lone finds; no fact-checker: it confirmed 189/199 lone finds and doubled the time),
+  # MiMo 16k / workers 8k: MiMo 32k + workers 16k measured 15.2 GB, over the 14.5 GB budget, and the two
+  # workers swapped on every task (192 s/question); the largest prompts last run were ~6.7k tokens. Adds structured worker reports, a
+  # "try harder" control (more turns + thinking, no expert) and a bigger expert MiMo can call when a
+  # step is stuck (max 2 calls; a blocked repeat goes to the expert automatically). Gemma-12B Q5 +
+  # MiMo don't fit the card together, so MiMo is unloaded while the expert works (fast evict).
+  mgr-ex-base:
+    description: "thinking MiMo + Qwen3.5-4B and Gemma-4-E4B, every task to both"
+    overrides:
+      mode: manager
+      research: {passages_per_subquestion: 15}
+      coordinator: {model: MiMo-V2.6-Distill-Qwen-9B, ctx_per_slot: 16384, parallel: 1}
+      verifier: {model: Granite-4.1-3B}
+      workers: {team: [Qwen3.5-4B, Gemma-4-E4B-it], ctx_per_slot: 8192}
+      manager: {max_cycles: 6, passages_per_task: 6, pages_per_search: 3, dispatch: both, coordinator_style: think, think_tokens: 1000, verify: false}
+      gpu: {keep_reasoning_models: [gpt-oss, MiMo]}
+  mgr-ex-reports:
+    description: "as mgr-ex-base, but workers send structured reports (what the passages said, answer, what's missing and why, suggested next step + search, confidence and why)"
+    overrides:
+      mode: manager
+      research: {passages_per_subquestion: 15}
+      coordinator: {model: MiMo-V2.6-Distill-Qwen-9B, ctx_per_slot: 16384, parallel: 1}
+      verifier: {model: Granite-4.1-3B}
+      workers: {team: [Qwen3.5-4B, Gemma-4-E4B-it], ctx_per_slot: 8192}
+      manager: {max_cycles: 6, passages_per_task: 6, pages_per_search: 3, dispatch: both, coordinator_style: think, think_tokens: 1000, verify: false, reports: true}
+      gpu: {keep_reasoning_models: [gpt-oss, MiMo]}
+  mgr-ex-harder:
+    description: "as mgr-ex-reports, but MiMo gets 10 turns and 2000 thinking tokens (try-harder control, no expert)"
+    overrides:
+      mode: manager
+      research: {passages_per_subquestion: 15}
+      coordinator: {model: MiMo-V2.6-Distill-Qwen-9B, ctx_per_slot: 16384, parallel: 1}
+      verifier: {model: Granite-4.1-3B}
+      workers: {team: [Qwen3.5-4B, Gemma-4-E4B-it], ctx_per_slot: 8192}
+      manager: {max_cycles: 10, passages_per_task: 6, pages_per_search: 3, dispatch: both, coordinator_style: think, think_tokens: 2000, verify: false, reports: true}
+      gpu: {keep_reasoning_models: [gpt-oss, MiMo]}
+  mgr-ex-qwen9:
+    description: "as mgr-ex-reports, plus expert Qwen3.5-9B (Q5) MiMo can call when stuck (max 2 calls, may run 1 follow-up search)"
+    overrides:
+      mode: manager
+      research: {passages_per_subquestion: 15}
+      coordinator: {model: MiMo-V2.6-Distill-Qwen-9B, ctx_per_slot: 16384, parallel: 1}
+      verifier: {model: Granite-4.1-3B}
+      workers: {team: [Qwen3.5-4B, Gemma-4-E4B-it], ctx_per_slot: 8192}
+      manager: {max_cycles: 6, passages_per_task: 6, pages_per_search: 3, dispatch: both, coordinator_style: think, think_tokens: 1000, verify: false, reports: true, expert: {model: Qwen3.5-9B, ctx_per_slot: 16384, max_calls: 2, followup_searches: 1, auto: true}}
+      gpu: {keep_reasoning_models: [gpt-oss, MiMo], pinned_evict_after_s: 2}
+  mgr-ex-gemma12:
+    description: "as mgr-ex-reports, plus expert Gemma-4-12B-it (Q5) MiMo can call when stuck (max 2 calls, may run 1 follow-up search)"
+    overrides:
+      mode: manager
+      research: {passages_per_subquestion: 15}
+      coordinator: {model: MiMo-V2.6-Distill-Qwen-9B, ctx_per_slot: 16384, parallel: 1}
+      verifier: {model: Granite-4.1-3B}
+      workers: {team: [Qwen3.5-4B, Gemma-4-E4B-it], ctx_per_slot: 8192}
+      manager: {max_cycles: 6, passages_per_task: 6, pages_per_search: 3, dispatch: both, coordinator_style: think, think_tokens: 1000, verify: false, reports: true, expert: {model: Gemma-4-12B-it-Q5, ctx_per_slot: 16384, max_calls: 2, followup_searches: 1, auto: true}}
+      gpu: {keep_reasoning_models: [gpt-oss, MiMo], pinned_evict_after_s: 2}
+  mgr-ex-ornith:
+    description: "as mgr-ex-reports, plus expert Ornith-1.5-9B (Q5, search-agent RL) MiMo can call when stuck (max 2 calls, may run 1 follow-up search)"
+    overrides:
+      mode: manager
+      research: {passages_per_subquestion: 15}
+      coordinator: {model: MiMo-V2.6-Distill-Qwen-9B, ctx_per_slot: 16384, parallel: 1}
+      verifier: {model: Granite-4.1-3B}
+      workers: {team: [Qwen3.5-4B, Gemma-4-E4B-it], ctx_per_slot: 8192}
+      manager: {max_cycles: 6, passages_per_task: 6, pages_per_search: 3, dispatch: both, coordinator_style: think, think_tokens: 1000, verify: false, reports: true, expert: {model: Ornith-1.5-9B, ctx_per_slot: 16384, max_calls: 2, followup_searches: 1, auto: true}}
+      gpu: {keep_reasoning_models: [gpt-oss, MiMo], pinned_evict_after_s: 2}
+
+  # Vote (2026-10-06): the experts run's best lever is variance (71/100 right in at least one setup,
+  # 21 in all six; a plain majority vote over 3 setups scored 56-57% vs 52% best single). Run the base
+  # loop 3 times independently and let MiMo compare the answers (swarm/attempts.py).
+  mgr-vote3-same:
+    description: "base team 3 times (temperature 0.2 / 0.7 / 0.7), then MiMo votes"
+    overrides:
+      mode: manager
+      research: {passages_per_subquestion: 15}
+      coordinator: {model: MiMo-V2.6-Distill-Qwen-9B, ctx_per_slot: 16384, parallel: 1}
+      verifier: {model: Granite-4.1-3B}
+      workers: {team: [Qwen3.5-4B, Gemma-4-E4B-it], ctx_per_slot: 8192}
+      manager: {max_cycles: 6, passages_per_task: 6, pages_per_search: 3, dispatch: both, coordinator_style: think, think_tokens: 1000, verify: false, attempts: {runs: [{temperature: 0.2}, {temperature: 0.7}, {temperature: 0.7}]}}
+      gpu: {keep_reasoning_models: [gpt-oss, MiMo]}
+  mgr-vote3-diverse:
+    description: "3 attempts with different worker pairs (Qwen+Gemma t0.2, Qwen+Qwen t0.7, Gemma+Gemma t0.7), then MiMo votes"
+    overrides:
+      mode: manager
+      research: {passages_per_subquestion: 15}
+      coordinator: {model: MiMo-V2.6-Distill-Qwen-9B, ctx_per_slot: 16384, parallel: 1}
+      verifier: {model: Granite-4.1-3B}
+      workers: {team: [Qwen3.5-4B, Gemma-4-E4B-it], ctx_per_slot: 8192}
+      manager: {max_cycles: 6, passages_per_task: 6, pages_per_search: 3, dispatch: both, coordinator_style: think, think_tokens: 1000, verify: false, attempts: {runs: [{temperature: 0.2}, {temperature: 0.7, team: [Qwen3.5-4B, Qwen3.5-4B]}, {temperature: 0.7, team: [Gemma-4-E4B-it, Gemma-4-E4B-it]}]}}
+      gpu: {keep_reasoning_models: [gpt-oss, MiMo]}
+  mgr-vote-adaptive:
+    description: "as mgr-vote3-diverse, but stops after 2 attempts when they agree (3rd attempt only on disagreement)"
+    overrides:
+      mode: manager
+      research: {passages_per_subquestion: 15}
+      coordinator: {model: MiMo-V2.6-Distill-Qwen-9B, ctx_per_slot: 16384, parallel: 1}
+      verifier: {model: Granite-4.1-3B}
+      workers: {team: [Qwen3.5-4B, Gemma-4-E4B-it], ctx_per_slot: 8192}
+      manager: {max_cycles: 6, passages_per_task: 6, pages_per_search: 3, dispatch: both, coordinator_style: think, think_tokens: 1000, verify: false, attempts: {adaptive: true, runs: [{temperature: 0.2}, {temperature: 0.7, team: [Qwen3.5-4B, Qwen3.5-4B]}, {temperature: 0.7, team: [Gemma-4-E4B-it, Gemma-4-E4B-it]}]}}
+      gpu: {keep_reasoning_models: [gpt-oss, MiMo]}
+
+  # Trust check (2026-10-06, Chris's partner charter: trusted -> tells the truth -> shows its work -> reliable).
+  # Before finishing, MiMo lays out the chain its answer rests on (claim, cited passages, supported /
+  # inferred / unsupported / conflict, the arithmetic, every part answered?). Code checks the citations
+  # and recomputes the arithmetic; Qwen3.5-4B re-checks the steps MiMo calls supported. Gaps send the
+  # team back to work (max 2 times, up to 3 extra turns); remaining gaps go to the writer to state honestly.
+  # Main question: is MiMo capable of following it (does "ready" predict right answers? how often does it
+  # over-claim support?), and does it raise accuracy / honesty.
+  mgr-trust:
+    description: "base team + trust check before finishing (MiMo's chain checked by code and by Qwen3.5-4B)"
+    overrides:
+      mode: manager
+      research: {passages_per_subquestion: 15}
+      coordinator: {model: MiMo-V2.6-Distill-Qwen-9B, ctx_per_slot: 16384, parallel: 1}
+      verifier: {model: Granite-4.1-3B}
+      workers: {team: [Qwen3.5-4B, Gemma-4-E4B-it], ctx_per_slot: 8192}
+      manager: {max_cycles: 6, passages_per_task: 6, pages_per_search: 3, dispatch: both, coordinator_style: think, think_tokens: 1000, verify: false, trust_check: {rounds: 2, extra_cycles: 3, verify: true}}
+      gpu: {keep_reasoning_models: [gpt-oss, MiMo]}
+  mgr-trust-self:
+    description: "base team + trust check, MiMo's own judgment only (code checks citations and arithmetic; no second model)"
+    overrides:
+      mode: manager
+      research: {passages_per_subquestion: 15}
+      coordinator: {model: MiMo-V2.6-Distill-Qwen-9B, ctx_per_slot: 16384, parallel: 1}
+      verifier: {model: Granite-4.1-3B}
+      workers: {team: [Qwen3.5-4B, Gemma-4-E4B-it], ctx_per_slot: 8192}
+      manager: {max_cycles: 6, passages_per_task: 6, pages_per_search: 3, dispatch: both, coordinator_style: think, think_tokens: 1000, verify: false, trust_check: {rounds: 2, extra_cycles: 3, verify: false}}
+      gpu: {keep_reasoning_models: [gpt-oss, MiMo]}
+# Scaling run: 8 independent attempts per question (t0.2 then 7 x t0.7), every one saved and graded,
+# then MiMo votes over all 8. Subsets give the curve for 1..8 attempts offline. Pick the variant that
+# matches the trust study's winner.
+  mgr-scale8:
+    description: "base team x8 attempts (t0.2, then 0.7 x7), MiMo votes over all 8; every attempt graded"
+    run_timeout_seconds: 5400
+    overrides:
+      mode: manager
+      research: {passages_per_subquestion: 15}
+      coordinator: {model: MiMo-V2.6-Distill-Qwen-9B, ctx_per_slot: 16384, parallel: 1}
+      verifier: {model: Granite-4.1-3B}
+      workers: {team: [Qwen3.5-4B, Gemma-4-E4B-it], ctx_per_slot: 8192}
+      manager: {max_cycles: 6, passages_per_task: 6, pages_per_search: 3, dispatch: both, coordinator_style: think, think_tokens: 1000, verify: false, attempts: {runs: [{temperature: 0.2}, {temperature: 0.7}, {temperature: 0.7}, {temperature: 0.7}, {temperature: 0.7}, {temperature: 0.7}, {temperature: 0.7}, {temperature: 0.7}], adaptive: false}}
+      gpu: {keep_reasoning_models: [gpt-oss, MiMo]}
+  mgr-scale8-charter:
+    description: "as mgr-scale8, with the partner charter nudge in every prompt"
+    run_timeout_seconds: 5400
+    overrides:
+      mode: manager
+      research: {passages_per_subquestion: 15}
+      coordinator: {model: MiMo-V2.6-Distill-Qwen-9B, ctx_per_slot: 16384, parallel: 1}
+      verifier: {model: Granite-4.1-3B}
+      workers: {team: [Qwen3.5-4B, Gemma-4-E4B-it], ctx_per_slot: 8192}
+      manager: {max_cycles: 6, passages_per_task: 6, pages_per_search: 3, dispatch: both, coordinator_style: think, think_tokens: 1000, verify: false, charter: {lead: true, workers: true}, attempts: {runs: [{temperature: 0.2}, {temperature: 0.7}, {temperature: 0.7}, {temperature: 0.7}, {temperature: 0.7}, {temperature: 0.7}, {temperature: 0.7}, {temperature: 0.7}], adaptive: false}}
+      gpu: {keep_reasoning_models: [gpt-oss, MiMo]}
+  mgr-scale8-trust:
+    description: "as mgr-scale8, with the trust check (Qwen3.5-4B re-check) in every attempt"
+    run_timeout_seconds: 5400
+    overrides:
+      mode: manager
+      research: {passages_per_subquestion: 15}
+      coordinator: {model: MiMo-V2.6-Distill-Qwen-9B, ctx_per_slot: 16384, parallel: 1}
+      verifier: {model: Granite-4.1-3B}
+      workers: {team: [Qwen3.5-4B, Gemma-4-E4B-it], ctx_per_slot: 8192}
+      manager: {max_cycles: 6, passages_per_task: 6, pages_per_search: 3, dispatch: both, coordinator_style: think, think_tokens: 1000, verify: false, trust_check: {rounds: 2, extra_cycles: 3, verify: true}, attempts: {runs: [{temperature: 0.2}, {temperature: 0.7}, {temperature: 0.7}, {temperature: 0.7}, {temperature: 0.7}, {temperature: 0.7}, {temperature: 0.7}, {temperature: 0.7}], adaptive: false}}
+      gpu: {keep_reasoning_models: [gpt-oss, MiMo]}
+  mgr-scale8-trust-all:
+    description: "as mgr-scale8, with the trust check and the charter nudge in every attempt"
+    run_timeout_seconds: 5400
+    overrides:
+      mode: manager
+      research: {passages_per_subquestion: 15}
+      coordinator: {model: MiMo-V2.6-Distill-Qwen-9B, ctx_per_slot: 16384, parallel: 1}
+      verifier: {model: Granite-4.1-3B}
+      workers: {team: [Qwen3.5-4B, Gemma-4-E4B-it], ctx_per_slot: 8192}
+      manager: {max_cycles: 6, passages_per_task: 6, pages_per_search: 3, dispatch: both, coordinator_style: think, think_tokens: 1000, verify: false, charter: {lead: true, workers: true}, trust_check: {rounds: 2, extra_cycles: 3, verify: true}, attempts: {runs: [{temperature: 0.2}, {temperature: 0.7}, {temperature: 0.7}, {temperature: 0.7}, {temperature: 0.7}, {temperature: 0.7}, {temperature: 0.7}, {temperature: 0.7}], adaptive: false}}
+      gpu: {keep_reasoning_models: [gpt-oss, MiMo]}
+  mgr-scale8-trust-self:
+    description: "as mgr-scale8, with the trust check on MiMo's own judgment in every attempt"
+    run_timeout_seconds: 5400
+    overrides:
+      mode: manager
+      research: {passages_per_subquestion: 15}
+      coordinator: {model: MiMo-V2.6-Distill-Qwen-9B, ctx_per_slot: 16384, parallel: 1}
+      verifier: {model: Granite-4.1-3B}
+      workers: {team: [Qwen3.5-4B, Gemma-4-E4B-it], ctx_per_slot: 8192}
+      manager: {max_cycles: 6, passages_per_task: 6, pages_per_search: 3, dispatch: both, coordinator_style: think, think_tokens: 1000, verify: false, trust_check: {rounds: 2, extra_cycles: 3, verify: false}, attempts: {runs: [{temperature: 0.2}, {temperature: 0.7}, {temperature: 0.7}, {temperature: 0.7}, {temperature: 0.7}, {temperature: 0.7}, {temperature: 0.7}, {temperature: 0.7}], adaptive: false}}
+      gpu: {keep_reasoning_models: [gpt-oss, MiMo]}
+  mgr-charter-all:
+    description: "base team with the partner charter as a short nudge in every prompt (MiMo's and the workers'); no trust check"
+    overrides:
+      mode: manager
+      research: {passages_per_subquestion: 15}
+      coordinator: {model: MiMo-V2.6-Distill-Qwen-9B, ctx_per_slot: 16384, parallel: 1}
+      verifier: {model: Granite-4.1-3B}
+      workers: {team: [Qwen3.5-4B, Gemma-4-E4B-it], ctx_per_slot: 8192}
+      manager: {max_cycles: 6, passages_per_task: 6, pages_per_search: 3, dispatch: both, coordinator_style: think, think_tokens: 1000, verify: false, charter: {lead: true, workers: true}}
+      gpu: {keep_reasoning_models: [gpt-oss, MiMo]}
+  mgr-trust-all:
+    description: "mgr-trust (trust check, verified by Qwen3.5-4B) plus the charter nudge in every prompt"
+    overrides:
+      mode: manager
+      research: {passages_per_subquestion: 15}
+      coordinator: {model: MiMo-V2.6-Distill-Qwen-9B, ctx_per_slot: 16384, parallel: 1}
+      verifier: {model: Granite-4.1-3B}
+      workers: {team: [Qwen3.5-4B, Gemma-4-E4B-it], ctx_per_slot: 8192}
+      manager: {max_cycles: 6, passages_per_task: 6, pages_per_search: 3, dispatch: both, coordinator_style: think, think_tokens: 1000, verify: false, charter: {lead: true, workers: true}, trust_check: {rounds: 2, extra_cycles: 3, verify: true}}
+      gpu: {keep_reasoning_models: [gpt-oss, MiMo]}
+
 # Templates filled in once per value; each also becomes a group of the same name.
 matrices:
   # Every general chat model alone, reading the same evidence and writing the answer:
@@ -533,6 +886,13 @@ groups:
   round3-screen: [strategy-screen-round3]
   notebook-study: [nb-big, nb-none, nb-tiny, nb-same3, diverse-separate, solo-MiMo-V2.6-Distill-Qwen-9B, coordinator-only]
   notebook-v2: [nb2-big, nb2-cpu-qwen4b, nb2-cpu-qwen2b, nb2-cpu-lfm, solo-MiMo-V2.6-Distill-Qwen-9B, coordinator-only]
+  notebook-v3: [solo-MiMo-V2.6-Distill-Qwen-9B, solo-MiMo-wide, nb3-wide, nb3-wide-same3, diverse-separate-wide]
+  manager-study: [solo-MiMo-wide, mgr-alone, mgr-same2, mgr-duo]
+  manager-both: [solo-MiMo-wide, mgr-both-same, mgr-both-duo, mgr-both-same-think, mgr-both-same-stepback]
+  manager-combined: [solo-MiMo-wide, mgr-both-same-think, mgr-duo-think, mgr-same-think-verify, mgr-duo-think-verify]
+  manager-experts: [solo-MiMo-wide, mgr-ex-base, mgr-ex-reports, mgr-ex-harder, mgr-ex-qwen9, mgr-ex-gemma12, mgr-ex-ornith]
+  manager-vote: [solo-MiMo-wide, mgr-ex-base, mgr-vote3-same, mgr-vote3-diverse, mgr-vote-adaptive]
+  manager-trust: [solo-MiMo-wide, mgr-ex-base, mgr-charter-all, mgr-trust, mgr-trust-all, mgr-trust-self]
   # v2 vs its best member alone and vs the bake-off winner (MiMo coordinating the old roles team)
   # plus coordinator-only as an in-session anchor: live scores drift by day (roles-2ways-split 65% on
   # 9-30 vs 53% on 10-03 on the same questions), so v2 must be compared within its own run

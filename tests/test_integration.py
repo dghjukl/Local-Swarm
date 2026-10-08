@@ -411,6 +411,10 @@ async def test_notebook_mode_with_and_without_a_coordinator(cfg, cards, mock_poo
         c2 = copy.deepcopy(c)
         c2["notebook"]["leader"] = "none"
         free = await Swarm(c2, pool, cards, FakeResearch()).run("Tell me about the Eiffel Tower", emit, prepared=prep)
+        c3 = copy.deepcopy(c)  # v3: the writer reads what solo reads (top 1 per part) + the notebook
+        c3["notebook"].update(writer="evidence+notes", writer_passages_per_subquestion=1)
+        c3["research"]["passages_per_subquestion"] = 3
+        over = await Swarm(c3, pool, cards, FakeResearch()).run("Tell me about the Eiffel Tower", emit, prepared=prep)
     finally:
         await pool.shutdown()
     for t in (led, free):
@@ -425,7 +429,293 @@ async def test_notebook_mode_with_and_without_a_coordinator(cfg, cards, mock_poo
         assert t["stats"]["notebook"]["rejected_notes"] >= 2 and t["stats"]["notebook"]["unchecked"] == 0
         assert not any("?" in n["fact"] or "Additional details" in n["fact"] for n in notes)
         assert t["final"]["answer"]
+    assert not over.get("error") and over["final"]["answer"], over.get("error")
+    wv = over["writer_view"]
+    assert 1 <= len(wv["passages"]) <= 2 < len(over["evidence"])  # writer: solo-sized view; team: wider
     assert not led["drafts"]                                     # the coordinator wrote it directly
     assert free["writer"] in free["team"] and free["objections"]  # LFM objected ...
     assert free["drafts"][-1].get("revision")                    # ... so the writer revised once
     assert any(d["by"] == "Phi-4-mini-instruct" for n in led["notebook"]["notes"] for d in n["disputes"])
+
+
+async def test_manager_mode_directs_teammates_turn_by_turn(cfg, cards, mock_pool_cls):
+    """Manager mode: the coordinator gives one task per turn (with a web search), gives the same task to
+    the other teammate, stops itself, and writes from its evidence + the workspace. With no team it
+    does the steps itself."""
+    import copy
+    events = []
+
+    async def emit(e):
+        events.append(e)
+
+    c = copy.deepcopy(cfg)
+    c["mode"] = "manager"
+    c["workers"]["team"] = ["Ministral-3-3B-Instruct", "Phi-4-mini-instruct"]
+    c["manager"] = {"max_cycles": 5, "passages_per_task": 3}
+    pool = mock_pool_cls(cfg, cards)
+    try:
+        sw = Swarm(c, pool, cards, FakeResearch())
+        prep = await sw.prepare("Tell me about the Eiffel Tower")
+        duo = await sw.run("Tell me about the Eiffel Tower", emit, prepared=prep)
+        c2 = copy.deepcopy(c)
+        c2["workers"]["team"] = [c2["coordinator"]["model"]]
+        alone = await Swarm(c2, pool, cards, FakeResearch()).run("Tell me about the Eiffel Tower", emit, prepared=prep)
+    finally:
+        await pool.shutdown()
+    for t in (duo, alone):
+        assert not t.get("error"), t.get("error")
+        log = t["manager"]["log"]
+        assert len(log) == 2 and all(s["search"] for s in log) and t["final"]["answer"]
+        assert t["stats"]["manager"]["stopped_by_coordinator"] and t["stats"]["mode"] == "manager"
+        assert t["manager"]["notes"]
+    assert [s["worker"] for s in duo["manager"]["log"]] == ["Ministral-3-3B-Instruct", "Phi-4-mini-instruct"]
+    assert duo["manager"]["log"][1]["reassigned"] and duo["stats"]["manager"]["reassigned"] == 1
+    assert len(alone["team"]) == 1
+
+
+async def test_manager_both_dispatch_sends_every_task_to_every_teammate(cfg, cards, mock_pool_cls):
+    import copy
+
+    async def emit(e):
+        pass
+
+    c = copy.deepcopy(cfg)
+    c["mode"] = "manager"
+    c["workers"]["team"] = ["Ministral-3-3B-Instruct", "Phi-4-mini-instruct"]
+    c["manager"] = {"max_cycles": 5, "passages_per_task": 3, "dispatch": "both"}
+    pool = mock_pool_cls(cfg, cards)
+    try:
+        sw = Swarm(c, pool, cards, FakeResearch())
+        prep = await sw.prepare("Tell me about the Eiffel Tower")
+        t = await sw.run("Tell me about the Eiffel Tower", emit, prepared=prep)
+        c2 = copy.deepcopy(c)
+        c2["workers"]["team"] = ["Phi-4-mini-instruct", "Phi-4-mini-instruct"]  # two copies on one server
+        t2 = await Swarm(c2, pool, cards, FakeResearch()).run("Tell me about the Eiffel Tower", emit, prepared=prep)
+    finally:
+        await pool.shutdown()
+    for tr in (t, t2):
+        assert not tr.get("error"), tr.get("error")
+        log = tr["manager"]["log"]
+        assert len(log) == 2 and all(len(s["results"]) == 2 for s in log)
+        st = tr["stats"]["manager"]
+        assert st["dispatch"] == "both" and st["both_found"] == 2 and st["agree"] == 2
+        assert any(len(n["readers"]) == 2 for n in tr["manager"]["notes"])  # the same fact from both
+    assert {x["worker"] for x in t["manager"]["log"][0]["results"]} == {"Ministral-3-3B-Instruct", "Phi-4-mini-instruct"}
+
+
+async def test_manager_coordinator_styles_run(cfg, cards, mock_pool_cls):
+    """step_back and think styles for the coordinator: the loop still runs and the style is recorded."""
+    import copy
+
+    async def emit(e):
+        pass
+
+    pool = mock_pool_cls(cfg, cards)
+    try:
+        out = {}
+        for style in ("step_back", "think"):
+            c = copy.deepcopy(cfg)
+            c["mode"] = "manager"
+            c["workers"]["team"] = ["Ministral-3-3B-Instruct", "Ministral-3-3B-Instruct"]
+            c["manager"] = {"max_cycles": 4, "passages_per_task": 3, "dispatch": "both", "coordinator_style": style}
+            sw = Swarm(c, pool, cards, FakeResearch())
+            prep = await sw.prepare("Tell me about the Eiffel Tower")
+            out[style] = await sw.run("Tell me about the Eiffel Tower", emit, prepared=prep)
+    finally:
+        await pool.shutdown()
+    for style, t in out.items():
+        assert not t.get("error"), t.get("error")
+        assert t["final"]["answer"] and t["stats"]["manager"]["coordinator_style"] == style
+        assert t["manager"]["log"]
+
+
+async def test_manager_verifies_notes_only_one_teammate_found(cfg, cards, mock_pool_cls):
+    import copy
+
+    async def emit(e):
+        pass
+
+    c = copy.deepcopy(cfg)
+    c["mode"] = "manager"
+    c["workers"]["team"] = ["Ministral-3-3B-Instruct", "Phi-4-mini-instruct"]
+    c["manager"] = {"max_cycles": 4, "passages_per_task": 3, "dispatch": "both", "verify": True}
+    pool = mock_pool_cls(cfg, cards)
+    try:
+        sw = Swarm(c, pool, cards, FakeResearch())
+        prep = await sw.prepare("Tell me about the Eiffel Tower")
+        t = await sw.run("Tell me about the Eiffel Tower", emit, prepared=prep)
+    finally:
+        await pool.shutdown()
+    assert not t.get("error"), t.get("error")
+    st = t["stats"]["manager"]
+    assert st["verify"] is True
+    assert st["verify_checked"] >= 1  # Phi's extra fact was found by Phi alone, so it was fact-checked
+    for s in t["manager"]["log"]:
+        assert all("verified" in x for x in s["results"])
+    # both teammates found the same fact: confirmed by the other, so the verifier is not needed for it
+    assert any(x["confirmed_by_other"] for s in t["manager"]["log"] for x in s["results"])
+
+
+async def test_manager_reports_and_expert(cfg, cards, mock_pool_cls):
+    """Structured reports reach the coordinator (and taking a suggestion is counted); the coordinator can
+    call the expert (X), and a blocked repeat of a failed step goes to the expert automatically."""
+    import copy
+
+    async def emit(e):
+        pass
+
+    c = copy.deepcopy(cfg)
+    c["mode"] = "manager"
+    c["workers"]["team"] = ["Ministral-3-3B-Instruct", "Ministral-3-3B-Instruct"]
+    c["manager"] = {"max_cycles": 5, "passages_per_task": 3, "dispatch": "both", "reports": True,
+                    "expert": {"model": "Qwen3.5-9B", "ctx_per_slot": 4096, "max_calls": 1, "followup_searches": 1}}
+    pool = mock_pool_cls(cfg, cards)
+    try:
+        sw = Swarm(c, pool, cards, FakeResearch())
+        prep = await sw.prepare("Tell me about the Eiffel Tower")
+        t = await sw.run("Tell me about the Eiffel Tower", emit, prepared=prep)
+        stuck = await Swarm(c, pool, cards, FakeResearch()).run("Tell me about the nowhere tower", emit, prepared=prep)
+        c3 = copy.deepcopy(c)
+        c3["manager"]["expert"]["model"] = "Phi-4-mini-instruct"   # an expert that can't find it either
+        miss = await Swarm(c3, pool, cards, FakeResearch()).run("Tell me about the nowhere tower", emit, prepared=prep)
+    finally:
+        await pool.shutdown()
+    assert not t.get("error"), t.get("error")
+    log = t["manager"]["log"]
+    assert log[0]["results"][0]["report"]["next_search"] == "Eiffel Tower official height"
+    assert log[1]["expert"] and log[1]["model"] == "Qwen3.5-9B" and log[1]["found"] and not log[1]["auto"]
+    st = t["stats"]["manager"]
+    assert st["reports"] and st["expert_calls"] == 1 and st["picks"]["X"] == 1 and st["confidence"]["high"] >= 2
+    assert st["suggested_turns"] >= 1
+    assert any("Qwen3.5-9B (expert)" in n["readers"] for n in t["manager"]["notes"])
+
+    assert not stuck.get("error"), stuck.get("error")
+    slog = stuck["manager"]["log"]
+    assert not slog[0]["found"]                                  # both teammates came back empty
+    assert slog[1]["expert"] and slog[1]["auto"] and slog[1]["found"]  # the repeat went to the expert
+    assert slog[1]["search"] == ""                               # the failed search was not rerun
+    assert slog[2].get("repeat")                                 # no expert calls left: skipped
+    assert stuck["stats"]["manager"]["expert_auto"] == 1
+    # the expert came back empty, so it ran its own suggested follow-up search and read again
+    assert not miss.get("error"), miss.get("error")
+    mx = miss["manager"]["log"][1]
+    assert mx["expert"] and not mx["found"] and mx["expert_searches"] == ["nowhere fact official"]
+    assert miss["stats"]["manager"]["expert_searches"] == 1 and miss["final"]["answer"]
+
+
+async def test_manager_attempts_and_vote(cfg, cards, mock_pool_cls):
+    """Several independent manager attempts (different temperature / worker pair), then the coordinator
+    votes; adaptive mode stops after two attempts that agree."""
+    import copy
+
+    async def emit(e):
+        pass
+
+    c = copy.deepcopy(cfg)
+    c["mode"] = "manager"
+    c["workers"]["team"] = ["Ministral-3-3B-Instruct", "Phi-4-mini-instruct"]
+    c["manager"] = {"max_cycles": 3, "passages_per_task": 3, "dispatch": "both",
+                    "attempts": {"runs": [{"temperature": 0.2}, {"temperature": 0.7},
+                                          {"temperature": 0.7, "team": ["Phi-4-mini-instruct", "Phi-4-mini-instruct"]}]}}
+    pool = mock_pool_cls(cfg, cards)
+    try:
+        sw = Swarm(c, pool, cards, FakeResearch())
+        prep = await sw.prepare("Tell me about the Eiffel Tower")
+        t = await sw.run("Tell me about the Eiffel Tower", emit, prepared=prep)
+        c2 = copy.deepcopy(c)
+        c2["manager"]["attempts"]["adaptive"] = True
+        t2 = await Swarm(c2, pool, cards, FakeResearch()).run("Do the sources agree on the Eiffel Tower?", emit,
+                                                              prepared=prep)
+    finally:
+        await pool.shutdown()
+    assert not t.get("error"), t.get("error")
+    st = t["stats"]["attempts"]
+    assert st["runs"] == 3 and st["chosen"] == 2 and len(t["votes"]) == 1 and len(t["attempts"]) == 3
+    assert t["final"]["answer"] == t["attempts"][1]["answer"]
+    assert t["attempts"][2]["config"]["team"] == ["Phi-4-mini-instruct", "Phi-4-mini-instruct"]
+    assert t["attempts"][2]["manager"]["log"][0]["model"] == "Phi-4-mini-instruct+Phi-4-mini-instruct"
+    assert sw.cfg is c                                   # the base config is restored
+    assert not t2.get("error"), t2.get("error")
+    st2 = t2["stats"]["attempts"]
+    assert st2["runs"] == 2 and st2["first2_same"] is True and st2["planned"] == 3
+
+
+async def test_manager_trust_check_sends_team_back_then_passes(cfg, cards, mock_pool_cls):
+    """Before finishing, the coordinator lays out the answer's chain. Code catches the made-up citation and
+    the wrong arithmetic, so the team goes back to work; the second check passes and the answer is written."""
+    import copy
+
+    async def emit(e):
+        pass
+
+    c = copy.deepcopy(cfg)
+    c["mode"] = "manager"
+    c["workers"]["team"] = ["Ministral-3-3B-Instruct", "Phi-4-mini-instruct"]
+    c["manager"] = {"max_cycles": 3, "passages_per_task": 3, "dispatch": "both",
+                    "trust_check": {"rounds": 2, "extra_cycles": 2}}
+    pool = mock_pool_cls(cfg, cards)
+    try:
+        sw = Swarm(c, pool, cards, FakeResearch())
+        prep = await sw.prepare("Tell me about the Eiffel Tower")
+        t = await sw.run("Tell me about the Eiffel Tower", emit, prepared=prep)
+    finally:
+        await pool.shutdown()
+    assert not t.get("error"), t.get("error")
+    st = t["stats"]["manager"]
+    trust = t["manager"]["trust"]
+    assert st["trust_check"] and st["trust_checks"] == 2 and st["trust_sent_back"] == 1
+    first, last = trust[0], trust[-1]
+    assert first["said_ready"] and not first["ready"]                 # the lead said ready, the check disagreed
+    assert first["calc"]["ok"] is False and st["trust_calc_wrong"] == 1
+    assert st["trust_bad_citation"] == 1 and any("E999" in x["bad_sources"] for x in first["steps"])
+    assert any("unsupported" in p for p in first["problems"])
+    assert last["ready"] and st["trust_final_ready"] is True
+    assert any(s.get("trust") for s in t["manager"]["log"])           # the gaps went back into the workspace
+    assert t["final"]["answer"]
+
+
+async def test_manager_charter_nudge_reaches_lead_and_workers(cfg, cards, mock_pool_cls, monkeypatch):
+    """manager.charter {lead, workers} puts the short partner charter at the top of MiMo's prompts (decide and
+    write) and the workers' prompts, and the worker honesty counters are recorded."""
+    import copy
+    from swarm import llm as llm_mod
+    from swarm import manager as mgr
+
+    seen = []
+    real_json, real_chat = llm_mod.chat_json, llm_mod.chat
+
+    async def spy_json(url, msgs, *a, **kw):
+        seen.append(msgs[0]["content"])
+        return await real_json(url, msgs, *a, **kw)
+
+    async def spy_chat(url, msgs, *a, **kw):
+        seen.append(msgs[0]["content"])
+        return await real_chat(url, msgs, *a, **kw)
+
+    monkeypatch.setattr(llm_mod, "chat_json", spy_json)
+    monkeypatch.setattr(llm_mod, "chat", spy_chat)
+
+    async def emit(e):
+        pass
+
+    c = copy.deepcopy(cfg)
+    c["mode"] = "manager"
+    c["workers"]["team"] = ["Ministral-3-3B-Instruct", "Phi-4-mini-instruct"]
+    c["manager"] = {"max_cycles": 2, "passages_per_task": 3, "dispatch": "both",
+                    "charter": {"lead": True, "workers": True}}
+    pool = mock_pool_cls(cfg, cards)
+    try:
+        sw = Swarm(c, pool, cards, FakeResearch())
+        prep = await sw.prepare("Tell me about the Eiffel Tower")
+        t = await sw.run("Tell me about the Eiffel Tower", emit, prepared=prep)
+    finally:
+        await pool.shutdown()
+    assert not t.get("error"), t.get("error")
+    st = t["stats"]["manager"]
+    assert st["charter"] == {"lead": True, "workers": True}
+    assert any(s.startswith(mgr.CHARTER_WORKER) and "research assistant" in s for s in seen)
+    assert any(s.startswith(mgr.CHARTER_LEAD) and "lead a small research team" in s for s in seen)
+    assert any(s.startswith(mgr.CHARTER_LEAD) and "final answer" in s for s in seen)
+    assert st["worker_answers"] >= 2 and st["worker_notes_offered"] >= st["worker_notes_kept"] >= 0
+    assert "worker_bad_citations" in st and "worker_found_unbacked" in st
+    assert any("candidates" in e and "read_urls" in e for e in t["manager"]["log"])  # pages found vs read, per task

@@ -6,6 +6,9 @@
   recently used first). If everything is busy, the load waits.
 - Every load records measured VRAM and load time in runtime/measurements, and
   later estimates use those measurements. This is the start of the capability cards.
+- Remote models (gpu.remote_models) run on another machine on the home network, e.g. a laptop
+  serving the checker: they are never started, stopped or counted against the VRAM budget here;
+  `use()` just checks they answer and hands out their address.
 """
 from __future__ import annotations
 
@@ -30,6 +33,14 @@ class ModelLoadError(RuntimeError):
     pass
 
 
+class _RemoteProc:
+    """Stands in for a llama-server process that runs on another machine."""
+    pid = 0
+
+    def poll(self):
+        return None
+
+
 @dataclass
 class Running:
     card: ModelCard
@@ -45,14 +56,20 @@ class Running:
     last_used: float = field(default_factory=time.time)
     load_seconds: float = 0.0
     measured_mb: int | None = None
+    url: str = ""           # remote model: its address on the network (nothing runs here)
+    checked: float = 0.0    # remote model: when it last answered /health
 
     @property
     def base_url(self) -> str:
-        return f"http://127.0.0.1:{self.port}"
+        return self.url or f"http://127.0.0.1:{self.port}"
+
+    @property
+    def remote(self) -> bool:
+        return bool(self.url)
 
     @property
     def vram_mb(self) -> int:
-        if self.on_cpu:
+        if self.on_cpu or self.url:
             return 0
         if self.offload:
             return self.est_mb  # the whole budget: nothing else loads next to it
@@ -124,7 +141,69 @@ class ModelPool:
         self.cpu_models = [str(m).lower() for m in (g.get("cpu_models") or [])]
         self.cpu_threads = int(g.get("cpu_threads", 6))
         self.fit_margin_mb = int(g.get("fit_margin_mb", 1024))
+        # models served by other machines on the network (model id -> url or {url, ctx_per_slot, parallel})
+        self.remote_models: dict[str, dict] = {}
+        self.remote_running: dict[str, Running] = {}
+        self.set_remote(g.get("remote_models") or {})
         self._kill_stale()
+
+    def set_remote(self, mapping: dict) -> None:
+        """Which models live on another machine. A model that isn't in Models/ on this PC gets a
+        card of its own, so configs can name it like any other model."""
+        from swarm.registry import _kind_for, _lab_for
+        out: dict[str, dict] = {}
+        for mid, v in (mapping or {}).items():
+            spec = {"url": v} if isinstance(v, str) else dict(v or {})
+            url = str(spec.get("url", "")).rstrip("/")
+            if not url:
+                continue
+            if not url.startswith(("http://", "https://")):
+                url = "http://" + url
+            out[str(mid)] = {"url": url, "ctx_per_slot": int(spec.get("ctx_per_slot", 0) or 0),
+                             "parallel": int(spec.get("parallel", 1) or 1)}
+            if mid not in self.cards:
+                lab, lineage = _lab_for(str(mid))
+                self.cards[str(mid)] = ModelCard(id=str(mid), path=f"remote:{url}", size_mb=0, lab=lab,
+                                                 lineage=lineage, kind=_kind_for(str(mid)))
+        for mid in [m for m in self.remote_running if m not in out or out[m]["url"] != self.remote_running[m].url]:
+            self.remote_running.pop(mid, None)
+        self.remote_models = out
+
+    def is_remote(self, model_id: str) -> bool:
+        return model_id in self.remote_models
+
+    async def _ensure_remote(self, model_id: str, ctx_per_slot: int, parallel: int) -> Running:
+        spec = self.remote_models[model_id]
+        r = self.remote_running.get(model_id)
+        if r is None:
+            r = Running(card=self.cards[model_id], proc=_RemoteProc(), port=0,
+                        ctx_per_slot=spec["ctx_per_slot"] or ctx_per_slot, parallel=spec["parallel"],
+                        est_mb=0, url=spec["url"])
+            self.remote_running[model_id] = r
+        if time.time() - r.checked > 60:  # make sure the other machine is up (cheap, on the home network)
+            t0 = time.time()
+            try:
+                async with httpx.AsyncClient(timeout=8) as c:
+                    resp = await c.get(r.url + "/health")
+                ok = resp.status_code == 200
+                why = f"HTTP {resp.status_code}"
+            except httpx.HTTPError as e:
+                ok, why = False, f"{type(e).__name__}"
+            if not ok:
+                r.checked = 0.0
+                raise ModelLoadError(f"{model_id} runs on another machine ({r.url}) but it isn't answering "
+                                     f"({why}). Is that machine on and its model server running?")
+            first = r.checked == 0.0 and r.load_seconds == 0.0
+            r.checked = time.time()
+            if first:
+                r.load_seconds = time.time() - t0
+                await self._emit({"type": "model", "event": "ready", "model": model_id, "lab": r.card.lab,
+                                  "vram_mb": 0, "seconds": round(r.load_seconds, 2), "remote": r.url})
+                if spec["ctx_per_slot"] and ctx_per_slot > spec["ctx_per_slot"]:
+                    await self._emit({"type": "warning", "message":
+                                      f"{model_id} on {r.url} has {spec['ctx_per_slot']} tokens per request; this "
+                                      f"configuration asks for {ctx_per_slot}. Longer prompts will fail there."})
+        return r
 
     def _kill_stale(self) -> None:
         try:
@@ -169,6 +248,11 @@ class ModelPool:
                     "load_seconds": round(r.load_seconds, 1), "alive": r.alive(),
                 }
                 for r in self.running.values()
+            ] + [
+                {"model": r.card.id, "lab": r.card.lab, "lineage": r.card.lineage, "vram_mb": 0,
+                 "measured": False, "busy": r.busy, "pinned": False, "port": 0, "remote": r.url,
+                 "load_seconds": round(r.load_seconds, 2), "alive": True}
+                for r in self.remote_running.values()
             ],
         }
 
@@ -210,6 +294,8 @@ class ModelPool:
                 self._changed.notify_all()
 
     async def ensure(self, model_id: str, ctx_per_slot: int, parallel: int = 1, pin: bool = False) -> Running:
+        if model_id in self.remote_models:
+            return await self._ensure_remote(model_id, ctx_per_slot, parallel)
         if model_id not in self.cards:
             raise ModelLoadError(f"Unknown model '{model_id}'. Folder names in Models/ are the valid ids.")
         async with self._load_lock:
@@ -277,7 +363,7 @@ class ModelPool:
 
     def prefetch(self, model_id: str, ctx_per_slot: int, parallel: int = 1, pin: bool = False) -> None:
         """Load a model in the background when it fits, without disturbing models needed sooner."""
-        if not self.prefetch_enabled or model_id not in self.cards:
+        if not self.prefetch_enabled or model_id not in self.cards or model_id in self.remote_models:
             return
         r = self.running.get(model_id)
         if (r and r.alive()) or model_id in self._prefetch:

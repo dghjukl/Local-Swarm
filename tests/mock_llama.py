@@ -56,6 +56,55 @@ def reply(body: dict) -> str:
             notes.insert(1, {"fact": "It stands about 330 metres tall today.", "sources": [e2]})
         return json.dumps({"notes": notes,
                            "open_questions": ["Who designed the tower?"]})
+    if "worker" in props and "done" in props:  # manager mode: the coordinator picks the next step
+        steps = len(re.findall(r"^\d+\. ", user.split("=== Steps so far ===")[-1], re.M))
+        letters = props["worker"].get("enum", ["A"])
+        if "nowhere" in user.split("=== Your evidence ===")[0]:  # a step that keeps failing
+            if steps >= 3:
+                return json.dumps({"thought": "give up", "done": True, "worker": letters[0], "task": "", "search": ""})
+            return json.dumps({"thought": "try again", "done": False, "worker": letters[0],
+                               "task": "Find the nowhere fact.", "search": "nowhere fact"})
+        if "X" in letters and steps == 1:  # call the expert once
+            return json.dumps({"thought": "stuck, ask the expert", "done": False, "worker": "X",
+                               "task": "Find the official height of the Eiffel Tower.", "search": ""})
+        if steps >= 2:
+            return json.dumps({"thought": "enough", "done": True, "worker": letters[0], "task": "", "search": ""})
+        who = letters[min(steps, len(letters) - 1)]
+        return json.dumps({"thought": "need the height", "done": False, "worker": who,
+                           "task": "Find how tall the Eiffel Tower is.", "search": "Eiffel Tower height"})
+    if "ready" in props and "steps" in props:  # manager trust check: the chain the answer rests on
+        e1 = ids[-1] if ids else "E1"
+        again = "TRUST CHECK" in user          # a second check, after the team fixed the gaps
+        steps = [{"claim": "The Eiffel Tower is about 330 metres tall.", "sources": [e1], "status": "supported"},
+                 {"claim": "Its height in feet.", "sources": [], "status": "inferred" if again else "unsupported"},
+                 {"claim": "A step citing a passage that doesn't exist.", "sources": ["E999"], "status": "supported"}]
+        return json.dumps({"answer": "about 330 m", "steps": steps[:2] if again else steps,
+                           "calc_expression": "2024 - 1987", "calc_result": "37" if again else "36",
+                           "parts_answered": True, "gaps": "" if again else "height in feet not found",
+                           "ready": True})
+    if "best" in props and "same" in props:  # several attempts: the vote
+        n = props["answers"].get("maxItems", 2)
+        return json.dumps({"answers": [{"attempt": i + 1, "short": "330 metres"} for i in range(n)],
+                           "same": "agree" in user.split("=== Attempt 1")[0], "best": min(2, n),
+                           "reason": "mock vote"})
+    if "said" in props and "next_search" in props:  # manager mode: a structured report (worker or expert)
+        e1 = ids[-1] if ids else "E99"
+        task = (re.findall(r"^Your task: (.*)$", user, re.M) or [""])[0]
+        ok = "nowhere" not in task or "Qwen3.5-9B" in MODEL
+        return json.dumps({"said": f"[{e1}] gives the height." if ok else "None of the passages mention it.",
+                           "notes": [{"fact": "The Eiffel Tower stands about 330 metres tall.", "sources": [e1]}] if ok else [],
+                           "result": f"{MODEL}: about 330 metres." if ok else "Not in these passages.",
+                           "found": ok, "missing": "" if ok else "the fact itself",
+                           "why_missing": "" if ok else "the passages are about something else",
+                           "next_step": "Look up the official height page",
+                           "next_search": "Eiffel Tower official height" if ok else "nowhere fact official",
+                           "confidence": "high" if ok else "low", "confidence_reason": "stated directly"})
+    if "found" in props and "result" in props and "notes" in props:  # manager mode: a teammate's task
+        e1 = ids[-1] if ids else "E99"
+        return json.dumps({"found": True, "result": f"{MODEL}: it is about 330 metres tall.",
+                           "notes": [{"fact": f"The Eiffel Tower stands about 330 metres tall.", "sources": [e1]}]
+                           + ([{"fact": "Gustave Eiffel's company designed and built the tower.", "sources": [e1]}]
+                              if "Phi" in MODEL else [])})
     if "agree" in props and "new_notes" in props:  # notebook mode: review the shared notebook
         e1 = ids[0] if ids else "E99"
         return json.dumps({"agree": ["N1", "N2"], "dispute": [{"id": "N2", "reason": "mock disagreement"}]

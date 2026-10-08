@@ -359,3 +359,51 @@ async def test_preflight_skips_configs_whose_model_fails(cfg, cards, mock_pool_c
     rs = [json.loads(l) for l in (out / "results.jsonl").read_text(encoding="utf-8").splitlines()]
     assert {r["config"] for r in rs} == {"coordinator-only"}          # swarm-t1 skipped, nothing wasted
     assert worker in json.loads((out / "meta.json").read_text(encoding="utf-8"))["preflight_failed"]
+
+
+async def test_grade_attempts_grades_every_attempt_and_reports_oracle(tmp_path, monkeypatch):
+    """Multi-attempt runs: every attempt gets its own grade (the chosen one reuses the run's grade), and
+    the report shows one-attempt accuracy, the vote, the oracle and the oracle-by-N curve."""
+    import json as _json
+    from swarm import evals
+
+    q = {"id": "q1", "question": "Capital of France?", "answer": "Paris", "grading": "judge"}
+    key = evals.rubric_key(q)
+    (tmp_path / "traces").mkdir()
+    (tmp_path / "traces" / "t1.json").write_text(_json.dumps({"attempts": [
+        {"answer": "It is Lyon.", "stats": {"total_seconds": 10, "manager": {"trust_final_ready": False}}, "config": {"temperature": 0.2}},
+        {"answer": "It is Paris.", "stats": {"total_seconds": 12, "manager": {"trust_final_ready": True}}, "config": {"temperature": 0.7}},
+        {"answer": "Paris, the capital.", "stats": {"total_seconds": 11}, "config": {"temperature": 0.7}}]}))
+    r = {"config": "mgr-x", "question_id": "q1", "answer": "It is Paris.", "trace": "traces/t1.json",
+         "grade": {"judge": "J", "rubric": key, "score": 1.0, "verdict": "correct", "extracted": "Paris"}}
+    judged = []
+
+    async def fake_loop(recs, questions, pool, jcfg, rec, model, save=None, k="grade"):
+        for p in recs:
+            judged.append(p["answer"])
+            ok = "Paris" in p["answer"]
+            p[k] = {"judge": model, "rubric": key, "score": 1.0 if ok else 0.0,
+                    "verdict": "correct" if ok else "incorrect", "extracted": "Paris" if ok else "Lyon"}
+        if save:
+            save()
+
+    class Pool:
+        cards = {"J": object()}
+
+        async def unload_all(self):
+            pass
+
+    class Rec:
+        def say(self, m):
+            pass
+
+    monkeypatch.setattr(evals, "_judge_loop", fake_loop)
+    n = await evals.grade_attempts(tmp_path, [r], {"q1": q}, Pool(), {"model": "J"}, Rec())
+    assert n == 2 and sorted(judged) == ["It is Lyon.", "Paris, the capital."]   # the chosen one was reused
+    assert [g["score"] for g in r["attempt_grades"]] == [0.0, 1.0, 1.0] and r["attempt_grades"][1].get("copied")
+    assert [i["trust_ready"] for i in r["attempt_info"]] == [False, True, None]
+    assert await evals.grade_attempts(tmp_path, [r], {"q1": q}, Pool(), {"model": "J"}, Rec()) == 0  # resumes
+    md, page = evals.attempts_section([r], ["mgr-x"])
+    text = "\n".join(md)
+    assert "| mgr-x | 1 | 3 | 67% | 100% | 100% | 100% | 1/1 |" in text
+    assert "1: 67%, 2: 100%, 3: 100%" in text and "Oracle" in page

@@ -421,6 +421,133 @@ async def _judge_reference(url: str, r: dict, q: dict, model: str, rec, i: int, 
         rec.say(f"  [{i}/{total}] judge error: {e}"[:200])
 
 
+async def grade_attempts(out: Path, results: list[dict], questions: dict, pool: ModelPool, jcfg: dict,
+                         rec: Recorder, save=None) -> int:
+    """Runs with several attempts per question (manager.attempts): grade EVERY attempt's answer, not just
+    the one the vote chose, so the oracle (any attempt right), the vote's hit rate and any other way of
+    choosing can be measured offline. Grades land in r["attempt_grades"] (one per attempt, in order) with
+    r["attempt_info"] (each attempt's config, trust-check verdict, time). An attempt whose answer is the
+    chosen answer reuses that grade; grades already made by the same judge are kept, so it resumes."""
+    model = jcfg.get("model")
+    if not model or model not in pool.cards:
+        return 0
+    todo = []
+    for r in results:
+        q = questions.get(r["question_id"])
+        tp = out / str(r.get("trace") or "")
+        if not q or not r.get("trace") or not tp.is_file():
+            continue
+        try:
+            atts = json.loads(tp.read_text(encoding="utf-8")).get("attempts") or []
+        except (OSError, json.JSONDecodeError):
+            continue
+        if len(atts) < 2:
+            continue
+        key = rubric_key(q)
+        ok = lambda g: bool(g) and g.get("judge") == model and g.get("score") is not None and g.get("rubric") == key
+        old = r.get("attempt_grades") or []
+        grades = []
+        for k, a in enumerate(atts):
+            ans = str(a.get("answer") or "")
+            if k < len(old) and ok(old[k]):
+                grades.append(old[k])
+            elif ans and ans == r.get("answer") and ok(r.get("grade")):
+                grades.append({**r["grade"], "copied": True})
+            else:
+                grades.append(None)
+                todo.append((r, k, {"config": r["config"], "question_id": r["question_id"], "answer": ans,
+                                    "error": None if ans else "attempt gave no answer"}))
+        r["attempt_grades"] = grades
+        r["attempt_info"] = [{"config": a.get("config"),
+                              "trust_ready": ((a.get("stats") or {}).get("manager") or {}).get("trust_final_ready"),
+                              "seconds": (a.get("stats") or {}).get("total_seconds")} for a in atts]
+    if not todo:
+        if save:
+            save()
+        return 0
+
+    def sync_save() -> None:
+        for r, k, p in todo:
+            if p.get("grade"):
+                r["attempt_grades"][k] = p["grade"]
+        if save:
+            save()
+
+    await pool.unload_all()
+    rec.say(f"Grading {len(todo)} individual attempts with judge {model} (for the oracle and vote analysis)")
+    try:
+        await _judge_loop([p for _, _, p in todo], questions, pool, jcfg, rec, model, sync_save, "grade")
+    except Exception as e:
+        rec.say(f"attempt grading stopped: {type(e).__name__}: {e}. Run --regrade <folder> --attempts-only to finish")
+    sync_save()
+    return len(todo)
+
+
+def attempts_section(results: list[dict], configs: list[str]) -> tuple[list[str], str]:
+    """Several attempts per question: how good one attempt is, how often ANY attempt was right (the
+    oracle), what a plain most-common-answer vote and the coordinator's vote got, and the vote's hit rate
+    when the attempts disagreed."""
+    import itertools
+    rows = []
+    for c in configs:
+        rs = [r for r in results if r["config"] == c and r.get("attempt_grades")
+              and all(g and g.get("score") is not None for g in r["attempt_grades"])]
+        if not rs:
+            continue
+        n_att = max(len(r["attempt_grades"]) for r in rs)
+        right = lambda g: g["score"] >= 0.5
+        each = sum(sum(right(g) for g in r["attempt_grades"]) / len(r["attempt_grades"]) for r in rs) / len(rs)
+        oracle = sum(any(right(g) for g in r["attempt_grades"]) for r in rs) / len(rs)
+        vote = sum((r.get("grade") or {}).get("score", 0) >= 0.5 for r in rs) / len(rs)
+        maj = 0
+        for r in rs:  # most common extracted answer (judge's extraction, normalised); ties -> first attempt
+            ks = [" ".join(str(g.get("extracted", "")).lower().split()) for g in r["attempt_grades"]]
+            best = max(range(len(ks)), key=lambda i: (ks.count(ks[i]) if ks[i] else 0, -i))
+            maj += right(r["attempt_grades"][best])
+        split = [r for r in rs if 0 < sum(right(g) for g in r["attempt_grades"]) < len(r["attempt_grades"])]
+        hit = sum((r.get("grade") or {}).get("score", 0) >= 0.5 for r in split)
+        # oracle by number of attempts: average over every subset of that size
+        curve = []
+        for k in range(1, n_att + 1):
+            tot = cnt = 0
+            for r in rs:
+                gs = [right(g) for g in r["attempt_grades"]]
+                if len(gs) < k:
+                    continue
+                subs = list(itertools.combinations(range(len(gs)), k))[:200]
+                tot += sum(any(gs[i] for i in sub) for sub in subs) / len(subs)
+                cnt += 1
+            curve.append(tot / cnt if cnt else None)
+        rows.append({"c": c, "n": len(rs), "k": n_att, "each": each, "oracle": oracle, "vote": vote,
+                     "maj": maj / len(rs), "split": len(split), "hit": hit, "curve": curve})
+    if not rows:
+        return [], ""
+    fmt = lambda v: "–" if v is None else f"{v:.0%}"
+    md = ["", "## Attempts (every attempt graded)", "",
+          "| Config | Questions | Attempts | One attempt (avg) | Most-common answer | Coordinator's vote | Any attempt right (oracle) | Vote right when attempts split |",
+          "|---|---|---|---|---|---|---|---|"]
+    trs = ""
+    for x in rows:
+        md.append(f"| {x['c']} | {x['n']} | {x['k']} | {x['each']:.0%} | {x['maj']:.0%} | {x['vote']:.0%} | "
+                  f"{x['oracle']:.0%} | {x['hit']}/{x['split']} |")
+        trs += (f"<tr><td>{html.escape(x['c'])}</td><td>{x['n']}</td><td>{x['k']}</td><td>{x['each']:.0%}</td>"
+                f"<td>{x['maj']:.0%}</td><td><b>{x['vote']:.0%}</b></td><td>{x['oracle']:.0%}</td>"
+                f"<td>{x['hit']}/{x['split']}</td></tr>")
+    md += ["", "Oracle by number of attempts (share of questions where at least one of N attempts is right, "
+              "averaged over every set of N attempts):", ""]
+    for x in rows:
+        md.append(f"- {x['c']}: " + ", ".join(f"{i + 1}: {fmt(v)}" for i, v in enumerate(x["curve"])))
+    md.append("")
+    page = ("<h2>Attempts</h2><p class=m>Every attempt graded separately. The oracle is the share of questions where "
+            "at least one attempt was right: the ceiling for any way of choosing.</p>"
+            "<div class=card><table><tr><th>Config</th><th>Questions</th><th>Attempts</th><th>One attempt</th>"
+            "<th>Most-common answer</th><th>Coordinator's vote</th><th>Oracle</th><th>Vote right when split</th></tr>"
+            f"{trs}</table></div>"
+            + "".join(f"<p class=m>{html.escape(x['c'])} oracle by attempts: "
+                      + ", ".join(f"{i + 1}: {fmt(v)}" for i, v in enumerate(x["curve"])) + "</p>" for x in rows))
+    return md, page
+
+
 # ---------------------------------------------------------------------- report
 
 def paired_ci(a: dict, b: dict, n: int = 4000, seed: int = 7) -> tuple[float, float, float] | None:
@@ -641,6 +768,9 @@ def build_report(out: Path, results: list[dict], meta: dict) -> None:
     ref_md, ref_html = reference_section(results, configs)
     md += ref_md
     screen_html += ref_html
+    att_md, att_html = attempts_section(results, configs)
+    md += att_md
+    screen_html += att_html
     if any(b.get("score2") is not None for b in board):
         screen_html += ("<h2>Cross-check: second judge</h2><p class=m>Every answer graded again by "
                         + html.escape(str(meta.get("judge2") or "a second judge")) + ", a different model family.</p>"
@@ -856,6 +986,12 @@ async def run(args) -> Path:
             if not getattr(args, "no_preflight", False):
                 from swarm import preflight as pf
                 need = []
+                # models served by other machines (gpu.remote_models), across all configurations
+                remote_all: dict = dict(cfg["gpu"].get("remote_models") or {})
+                for name in names:
+                    remote_all.update((_merge(copy.deepcopy(cfg), econf["configs"][name].get("overrides") or {})
+                                       .get("gpu") or {}).get("remote_models") or {})
+                pool.set_remote(remote_all)
                 for name in names:
                     if all((name, q["id"], n) in done for q in questions for n in range(args.repeats)):
                         continue
@@ -884,6 +1020,10 @@ async def run(args) -> Path:
             reuse = repo_path(args.reuse_evidence) / "evidence" if args.reuse_evidence and not args.live else None
             prepared = {}
             need_web = args.live or not reuse or any(not (reuse / f"{q['id']}.json").exists() for q in questions)
+            # manager-mode configs search the web during the run (follow-up searches), even on reused sources
+            need_web = need_web or any(
+                _merge(copy.deepcopy(cfg), econf["configs"][n].get("overrides") or {}).get("mode") == "manager"
+                for n in names)
             if need_web and research_mcp_available(cfg):
                 try:
                     research = ResearchMCP(cfg["research"].get("fetch_workers", 3))
@@ -938,6 +1078,8 @@ async def run(args) -> Path:
                                        (variant.get("gpu") or {}).get("keep_reasoning_models", ["gpt-oss"])]
                 # models this configuration runs on the CPU (e.g. a resident leader); one pool serves all
                 pool.cpu_models = [str(m).lower() for m in (variant.get("gpu") or {}).get("cpu_models") or []]
+                # models this configuration uses from another machine on the network
+                pool.set_remote((variant.get("gpu") or {}).get("remote_models") or {})
                 rec.say(f"== {name}: {c.get('description', '')}")
                 fails = 0
                 for q in questions:
@@ -954,7 +1096,7 @@ async def run(args) -> Path:
                             continue
                         await rec.reset_peak()
                         # watchdog: one stuck question (a hung site or model) must not stall the whole night
-                        limit = float(econf.get("run_timeout_seconds", 1500))
+                        limit = float(c.get("run_timeout_seconds") or econf.get("run_timeout_seconds", 1500))
                         try:
                             if args.live:
                                 # the real task: this configuration plans, searches, reads and answers itself
@@ -980,9 +1122,13 @@ async def run(args) -> Path:
 
         # 3. grade
         pool.cpu_models = [str(m).lower() for m in cfg["gpu"].get("cpu_models") or []]
+        pool.set_remote(cfg["gpu"].get("remote_models") or {})
         if not args.no_judge and results:
-            await judge_all(results, qmap, pool, judge_cfg, rec, force=bool(args.regrade),
-                            save=lambda: write_results(out / "results.jsonl", results))
+            if not getattr(args, "attempts_only", False):
+                await judge_all(results, qmap, pool, judge_cfg, rec, force=bool(args.regrade),
+                                save=lambda: write_results(out / "results.jsonl", results))
+            await grade_attempts(out, results, qmap, pool, judge_cfg, rec,
+                                 save=lambda: write_results(out / "results.jsonl", results))
             meta["judge"] = judge_cfg.get("model")
             # optional second judge from a different model family: a cross-check on the first judge,
             # needed when the first judge's own model is also one of the contestants
@@ -1075,6 +1221,9 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--frozen", help="only run if the configs match this frozen manifest")
     ap.add_argument("--no-preflight", action="store_true",
                     help="don't try every model before the run (see swarm/preflight.py)")
+    ap.add_argument("--attempts-only", action="store_true",
+                    help="with --regrade: keep the existing grades and only grade the individual attempts of "
+                         "multi-attempt runs (manager.attempts)")
     ap.add_argument("--judge2", action="store_true",
                     help="also grade every answer with the second judge from evals/configs.yaml (a cross-check)")
     args = ap.parse_args(argv)

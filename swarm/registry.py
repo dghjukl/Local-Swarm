@@ -36,6 +36,7 @@ LABS: list[tuple[str, str, str]] = [
     ("gpt-oss", "OpenAI", "gpt-oss"),
     # added 2026-09-29 (round 2: second-tier labs that do a lot of open, local work)
     ("MiMo", "Xiaomi", "Qwen"),                 # MiMo-V2.6-Distill-Qwen-9B: fine-tune of Qwen3.5-9B
+    ("Ornith", "Ornith AI", "Qwen"),            # Ornith-1.5-9B: built on Qwen3.5 / Gemma 4, search-agent RL
     ("Kanana", "Kakao", "Kanana"),
     ("Jamba", "AI21", "Jamba"),
     ("Apertus", "Swiss AI", "Apertus"),
@@ -47,6 +48,7 @@ LABS: list[tuple[str, str, str]] = [
     ("Llama", "Meta", "Llama"),
     ("Command-R", "Cohere", "Command"),
     ("AFM", "Arcee AI", "AFM"),
+    ("Trinity", "Arcee AI", "Trinity"),         # Trinity-Mini 26B-A3B MoE
     ("EXAONE", "LG AI Research", "EXAONE"),
     ("GLM", "Zhipu / Z.ai", "GLM"),
 ]
