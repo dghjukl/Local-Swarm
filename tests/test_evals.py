@@ -407,3 +407,37 @@ async def test_grade_attempts_grades_every_attempt_and_reports_oracle(tmp_path, 
     text = "\n".join(md)
     assert "| mgr-x | 1 | 3 | 67% | 100% | 100% | 100% | 1/1 |" in text
     assert "1: 67%, 2: 100%, 3: 100%" in text and "Oracle" in page
+
+
+async def test_judge_recheck_overturns_reasoning_penalty(monkeypatch):
+    """With judge.recheck on, an 'incorrect' verdict is re-asked with the two short answers alone, so a
+    right final answer isn't marked wrong for its reasoning (2026-10-08 grader audit)."""
+    from types import SimpleNamespace
+    from swarm import evals
+
+    calls = []
+
+    async def fake_chat_json(url, msgs, schema, **kw):
+        calls.append(schema is evals.REF_RECHECK_SCHEMA)
+        if schema is evals.REF_RECHECK_SCHEMA:
+            return SimpleNamespace(data={"same": True, "reason": "same company"}, seconds=0.1)
+        return SimpleNamespace(data={"extracted_answer": "Game Freak Co., Ltd.", "verdict": "incorrect",
+                                     "reason": "reasoning ties the wrong year"}, seconds=0.1)
+
+    class Rec:
+        def say(self, m):
+            pass
+
+    monkeypatch.setattr(evals.llm, "chat_json", fake_chat_json)
+    q = {"id": "q", "question": "Which company?", "answer": "Game Freak", "grading": "judge"}
+    r = {"config": "c", "question_id": "q", "answer": "It was Game Freak Co., Ltd. because ..."}
+    monkeypatch.setitem(evals.JUDGE_OPTS, "recheck", False)
+    key_off = evals.rubric_key(q)
+    await evals._judge_reference("u", r, q, "J", Rec(), 1, 1)
+    assert r["grade"]["score"] == 0.0 and calls == [False] and r["grade"]["recheck"] is None
+    monkeypatch.setitem(evals.JUDGE_OPTS, "recheck", True)
+    assert evals.rubric_key(q) != key_off          # turning recheck on invalidates old grades
+    await evals._judge_reference("u", r, q, "J", Rec(), 1, 1)
+    g = r["grade"]
+    assert g["score"] == 1.0 and g["verdict"] == "correct" and g["first_verdict"] == "incorrect"
+    assert g["recheck"]["same"] is True and calls == [False, False, True]

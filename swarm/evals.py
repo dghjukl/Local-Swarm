@@ -258,10 +258,32 @@ def _in_answer(quote: str, answer: str) -> bool:
     return q in a or any(" ".join(words[i:i + 6]) in a for i in range(0, max(1, len(words) - 5), 3))
 
 
+REF_RECHECK_SYSTEM = """Two short answers to the same question: the reference answer (correct) and a candidate.
+Decide only whether the candidate names the same thing as the reference. Allow differences in spelling,
+wording, abbreviation, extra words, a fuller or shorter form of a name, units and rounding, as far as the
+question allows. "same" is false if it names a different thing or a different number (beyond rounding),
+or gives several alternatives. Ignore any reasoning; compare the answers only."""
+
+REF_RECHECK_SCHEMA = {
+    "type": "object",
+    "properties": {"same": {"type": "boolean"}, "reason": {"type": "string", "maxLength": 200}},
+    "required": ["same", "reason"],
+}
+
+# judge options for this run (evals/configs.yaml `judge:`), set in run()
+#   recheck: when the judge says "incorrect", compare the extracted answer with the reference alone, so a
+#   right final answer isn't marked wrong for its reasoning (the 2026-10-08 grader audit found ~1-3 such
+#   cases per 100 answers, e.g. 'Game Freak' / 'Eli Capilouto' marked wrong while matching the reference)
+JUDGE_OPTS = {"recheck": False}
+
+
 def rubric_key(q: dict) -> str:
     """Changes when the question's checklist or the judge instructions change."""
     if "answer" in q:  # reference-answer question (benchmark)
-        blob = json.dumps([REF_JUDGE_SYSTEM, q["answer"], q.get("grading", "")], sort_keys=True, default=str)
+        parts = [REF_JUDGE_SYSTEM, q["answer"], q.get("grading", "")]
+        if JUDGE_OPTS.get("recheck"):
+            parts.append(REF_RECHECK_SYSTEM)
+        blob = json.dumps(parts, sort_keys=True, default=str)
         return hashlib.sha1(blob.encode("utf-8")).hexdigest()[:12]
     blob = json.dumps([JUDGE_SYSTEM, q.get("must"), q.get("details"), q.get("must_not")], sort_keys=True, default=str)
     return hashlib.sha1(blob.encode("utf-8")).hexdigest()[:12]
@@ -409,8 +431,19 @@ async def _judge_reference(url: str, r: dict, q: dict, model: str, rec, i: int, 
         extracted = str(d.get("extracted_answer", "") or "")
         verdict = d.get("verdict") if d.get("verdict") in ("correct", "incorrect", "not_attempted") else "incorrect"
         exact = benchmarks.answers_match(extracted, q["answer"])
+        first_verdict, recheck = verdict, None
+        if mode == "judge" and JUDGE_OPTS.get("recheck") and verdict == "incorrect" and extracted.strip():
+            rr = await llm.chat_json(url, [{"role": "system", "content": REF_RECHECK_SYSTEM},
+                                           {"role": "user", "content": f"Question: {q['question']}\n\n"
+                                            f"Reference answer: {q['answer']}\n\nCandidate answer: {extracted}"}],
+                                     REF_RECHECK_SCHEMA, max_tokens=200, temperature=0.0)
+            rd = rr.data if isinstance(rr.data, dict) else {}
+            recheck = {"same": bool(rd.get("same")), "reason": str(rd.get("reason", ""))[:200]}
+            if recheck["same"]:
+                verdict = "correct"
         ok = exact if mode == "exact" else verdict == "correct"
         r[key] = {**base, "score": 1.0 if ok else 0.0, "letter": "A" if ok else "F", "verdict": verdict,
+                      "first_verdict": first_verdict, "recheck": recheck,
                       "extracted": extracted, "exact_match": exact,
                       "gold_in_text": benchmarks.gold_in_text(r["answer"], q["answer"]),
                       "reason": str(d.get("reason", ""))[:300], "judge_seconds": round(res.seconds, 1)}
@@ -865,6 +898,7 @@ async def run(args) -> Path:
     cfg = load_config()
     econf = expand_configs(yaml.safe_load((REPO / "evals" / "configs.yaml").read_text(encoding="utf-8")))
     judge_cfg = econf.get("judge") or {}
+    JUDGE_OPTS["recheck"] = bool(judge_cfg.get("recheck", False))
 
     if args.regrade == "last":
         done = sorted(p for p in (RUNTIME / "evals").glob("*") if (p / "results.jsonl").exists())
