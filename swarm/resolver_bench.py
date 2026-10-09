@@ -58,7 +58,8 @@ def stuck_reason(shorts: list[str], ready: list) -> str | None:
     """Why the team counts as stuck on this question, or None when it is not (all attempts give one
     answer and at least one passed the trust check)."""
     split = len(group(shorts, list(range(len(shorts))))) > 1
-    any_ready = any(bool(r) for r in ready)
+    # a run without the trust check (every verdict None) is judged on agreement alone
+    any_ready = any(bool(r) for r in ready) or all(r is None for r in ready)
     if split and not any_ready:
         return "split+not_ready"
     if split:
@@ -319,6 +320,37 @@ def compare(folder: Path) -> str:
     return text
 
 
+def overall(folder: Path) -> str:
+    """Whole-run accuracy if the resolver had answered every stuck question and the team's answer were
+    kept on the clear ones. Clear questions use the vote's grade when all attempts were used, else the
+    grade of attempt 1 (the attempts agree there, so that is what the team would answer)."""
+    from swarm.paths import repo_path
+    meta = json.loads((folder / "meta.json").read_text(encoding="utf-8"))
+    src = meta.get("resolver_of") or {}
+    rows = _read_rows(folder / "results.jsonl")
+    ok = lambda g: bool(g) and g.get("score") is not None and g["score"] >= 0.5
+    lines = ["| Resolver | k | Clear right | Stuck right | Overall | Team alone |", "|---|---|---|---|---|---|"]
+    for c, info in (meta.get("resolver") or {}).items():
+        k = info.get("k")
+        items = load_stuck(repo_path(src["run"]), src["config"], k, only_stuck=False)
+        res = {r["question_id"]: r for r in rows if r["config"] == c}
+        base = {r["question_id"]: r for r in rows if r["config"] == BASELINE}
+        clear_ok = stuck_ok = team_ok = n = 0
+        for it in items:
+            r = it["row"]
+            n += 1
+            if it["reason"] == "clear":
+                g = r.get("grade") if not k else (r.get("attempt_grades") or [None])[0]
+                clear_ok += ok(g)
+                team_ok += ok(r.get("grade"))
+            else:
+                stuck_ok += ok((res.get(r["question_id"]) or {}).get("grade"))
+                team_ok += ok((base.get(r["question_id"]) or r).get("grade"))
+        lines.append(f"| {c} | {k or 'all'} | {clear_ok} | {stuck_ok} | {100 * (clear_ok + stuck_ok) / max(1, n):.0f}% "
+                     f"| {100 * team_ok / max(1, n):.0f}% |")
+    return "\n".join(lines) + "\n"
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -338,6 +370,8 @@ def main(argv: list[str] | None = None) -> int:
     m.add_argument("--timeout", type=float, default=900)
     c = sub.add_parser("compare", help="rescue / break table for a graded resolver folder")
     c.add_argument("folder")
+    o = sub.add_parser("overall", help="whole-run accuracy with the resolver on the stuck questions")
+    o.add_argument("folder")
     s = sub.add_parser("count", help="how many questions of a run count as stuck (no GPU)")
     s.add_argument("run")
     s.add_argument("--config", required=True)
@@ -350,6 +384,9 @@ def main(argv: list[str] | None = None) -> int:
         print(compare(repo_path(args.folder)))
         return 0
     from swarm.paths import repo_path
+    if args.cmd == "overall":
+        print(overall(repo_path(args.folder)))
+        return 0
     items = load_stuck(repo_path(args.run), args.config, args.k, only_stuck=False)
     stuck = [i for i in items if i["reason"] != "clear"]
     ok = lambda r: (r.get("grade") or {}).get("score", 0) >= 0.5
