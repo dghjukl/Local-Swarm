@@ -179,6 +179,17 @@ def _row(src: dict, config: str, desc: str, answer: str, seconds: float | None, 
             "trace": "", "evidence_web_pages": src.get("evidence_web_pages"), "resolver": extra}
 
 
+def _ram_low(guard_mb: int) -> int | None:
+    """Available system RAM in MB if it is under the guard, else None (also None when unknown)."""
+    if not guard_mb:
+        return None
+    from swarm import procs
+    ram = procs.system_ram_mb()
+    if ram is None:
+        return None
+    return ram[0] if ram[0] < guard_mb else None
+
+
 def _read_rows(path: Path) -> list[dict]:
     if not path.exists():
         return []
@@ -224,6 +235,11 @@ async def make(args) -> int:
 
     res_path = out / "results.jsonl"
     rows = _read_rows(res_path)
+    # a resolver row that failed (no answer, e.g. the model server died) is dropped and asked again
+    dropped = sum(1 for r in rows if r["config"] == cfg_name and r.get("error"))
+    rows = [r for r in rows if not (r["config"] == cfg_name and r.get("error"))]
+    if dropped:
+        print(f"{dropped} earlier {cfg_name} answers had failed; asking those again", flush=True)
     have = {(r["config"], r["question_id"]) for r in rows}
     # the team's own answer on the same questions, graded in the same pass as the resolver
     for it in items:
@@ -246,8 +262,14 @@ async def make(args) -> int:
         print(f"model '{args.model}' not found in Models/", flush=True)
         return 2
     try:
+        fails = 0
         async with pool.use(args.model, args.ctx, 1, pin=True) as url:
             for n, it in enumerate(todo, 1):
+                low = _ram_low(args.min_free_ram_mb)
+                if low is not None:
+                    print(f"STOPPED: only {low} MB of system RAM available (guard {args.min_free_ram_mb} MB). "
+                          f"Finished answers are kept; run again later to continue.", flush=True)
+                    return 3
                 src, t = it["row"], it["trace"]
                 packet, info = build_packet(t, it["k"], max_chars=args.max_chars)
                 info.update({"reason": it["reason"], "k": it["k"], "model": args.model})
@@ -261,7 +283,7 @@ async def make(args) -> int:
                     err = None if answer else "resolver gave no answer"
                     toks = {"prompt_tokens": res.prompt_tokens, "completion_tokens": res.completion_tokens}
                     info["reasoning_chars"] = len(res.reasoning or "")
-                except Exception as e:  # keep going; the row records the failure
+                except Exception as e:  # the row records the failure; it is asked again on the next run
                     answer, err, toks = "", f"{type(e).__name__}: {e}"[:300], {}
                 secs = round(time.time() - t0, 1)
                 rows.append(_row(src, cfg_name, f"{args.model} resolves the stuck questions from the research packet",
@@ -269,6 +291,11 @@ async def make(args) -> int:
                 _write_rows(res_path, rows)
                 first = answer.splitlines()[0][:90] if answer else err
                 print(f"  [{n}/{len(todo)}] {src['question_id']:<12} {secs:>6.0f}s  {first}", flush=True)
+                fails = fails + 1 if err and not answer else 0
+                if fails >= args.max_fails:
+                    print(f"STOPPED: {fails} failures in a row (the model server may have died). "
+                          f"Finished answers are kept; failed ones are asked again on the next run.", flush=True)
+                    return 4
     finally:
         await pool.shutdown()
     return 0
@@ -368,6 +395,9 @@ def main(argv: list[str] | None = None) -> int:
     m.add_argument("--max-chars", type=int, default=60000)
     m.add_argument("--max-tokens", type=int, default=1500)
     m.add_argument("--timeout", type=float, default=900)
+    m.add_argument("--min-free-ram-mb", type=int, default=1500,
+                   help="stop cleanly before a question if available system RAM is below this (0 = off)")
+    m.add_argument("--max-fails", type=int, default=3, help="stop after this many failed questions in a row")
     c = sub.add_parser("compare", help="rescue / break table for a graded resolver folder")
     c.add_argument("folder")
     o = sub.add_parser("overall", help="whole-run accuracy with the resolver on the stuck questions")
