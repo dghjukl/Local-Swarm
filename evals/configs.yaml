@@ -919,6 +919,9 @@ judge:
   model: Ministral-3-14B-Instruct
   ctx_per_slot: 8192
   parallel: 1
+  # second look when the judge says "incorrect": compare the extracted answer with the reference alone
+  # (fixes judge false negatives, see the grader audit). Changes the rubric key, so old grades get redone.
+  recheck: true
 # optional cross-check (--judge2): a judge from a different family, used when the main judge's
 # own model is one of the contestants (e.g. Ministral-14B as a coordinator in the bake-off)
 judge2:
