@@ -13,19 +13,26 @@ echo    A. the 3-attempt vote study (its own vote got 60%%): resolve the questio
 echo    B. the 8-attempt study, but showing the resolver only the first 3 attempts
 echo  Expect about 1-1.5 hours. It stops by itself if free RAM drops under 1.5 GB. Safe to start again.
 echo.
-call :make runtime/evals/20261006-1714-recheck mgr-vote3-same runtime/evals/resolver-vote3-20261009
+call :make runtime/evals/20261006-1714-recheck mgr-vote3-same runtime/evals/resolver-vote3-20261009 || goto stopped
 call :grade runtime/evals/resolver-vote3-20261009
-call :make runtime/evals/20261008-0650-recheck mgr-scale8-trust runtime/evals/resolver-k3-20261009 --k 3
+call :make runtime/evals/20261008-0650-recheck mgr-scale8-trust runtime/evals/resolver-k3-20261009 --k 3 || goto stopped
 call :grade runtime/evals/resolver-k3-20261009
 echo.
 echo Finished. Reports: resolver_report.md and overall.md in the two resolver-* folders above.
 pause
 exit /b 0
 
+:stopped
+echo.
+echo Stopped early. Finished answers are kept; run this again later to continue.
+pause
+exit /b 1
+
 :make
 echo.
 echo  === %QWEN% on %1 (%2) %4 %5 %6 %7 ===
-powershell -NoProfile -ExecutionPolicy Bypass -Command ". '%~dp0scripts\env.ps1'; & '%~dp0tools\uv\uv.exe' sync --quiet; & '%~dp0.venv\Scripts\python.exe' -m swarm.resolver_bench make %1 --config %2 --model %QWEN% --out %3 %4 %5 %6 %7; exit $LASTEXITCODE"
+powershell -NoProfile -ExecutionPolicy Bypass -Command ". '%~dp0scripts\env.ps1'; & '%~dp0tools\uv\uv.exe' sync --quiet; & '%~dp0.venv\Scripts\python.exe' -m swarm.resolver_bench make %1 --config %2 --model %QWEN% --out %3 --no-mmap %4 %5 %6 %7; exit $LASTEXITCODE"
+if errorlevel 3 (echo   STOPPED by the RAM guard or repeated failures - not grading. Report the STOPPED line.& exit /b 1)
 if errorlevel 1 echo   stopped with an error - continuing (finished answers are kept)
 exit /b 0
 

@@ -257,6 +257,8 @@ async def make(args) -> int:
         return 0
 
     cfg = load_config()
+    if args.no_mmap:  # hold only the CPU part of a split model in RAM (see pool.offload_no_mmap)
+        cfg.setdefault("gpu", {}).setdefault("offload_no_mmap", []).append(args.model)
     pool = ModelPool(cfg, scan_models())
     if args.model not in pool.cards:
         print(f"model '{args.model}' not found in Models/", flush=True)
@@ -398,6 +400,8 @@ def main(argv: list[str] | None = None) -> int:
     m.add_argument("--min-free-ram-mb", type=int, default=1500,
                    help="stop cleanly before a question if available system RAM is below this (0 = off)")
     m.add_argument("--max-fails", type=int, default=3, help="stop after this many failed questions in a row")
+    m.add_argument("--no-mmap", action="store_true",
+                   help="load a split GPU+RAM model with --no-mmap (honest RAM use; needs RAM for its CPU part)")
     c = sub.add_parser("compare", help="rescue / break table for a graded resolver folder")
     c.add_argument("folder")
     o = sub.add_parser("overall", help="whole-run accuracy with the resolver on the stuck questions")

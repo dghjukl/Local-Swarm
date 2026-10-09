@@ -144,6 +144,9 @@ def test_big_models_run_alone_split_between_gpu_and_ram(cfg, cards, mock_pool_cl
     assert pool.needs_offload(big, 12288, 1)
     cmd = ModelPool.build_cmd(pool, big, 8200, 12288, 1, offload=True)
     assert "--fit" in cmd and "-ngl" not in cmd and "--no-mmap" not in cmd
+    # listed in gpu.offload_no_mmap: the split model holds only its CPU part in RAM (J5, 2026-10-09)
+    pool2 = mock_pool_cls({**cfg, "gpu": {**cfg["gpu"], "vram_budget_mb": 14500, "offload_no_mmap": ["Qwen3.6"]}}, cards)
+    assert "--no-mmap" in ModelPool.build_cmd(pool2, big, 8200, 12288, 1, offload=True)
 
 
 async def test_offload_model_unloads_everything_else(cfg, cards, mock_pool_cls):

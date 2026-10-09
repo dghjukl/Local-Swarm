@@ -84,7 +84,7 @@ async def test_make_then_compare(tmp_path, monkeypatch):
     monkeypatch.setattr(llm, "chat", fake_chat)
     args = SimpleNamespace(run=str(run), config="mgr-x", model="Big", out=str(out), name=None, k=None, all=False,
                            limit=None, think=False, ctx=8192, max_chars=60000, max_tokens=500, timeout=60,
-                           min_free_ram_mb=0, max_fails=3)
+                           min_free_ram_mb=0, max_fails=3, no_mmap=False)
     assert await R.make(args) == 0
     rows = [json.loads(l) for l in (out / "results.jsonl").read_text().splitlines()]
     assert {(r["config"], r["question_id"]) for r in rows} == {
@@ -135,7 +135,7 @@ async def test_failed_answers_are_retried_and_repeated_failures_stop(tmp_path, m
     monkeypatch.setattr(llm, "chat", flaky_chat)
     args = SimpleNamespace(run=str(run), config="mgr-x", model="Big", out=str(out), name=None, k=None, all=False,
                            limit=None, think=False, ctx=8192, max_chars=60000, max_tokens=500, timeout=60,
-                           min_free_ram_mb=0, max_fails=1)
+                           min_free_ram_mb=0, max_fails=1, no_mmap=False)
     assert await R.make(args) == 4 and state["calls"] == 1          # stopped at the first failure
     state["up"] = True
     args.max_fails = 3

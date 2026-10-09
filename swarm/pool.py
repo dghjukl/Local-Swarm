@@ -136,6 +136,11 @@ class ModelPool:
         self.threads = int(g.get("threads_per_model", 2))
         self.no_mmap = bool(g.get("no_mmap", True))
         self.offload_threads = int(g.get("offload_threads", 8))
+        # split GPU+RAM models normally keep the file memory-mapped. Windows then counts every page of
+        # the file the loader touched as in use, so "available RAM" reads near zero even though most of
+        # it could be reclaimed (J5, 2026-10-09). Models listed here (name prefixes) load with --no-mmap
+        # instead: only the CPU part is held in RAM and the reading is honest.
+        self.offload_no_mmap = [str(p).lower() for p in (g.get("offload_no_mmap") or [])]
         # small models that run on the CPU next to the GPU swarm (model-name prefixes): they take no
         # VRAM, so they stay loaded and never trigger a swap (Chris, 2026-10-03: LFM2.5-1.2B)
         self.cpu_models = [str(m).lower() for m in (g.get("cpu_models") or [])]
@@ -569,6 +574,7 @@ class ModelPool:
                 "-np", str(parallel),
                 "--jinja",
                 "-t", str(self.offload_threads),
+                *(["--no-mmap"] if any(card.id.lower().startswith(p) for p in self.offload_no_mmap) else []),
                 *self._extra_for(card),
             ]
         if self.on_cpu(card):
