@@ -40,7 +40,9 @@ def _toy_run(tmp_path):
 def test_stuck_reasons_and_packet(tmp_path):
     assert R.stuck_reason(["Paris", "Lyon"], [True, False]) == "split"
     assert R.stuck_reason(["Paris", "Paris"], [None, False]) == "not_ready"
-    assert R.stuck_reason(["Paris", "Lyon"], [None, None]) == "split+not_ready"
+    assert R.stuck_reason(["Paris", "Lyon"], [None, False]) == "split+not_ready"
+    assert R.stuck_reason(["Paris", "Lyon"], [None, None]) == "split"        # no trust check in that run
+    assert R.stuck_reason(["Paris", "Paris"], [None, None]) is None
     assert R.stuck_reason(["Paris", "paris."], [True, None]) is None
     run = _toy_run(tmp_path)
     items = R.load_stuck(run, "mgr-x", None)
