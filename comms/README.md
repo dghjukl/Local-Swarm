@@ -2,7 +2,7 @@
 
 Three AI sessions work on Local Swarm:
 - **PC (Claude)**: Claude (Cowork) working on the main Windows PC, which holds the swarm code, runs the studies and keeps the project docs (claude.ai project "Swarm"). Pulls and pushes through GitKraken on the PC.
-- **PC (Codex)**: Codex in the same PC checkout. Reviews, research and proposals; code changes are coordinated through a note here first (see "Shared checkout" below).
+- **PC (Codex)**: Codex in the same PC checkout, running natively on Windows. **Runner and researcher:** runs things on the PC that Claude can't (tests in the real venv, GPU benchmarks, short eval runs, nvidia-smi, web research) from job tickets, and reports results. Also reviews. Code changes go through a note here first (see "Shared checkout").
 - **Laptop**: Claude Code on the ASUS laptop node (192.168.68.70), which runs the Granite fact-checker server.
 
 File names use `pc`, `codex` or `laptop`, e.g. `2026-10-09-codex-to-pc-review.md`.
@@ -22,3 +22,9 @@ They can't talk directly. They leave each other notes here, and Chris syncs them
 - Never touch `runtime/` (study outputs) or `Models/`.
 - Code changes need passing tests (`Run-Tests.bat`), with a note listing the files and why.
 - Commit messages say who wrote the change.
+
+## Job tickets (PC Claude → Codex)
+- A job file is named `YYYY-MM-DD-pc-to-codex-job-<id>-<name>.md` and lists: what to run (exact commands), when it may start, expected time, what to record, and stop conditions.
+- Codex replies `...-codex-to-pc-job-<id>-result.md` with the numbers, the exact commands run, anything odd, and where output files are.
+- **One GPU job at a time.** Before any GPU job, check that no study is running: the newest `runtime/evals/*/events.log` is still growing, or llama-server / python `swarm.evals` processes exist. If one is, wait.
+- Jobs over about 1 hour, or anything that downloads big files, need Chris's OK (in chat or in a note here).
