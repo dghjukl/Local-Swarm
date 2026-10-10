@@ -380,6 +380,51 @@ def overall(folder: Path) -> str:
     return "\n".join(lines) + "\n"
 
 
+def live(run: Path, config: str) -> str:
+    """A live escalation run (manager.attempts.resolver): the vote's own pick is still graded as one of the
+    attempts, so the same run gives both 'vote alone' and 'vote + resolver' on identical attempts."""
+    ok = lambda g: bool(g) and g.get("score") is not None and g["score"] >= 0.5
+    n = vote_ok = final_ok = esc = resc = brk = errs = skipped = 0
+    secs = []
+    for line in (run / "results.jsonl").read_text(encoding="utf-8").splitlines():
+        if not line.strip():
+            continue
+        r = json.loads(line)
+        if r.get("config") != config or not (r.get("grade") or {}).get("score") is not None:
+            continue
+        st = (r.get("stats") or {}).get("attempts") or {}
+        grades = r.get("attempt_grades") or []
+        chosen = st.get("chosen")
+        if not isinstance(chosen, int) or not (1 <= chosen <= len(grades)) or grades[chosen - 1] is None:
+            continue
+        n += 1
+        v, f = ok(grades[chosen - 1]), ok(r.get("grade"))
+        vote_ok += v
+        final_ok += f
+        rs = st.get("resolver") or {}
+        if rs.get("used"):
+            esc += 1
+            resc += f and not v
+            brk += v and not f
+            if rs.get("seconds"):
+                secs.append(rs["seconds"])
+        elif rs.get("error"):
+            errs += 1
+        elif rs.get("skipped") and rs.get("skipped") != "not stuck":
+            skipped += 1
+    if not n:
+        return "No graded questions with attempt grades yet (run swarm.evals --regrade with attempts).\n"
+    from math import comb
+    k, m = min(resc, brk), resc + brk
+    p = min(1.0, 2 * sum(comb(m, i) for i in range(k + 1)) / 2 ** m) if m else 1.0
+    return (f"# Live escalation: {run.name} / {config}\n\n"
+            f"| Questions | Vote alone | Vote + resolver | Escalated | Rescued | Broken | Net | Sign test p | Avg resolver s |\n"
+            f"|---|---|---|---|---|---|---|---|---|\n"
+            f"| {n} | {vote_ok} ({100 * vote_ok / n:.0f}%) | {final_ok} ({100 * final_ok / n:.0f}%) | {esc} | {resc} | "
+            f"{brk} | {resc - brk:+d} | {p:.3f} | {(sum(secs) / len(secs)) if secs else 0:.0f} |\n\n"
+            f"Resolver errors (vote kept): {errs}. Skipped for low RAM: {skipped}.\n")
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -404,6 +449,9 @@ def main(argv: list[str] | None = None) -> int:
                    help="load a split GPU+RAM model with --no-mmap (honest RAM use; needs RAM for its CPU part)")
     c = sub.add_parser("compare", help="rescue / break table for a graded resolver folder")
     c.add_argument("folder")
+    lv = sub.add_parser("live", help="vote alone vs vote + resolver in a live escalation run")
+    lv.add_argument("run")
+    lv.add_argument("--config", required=True)
     o = sub.add_parser("overall", help="whole-run accuracy with the resolver on the stuck questions")
     o.add_argument("folder")
     s = sub.add_parser("count", help="how many questions of a run count as stuck (no GPU)")
@@ -418,6 +466,11 @@ def main(argv: list[str] | None = None) -> int:
         print(compare(repo_path(args.folder)))
         return 0
     from swarm.paths import repo_path
+    if args.cmd == "live":
+        text = live(repo_path(args.run), args.config)
+        (repo_path(args.run) / f"live_{args.config}.md").write_text(text, encoding="utf-8")
+        print(text)
+        return 0
     if args.cmd == "overall":
         print(overall(repo_path(args.folder)))
         return 0

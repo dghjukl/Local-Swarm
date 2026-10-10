@@ -38,6 +38,8 @@ def reply(body: dict) -> str:
         props = {"verdicts": {}}
     user = body["messages"][-1]["content"]
     ids = re.findall(r"\[(E\d+)\]", user)
+    if str(body["messages"][0].get("content", "")).startswith("You are the resolver"):  # escalation (attempts.py)
+        return f"FINAL ANSWER: 324 metres (resolved by {MODEL})\nWHY: [E1] gives the height.\nUNCERTAIN: nothing"
     if "mode" in props:
         direct = user.lower().startswith(("hi", "hello", "what is 2+2"))
         return json.dumps({"mode": "direct" if direct else "research",
@@ -84,7 +86,9 @@ def reply(body: dict) -> str:
                            "ready": True})
     if "best" in props and "same" in props:  # several attempts: the vote
         n = props["answers"].get("maxItems", 2)
-        return json.dumps({"answers": [{"attempt": i + 1, "short": "330 metres"} for i in range(n)],
+        split = "disputed" in user.split("=== Attempt 1")[0]   # the attempts disagree: e.g. 330 vs 300 metres
+        return json.dumps({"answers": [{"attempt": i + 1, "short": "300 metres" if split and i % 2 else "330 metres"}
+                                       for i in range(n)],
                            "same": "agree" in user.split("=== Attempt 1")[0], "best": min(2, n),
                            "reason": "mock vote"})
     if "said" in props and "next_search" in props:  # manager mode: a structured report (worker or expert)

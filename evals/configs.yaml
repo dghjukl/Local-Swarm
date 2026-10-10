@@ -504,6 +504,16 @@ configs:
       workers: {team: [Qwen3.5-4B, Gemma-4-E4B-it], ctx_per_slot: 8192}
       manager: {max_cycles: 6, passages_per_task: 6, pages_per_search: 3, dispatch: both, coordinator_style: think, think_tokens: 1000, verify: false, attempts: {runs: [{temperature: 0.2}, {temperature: 0.7}, {temperature: 0.7}]}}
       gpu: {keep_reasoning_models: [gpt-oss, MiMo]}
+  mgr-vote3-resolve-q38:
+    description: "mgr-vote3-same, then when the 3 attempts disagree the workers are unloaded and Qwen3.8-27B (all on the GPU) answers from the research packet"
+    overrides:
+      mode: manager
+      research: {passages_per_subquestion: 15}
+      coordinator: {model: MiMo-V2.6-Distill-Qwen-9B, ctx_per_slot: 16384, parallel: 1}
+      verifier: {model: Granite-4.1-3B}
+      workers: {team: [Qwen3.5-4B, Gemma-4-E4B-it], ctx_per_slot: 8192}
+      manager: {max_cycles: 6, passages_per_task: 6, pages_per_search: 3, dispatch: both, coordinator_style: think, think_tokens: 1000, verify: false, attempts: {runs: [{temperature: 0.2}, {temperature: 0.7}, {temperature: 0.7}], resolver: {model: Qwen3.8-27B, ctx: 16384, max_tokens: 1500, when: split, min_free_ram_mb: 1500}}}
+      gpu: {keep_reasoning_models: [gpt-oss, MiMo]}
   mgr-vote3-diverse:
     description: "3 attempts with different worker pairs (Qwen+Gemma t0.2, Qwen+Qwen t0.7, Gemma+Gemma t0.7), then MiMo votes"
     overrides:

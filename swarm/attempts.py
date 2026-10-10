@@ -122,19 +122,107 @@ async def run_attempts(sw, question: str, subqs: list[str], groups, evidence, se
         votes[-1] if votes else {"n": 1, "same": True, "best": 1, "reason": "one attempt", "short": []})
     chosen = attempts[v["best"] - 1]
     answer, sources = chosen["final"]["answer"], chosen["final"]["sources"]
+    resolved = await resolve_if_stuck(sw, question, trace, attempts, v, ac.get("resolver"), stage)
+    if resolved.get("used"):
+        answer = resolved["answer"]
+        sources = _all_sources(attempts)
     await send({"type": "answer_delta", "text": answer})
     trace.update({k: chosen[k] for k in ("team", "manager", "evidence_found", "worker_results", "final") if k in chosen})
     trace["attempts"] = [{"config": a.get("attempt_config"), "answer": a["final"]["answer"],
                           "sources": a["final"]["sources"], "stats": a.get("stats"),
                           "manager": a.get("manager")} for a in attempts]
     trace["votes"] = votes
+    trace["resolver"] = resolved
+    if resolved.get("used"):
+        trace["final"] = {**(trace.get("final") or {}), "answer": answer, "sources": sources}
     stats = copy.deepcopy(chosen["stats"])
     stats["total_seconds"] = round(time.time() - t_start, 1)
     stats["attempts"] = {"runs": len(attempts), "planned": len(runs), "adaptive": adaptive, "chosen": v["best"],
                          "same": v["same"], "short": v["short"], "first2_same": votes[0]["same"] if votes else None,
                          "vote_seconds": round(vote_seconds, 1), "vote_errors": sum(1 for x in votes if x.get("error")),
-                         "answers": [a["final"]["answer"] for a in attempts]}
+                         "answers": [a["final"]["answer"] for a in attempts],
+                         "vote_answer": chosen["final"]["answer"],
+                         "resolver": {k: resolved.get(k) for k in ("used", "reason", "model", "seconds", "error", "skipped")}}
     trace["stats"] = stats
     path = _save(trace, getattr(sw, "_save_dir", None))
     await send({"type": "final", "answer": answer, "sources": sources, "stats": stats, "trace": path.name})
     return trace
+
+
+# ------------------------------------------------------------------ escalation to a resolver
+# Resolver tests J4 and J6 (2026-10-09/10): when the attempts disagree, a bigger model reading the research
+# packet (evidence plus every attempt's answer and facts) picks or derives the answer better than the vote.
+# On this PC only models that fit entirely on the GPU are safe (split GPU+RAM ones ran 16 GB RAM out).
+#   manager.attempts.resolver: {model: Qwen3.8-27B, ctx: 16384, max_tokens: 1500, when: split,
+#                               min_free_ram_mb: 1500}
+# when: "split" = only when the attempts' short answers disagree; "stuck" = also when no attempt passed the
+# trust check (only meaningful with manager.trust_check on).
+
+def _all_sources(attempts: list[dict]) -> list[dict]:
+    seen, out = set(), []
+    for a in attempts:
+        for s in (a.get("final") or {}).get("sources") or []:
+            key = s.get("url") or s.get("id")
+            if key in seen:
+                continue
+            seen.add(key)
+            out.append(s)
+    return out
+
+
+async def resolve_if_stuck(sw, question: str, trace: dict, attempts: list[dict], vote: dict, rc: dict | None,
+                           stage) -> dict:
+    """Escalate a stuck question to the resolver model. Returns a record for the trace; `used` is True
+    only when the resolver gave an answer that replaces the vote's."""
+    if not rc or not rc.get("model") or len(attempts) < 2:
+        return {"used": False, "skipped": "no resolver configured"}
+    from swarm import procs
+    from swarm.resolver_bench import RESOLVER_SYSTEM, build_packet, stuck_reason
+    from swarm.selector_bench import short_answers
+    view = {"question": question, "evidence": trace.get("evidence") or [],
+            "evidence_found": [p for a in attempts for p in (a.get("evidence_found") or [])],
+            "attempts": [{"answer": (a.get("final") or {}).get("answer", ""),
+                          "sources": (a.get("final") or {}).get("sources") or [],
+                          "manager": a.get("manager") or {}} for a in attempts],
+            "votes": [vote]}
+    shorts = short_answers(view["attempts"], view["votes"])
+    ready = [((a.get("manager") or {}).get("trust") or [{}])[-1].get("ready") for a in attempts]
+    if rc.get("when", "split") == "split":
+        ready = [None] * len(ready)          # agreement alone decides
+    reason = stuck_reason(shorts, ready)
+    rec = {"used": False, "reason": reason, "model": rc["model"]}
+    if reason is None:
+        rec["skipped"] = "not stuck"
+        return rec
+    guard = int(rc.get("min_free_ram_mb", 1500))
+    ram = procs.system_ram_mb()
+    if guard and ram is not None and ram[0] < guard:
+        rec["skipped"] = f"low RAM ({ram[0]} MB available)"
+        return rec
+    packet, info = build_packet(view, len(attempts), max_chars=int(rc.get("max_chars", 60000)))
+    rec["packet"] = info
+    await stage("work", f"Escalating to {rc['model']} ({reason})")
+    t0 = time.time()
+    try:
+        await sw.pool.unload_all()           # the resolver runs alone on the GPU
+        async with sw.pool.use(rc["model"], int(rc.get("ctx", 16384)), 1) as url:
+            r = await llm.chat(url, [{"role": "system", "content": RESOLVER_SYSTEM},
+                                     {"role": "user", "content": packet}],
+                               max_tokens=int(rc.get("max_tokens", 1500)), temperature=0.2,
+                               think=bool(rc.get("think", False)), timeout=float(rc.get("timeout", 600)), final=True)
+        text = llm.strip_think(r.text).strip()
+        if text:
+            rec.update({"used": True, "answer": text})
+        else:
+            rec["error"] = "resolver gave no answer"
+    except llm.BudgetExhausted:
+        raise
+    except Exception as e:  # keep the vote's answer
+        rec["error"] = f"{type(e).__name__}: {e}"[:300]
+    finally:
+        try:
+            await sw.pool.unload_all()       # free the GPU for the swarm again
+        except Exception:
+            pass
+    rec["seconds"] = round(time.time() - t0, 1)
+    return rec

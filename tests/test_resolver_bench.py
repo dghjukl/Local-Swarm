@@ -147,3 +147,16 @@ async def test_failed_answers_are_retried_and_repeated_failures_stop(tmp_path, m
     monkeypatch.setattr(procs, "system_ram_mb", lambda: (400, 16000))
     args.name, args.min_free_ram_mb = "other", 1500
     assert await R.make(args) == 3 and state["calls"] == 3
+
+
+def test_live_escalation_report(tmp_path):
+    """The live run's vote pick is graded as an attempt, so vote alone vs vote + resolver are paired."""
+    rows = []
+    for qid, chosen_ok, final_ok, used in [("q1", False, True, True), ("q2", True, True, False),
+                                           ("q3", True, False, True), ("q4", False, True, True)]:
+        rows.append({"config": "c", "question_id": qid, "grade": {"score": 1.0 if final_ok else 0.0},
+                     "attempt_grades": [{"score": 0.0}, {"score": 1.0 if chosen_ok else 0.0}, {"score": 0.0}],
+                     "stats": {"attempts": {"chosen": 2, "resolver": {"used": used, "seconds": 10}}}})
+    (tmp_path / "results.jsonl").write_text("".join(json.dumps(r) + "\n" for r in rows))
+    text = R.live(tmp_path, "c")
+    assert "| 4 | 2 (50%) | 3 (75%) | 3 | 2 | 1 | +1 |" in text

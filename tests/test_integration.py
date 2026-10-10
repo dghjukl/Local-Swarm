@@ -640,6 +640,41 @@ async def test_manager_attempts_and_vote(cfg, cards, mock_pool_cls):
     assert st2["runs"] == 2 and st2["first2_same"] is True and st2["planned"] == 3
 
 
+async def test_attempts_escalate_to_resolver_only_when_split(cfg, cards, mock_pool_cls):
+    """J4/J6: when the attempts disagree, the workers are unloaded and a bigger resolver model answers from
+    the research packet; when they agree, the vote's answer stands and no resolver is loaded."""
+    import copy
+
+    async def emit(e):
+        pass
+
+    c = copy.deepcopy(cfg)
+    c["mode"] = "manager"
+    c["workers"]["team"] = ["Ministral-3-3B-Instruct", "Phi-4-mini-instruct"]
+    c["manager"] = {"max_cycles": 2, "passages_per_task": 3, "dispatch": "both",
+                    "attempts": {"runs": [{"temperature": 0.2}, {"temperature": 0.7}, {"temperature": 0.7}],
+                                 "resolver": {"model": "Qwen3.5-9B", "ctx": 8192, "min_free_ram_mb": 0}}}
+    pool = mock_pool_cls(cfg, cards)
+    try:
+        sw = Swarm(c, pool, cards, FakeResearch())
+        q1 = "Which height is right, the disputed one for the Eiffel Tower?"
+        t = await sw.run(q1, emit, prepared=await sw.prepare(q1))
+        q2 = "Tell me about the Eiffel Tower"
+        t2 = await Swarm(c, pool, cards, FakeResearch()).run(q2, emit, prepared=await sw.prepare(q2))
+    finally:
+        await pool.shutdown()
+    assert not t.get("error"), t.get("error")
+    r = t["resolver"]
+    assert r["used"] and r["reason"] == "split" and r["model"] == "Qwen3.5-9B" and not r.get("error")
+    assert "324 metres (resolved by Qwen3.5-9B)" in t["final"]["answer"]
+    assert t["stats"]["attempts"]["vote_answer"] == t["attempts"][1]["answer"] != t["final"]["answer"]
+    assert t["stats"]["attempts"]["resolver"]["used"] and r["packet"]["attempts"] == 3
+    assert t["final"]["sources"]                              # every attempt's sources, de-duplicated
+    assert not t2.get("error"), t2.get("error")
+    assert t2["resolver"]["used"] is False and t2["resolver"]["skipped"] == "not stuck"
+    assert t2["final"]["answer"] == t2["attempts"][1]["answer"]
+
+
 async def test_manager_trust_check_sends_team_back_then_passes(cfg, cards, mock_pool_cls):
     """Before finishing, the coordinator lays out the answer's chain. Code catches the made-up citation and
     the wrong arithmetic, so the team goes back to work; the second check passes and the answer is written."""
