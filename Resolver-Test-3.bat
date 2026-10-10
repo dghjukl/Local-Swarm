@@ -10,22 +10,25 @@ echo  RESOLVER TEST 3. Nothing else on the GPU; close other big apps.
 echo   Part A: the 3-attempt vote study (its own vote: 60%%) - the 73 questions where the 3 attempts disagree
 echo     1. Bonsai-2-27B   (ternary, 7.2 GB, all on the GPU, PrismML server)
 echo     2. Qwen3.8-27B    (IQ3_XXS, 10.9 GB, all on the GPU)
-echo     3. Gemma-4-26B    (split GPU + about 6 GB RAM, --no-mmap) - last, because it is the RAM risk
-echo   Part B: the same three on the 8-attempt study shown only its first 3 attempts (74 stuck questions)
-echo  Each part is graded when its three models are done. Expect about 2.5-3 h per part.
+echo     (Gemma-4-26B dropped: it ran free RAM down to 1.36 GB even with --no-mmap)
+echo   Part B: the same two on the 8-attempt study shown only its first 3 attempts (74 stuck questions)
+echo  Each part is graded when its models are done. Expect about 2.5-3 h per part.
 echo  Safe to stop and start again: finished answers are kept, failed ones are asked again.
 echo.
+rem J6 run 1: Gemma-26B (--no-mmap) stopped at 1.36 GB free, so the GPU-only pair continues alone.
+rem Add Gemma-4-26B-A4B-it back here only on a PC with more RAM.
+set MODELS=Bonsai-2-27B Qwen3.8-27B
 set A_SRC=runtime/evals/20261006-1714-recheck
 set A_CFG=mgr-vote3-same
 set A_OUT=runtime/evals/resolver-vote3-20261009
 set B_SRC=runtime/evals/20261008-0650-recheck
 set B_CFG=mgr-scale8-trust
 set B_OUT=runtime/evals/resolver-k3-20261009
-for %%M in (Bonsai-2-27B Qwen3.8-27B Gemma-4-26B-A4B-it) do (
+for %%M in (%MODELS%) do (
   call :make %A_SRC% %A_CFG% %A_OUT% %%M || goto stopped
 )
 call :grade %A_OUT%
-for %%M in (Bonsai-2-27B Qwen3.8-27B Gemma-4-26B-A4B-it) do (
+for %%M in (%MODELS%) do (
   call :make %B_SRC% %B_CFG% %B_OUT% %%M --k 3 || goto stopped
 )
 call :grade %B_OUT%
