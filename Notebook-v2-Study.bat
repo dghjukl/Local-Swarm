@@ -28,4 +28,5 @@ goto retry
 :done
 echo.
 echo Finished. The report is in runtime\evals\ (newest folder).
+call "%~dp0scripts\notify.bat" "Notebook-v2-Study" %rc% "study finished; see runtime\evals"
 pause

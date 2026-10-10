@@ -25,4 +25,5 @@ goto retryA
 :doneA
 echo.
 echo Finished. The report is in runtime\evals\ (newest folders).
+call "%~dp0scripts\notify.bat" "Coordinator-Bakeoff-2" %rc% "study finished; see runtime\evals"
 pause

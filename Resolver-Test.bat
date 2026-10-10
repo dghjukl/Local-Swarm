@@ -30,6 +30,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -Command ". '%~dp0scripts\env.ps1'
 powershell -NoProfile -ExecutionPolicy Bypass -Command ". '%~dp0scripts\env.ps1'; & '%~dp0.venv\Scripts\python.exe' -m swarm.resolver_bench compare %OUT%; exit $LASTEXITCODE"
 echo.
 echo Finished. Results: %OUT%\resolver_report.md and %OUT%\report.md
+set rc=%ERRORLEVEL%
+call "%~dp0scripts\notify.bat" "Resolver-Test" %rc% "resolver pass done; see %OUT%"
 pause
 exit /b 0
 

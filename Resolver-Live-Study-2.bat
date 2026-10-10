@@ -39,6 +39,7 @@ set OUT=runtime/evals/resolver-j7b-%RUN%
 echo.
 echo  Resolving the split questions of %RUN% with Qwen3.8-27B (one load) into %OUT% ...
 powershell -NoProfile -ExecutionPolicy Bypass -Command ". '%~dp0scripts\env.ps1'; & '%~dp0.venv\Scripts\python.exe' -m swarm.resolver_bench make runtime/evals/%RUN% --config mgr-vote3-same --model Qwen3.8-27B --out %OUT% --ctx 16384 --no-mmap; exit $LASTEXITCODE"
+set rc=%ERRORLEVEL%
 if errorlevel 3 (echo   STOPPED by the RAM guard or repeated failures - not grading. Report the STOPPED line.& goto done)
 powershell -NoProfile -ExecutionPolicy Bypass -Command ". '%~dp0scripts\env.ps1'; & '%~dp0.venv\Scripts\python.exe' -m swarm.evals --regrade %OUT% --no-open; & '%~dp0.venv\Scripts\python.exe' -m swarm.resolver_bench compare %OUT%; & '%~dp0.venv\Scripts\python.exe' -m swarm.resolver_bench overall %OUT% | Out-File -Encoding utf8 %OUT%\overall.md; Get-Content %OUT%\overall.md; exit 0"
 :done
@@ -47,4 +48,5 @@ taskkill /IM nvidia-smi.exe /F >nul 2>&1
 taskkill /IM typeperf.exe /F >nul 2>&1
 echo.
 echo Finished. Run report: runtime\evals\%RUN%\report.md ; resolver: %OUT%\resolver_report.md and overall.md
+call "%~dp0scripts\notify.bat" "J7b" %rc% "live study finished; see report.md and overall.md"
 pause

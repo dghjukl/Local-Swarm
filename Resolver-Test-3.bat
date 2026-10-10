@@ -34,12 +34,16 @@ for %%M in (%MODELS%) do (
 call :grade %B_OUT%
 echo.
 echo Finished. Reports: resolver_report.md and overall.md in %A_OUT% and %B_OUT%
+set rc=%ERRORLEVEL%
+call "%~dp0scripts\notify.bat" "Resolver-Test-3" %rc% "resolver pass done; see overall.md"
 pause
 exit /b 0
 
 :stopped
 echo.
 echo Stopped early. Finished answers are kept; run this again later to continue.
+set rc=1
+call "%~dp0scripts\notify.bat" "Resolver-Test-3" %rc% "stopped early; finished answers were kept"
 pause
 exit /b 1
 

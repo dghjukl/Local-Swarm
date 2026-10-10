@@ -35,4 +35,5 @@ powershell -NoProfile -ExecutionPolicy Bypass -Command ". '%~dp0scripts\env.ps1'
 :done
 echo.
 echo Finished. The reports are in runtime\evals\ (newest folder, and 20261006-1714 updated).
+call "%~dp0scripts\notify.bat" "Manager-Scale-Study" %rc% "study finished; see runtime\evals"
 pause

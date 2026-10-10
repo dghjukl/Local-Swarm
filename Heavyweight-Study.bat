@@ -16,6 +16,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -Command ". '%~dp0scripts\env.ps1'
 echo.
 echo  Now re-grading the big study with the fixed grader (about 3 hours)...
 powershell -NoProfile -ExecutionPolicy Bypass -Command ". '%~dp0scripts\env.ps1'; & '%~dp0tools\uv\uv.exe' sync --quiet; & '%~dp0.venv\Scripts\python.exe' -m swarm.evals --regrade runtime\evals\20260927-1155 --no-open"
+set rc=%ERRORLEVEL%
 echo.
 echo Finished. The report is in the newest folder in runtime\evals\
+call "%~dp0scripts\notify.bat" "Heavyweight-Study" %rc% "study finished; see runtime\evals"
 pause

@@ -31,4 +31,5 @@ echo  Step 2: verifier bench...
 powershell -NoProfile -ExecutionPolicy Bypass -Command ". '%~dp0scripts\env.ps1'; & '%~dp0tools\uv\uv.exe' sync --quiet; & '%~dp0.venv\Scripts\python.exe' -m swarm.verifier_bench --from runtime/evals/20260928-1323; exit $LASTEXITCODE"
 echo.
 echo Finished. The report is in runtime\evals\ (newest folders).
+call "%~dp0scripts\notify.bat" "Round2-Study" %rc% "study finished; see runtime\evals"
 pause

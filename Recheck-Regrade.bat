@@ -23,7 +23,7 @@ set COPY=runtime\evals\%1-recheck
 if not exist "%COPY%\results.jsonl" (
   echo Copying %RUN% to %COPY% ...
   robocopy "%RUN%" "%COPY%" /E /NFL /NDL /NJH /NJS /NP >nul
-  if errorlevel 8 (echo   copy FAILED for %1 - skipping & exit /b 1)
+  if errorlevel 8 (echo   copy FAILED for %1 - skipping & call "%~dp0scripts\notify.bat" "Recheck-Regrade" 1 "copy failed" & exit /b 1)
 )
 echo Regrading %COPY% ...
 powershell -NoProfile -ExecutionPolicy Bypass -Command ". '%~dp0scripts\env.ps1'; & '%~dp0.venv\Scripts\python.exe' -m swarm.evals --regrade %COPY:\=/% --no-open; exit $LASTEXITCODE"
@@ -31,4 +31,6 @@ if errorlevel 1 (
   echo   grading stopped for %1 - running it once more to finish ...
   powershell -NoProfile -ExecutionPolicy Bypass -Command ". '%~dp0scripts\env.ps1'; & '%~dp0.venv\Scripts\python.exe' -m swarm.evals --regrade %COPY:\=/% --no-open; exit $LASTEXITCODE"
 )
+set rc=%ERRORLEVEL%
+call "%~dp0scripts\notify.bat" "Recheck-Regrade" %rc% "regrade finished; see runtime\evals"
 exit /b 0

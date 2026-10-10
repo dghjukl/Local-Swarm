@@ -33,4 +33,5 @@ powershell -NoProfile -ExecutionPolicy Bypass -Command ". '%~dp0scripts\env.ps1'
 :done
 echo.
 echo Finished. Reports: the newest folder in runtime\evals\ (report.md and live_mgr-vote3-resolve-q38.md)
+call "%~dp0scripts\notify.bat" "J7" %rc% "live escalation study finished; see runtime\evals"
 pause

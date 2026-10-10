@@ -26,4 +26,5 @@ goto retry
 :done
 echo.
 echo Finished. The report is in runtime\evals\ (newest folder) - see the "Strategy screen" section.
+call "%~dp0scripts\notify.bat" "Round3-Study" %rc% "study finished; see runtime\evals"
 pause

@@ -14,6 +14,8 @@ echo  Close Start-Swarm first. If the power goes out, run Resume-Last-Eval.bat -
 echo  where it stopped, including half-finished grading.
 echo.
 powershell -NoProfile -ExecutionPolicy Bypass -Command ". '%~dp0scripts\env.ps1'; & '%~dp0tools\uv\uv.exe' sync --quiet; & '%~dp0.venv\Scripts\python.exe' -m swarm.evals --configs big-study --reuse-evidence runtime\evals\20260926-1759"
+set rc=%ERRORLEVEL%
 echo.
 echo Finished. The report is in the newest folder in runtime\evals\
+call "%~dp0scripts\notify.bat" "Big-Study" %rc% "study finished; see runtime\evals"
 pause

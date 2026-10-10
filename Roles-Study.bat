@@ -10,6 +10,8 @@ echo  Expect roughly 1 hour in total. Close Start-Swarm first. You can leave it 
 echo.
 powershell -NoProfile -ExecutionPolicy Bypass -Command ". '%~dp0scripts\env.ps1'; & '%~dp0tools\uv\uv.exe' sync --quiet; & '%~dp0.venv\Scripts\python.exe' -m swarm.evals --regrade runtime\evals\20260926-1759 --no-open"
 powershell -NoProfile -ExecutionPolicy Bypass -Command ". '%~dp0scripts\env.ps1'; & '%~dp0tools\uv\uv.exe' sync --quiet; & '%~dp0.venv\Scripts\python.exe' -m swarm.evals --configs roles-study --reuse-evidence runtime\evals\20260926-1759"
+set rc=%ERRORLEVEL%
 echo.
 echo Finished. Both reports are in runtime\evals\
+call "%~dp0scripts\notify.bat" "Roles-Study" %rc% "study finished; see runtime\evals"
 pause

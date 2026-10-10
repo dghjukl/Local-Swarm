@@ -31,4 +31,5 @@ goto retry
 :done
 echo.
 echo Finished. The report is in runtime\evals\ (newest folder).
+call "%~dp0scripts\notify.bat" "Manager-Trust-Study" %rc% "study finished; see runtime\evals"
 pause

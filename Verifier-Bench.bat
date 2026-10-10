@@ -9,6 +9,8 @@ echo  (Ministral-14B and gpt-oss-20b) give the reference answer. About 1-2 hours
 echo  Close Start-Swarm first.
 echo.
 powershell -NoProfile -ExecutionPolicy Bypass -Command ". '%~dp0scripts\env.ps1'; & '%~dp0tools\uv\uv.exe' sync --quiet; & '%~dp0.venv\Scripts\python.exe' -m swarm.verifier_bench --from runtime/evals/20260928-1323; exit $LASTEXITCODE"
+set rc=%ERRORLEVEL%
 echo.
 echo Finished. The report is in runtime\evals\verifier-bench-(newest)\report.md
+call "%~dp0scripts\notify.bat" "Verifier-Bench" %rc% "verifier bench finished; see report.md"
 pause

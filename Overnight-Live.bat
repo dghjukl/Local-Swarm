@@ -16,6 +16,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -Command ". '%~dp0scripts\env.ps1'
 echo.
 echo  Now re-grading yesterdays big study with the fixed grader...
 powershell -NoProfile -ExecutionPolicy Bypass -Command ". '%~dp0scripts\env.ps1'; & '%~dp0tools\uv\uv.exe' sync --quiet; & '%~dp0.venv\Scripts\python.exe' -m swarm.evals --regrade runtime\evals\20260927-1155 --no-open"
+set rc=%ERRORLEVEL%
 echo.
 echo Finished. Reports are in runtime\evals\
+call "%~dp0scripts\notify.bat" "Overnight-Live" %rc% "study finished; see runtime\evals"
 pause

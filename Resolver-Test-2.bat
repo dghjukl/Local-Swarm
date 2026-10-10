@@ -19,12 +19,16 @@ call :make runtime/evals/20261008-0650-recheck mgr-scale8-trust runtime/evals/re
 call :grade runtime/evals/resolver-k3-20261009
 echo.
 echo Finished. Reports: resolver_report.md and overall.md in the two resolver-* folders above.
+set rc=%ERRORLEVEL%
+call "%~dp0scripts\notify.bat" "Resolver-Test-2" %rc% "resolver pass done; see overall.md"
 pause
 exit /b 0
 
 :stopped
 echo.
 echo Stopped early. Finished answers are kept; run this again later to continue.
+set rc=1
+call "%~dp0scripts\notify.bat" "Resolver-Test-2" %rc% "stopped early; finished answers were kept"
 pause
 exit /b 1
 
