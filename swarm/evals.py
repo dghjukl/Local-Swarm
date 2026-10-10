@@ -275,6 +275,7 @@ REF_RECHECK_SCHEMA = {
 #   right final answer isn't marked wrong for its reasoning (the 2026-10-08 grader audit found ~1-3 such
 #   cases per 100 answers, e.g. 'Game Freak' / 'Eli Capilouto' marked wrong while matching the reference)
 JUDGE_OPTS = {"recheck": False}
+RUN_DIR = re.compile(r"^\d{8}-\d{4}$")  # an evaluation run's own folder name ("last" ignores resolver-*, *-recheck)
 
 
 def rubric_key(q: dict) -> str:
@@ -901,14 +902,15 @@ async def run(args) -> Path:
     JUDGE_OPTS["recheck"] = bool(judge_cfg.get("recheck", False))
 
     if args.regrade == "last":
-        done = sorted(p for p in (RUNTIME / "evals").glob("*") if (p / "results.jsonl").exists())
+        # only real run folders (yyyymmdd-hhmm): resolver-* and *-recheck folders sort after them (2026-10-10)
+        done = sorted(p for p in (RUNTIME / "evals").glob("*") if RUN_DIR.match(p.name) and (p / "results.jsonl").exists())
         if not done:
             raise SystemExit("no earlier evaluation to regrade")
         args.regrade = str(done[-1])
     resume_dir = None
     if getattr(args, "resume", None):  # continue an interrupted evaluation where it stopped
         if args.resume == "last":
-            started = sorted(p for p in (RUNTIME / "evals").glob("*") if (p / "meta.json").exists())
+            started = sorted(p for p in (RUNTIME / "evals").glob("*") if RUN_DIR.match(p.name) and (p / "meta.json").exists())
             if not started:
                 raise SystemExit("no earlier evaluation to resume")
             args.resume = str(started[-1])
