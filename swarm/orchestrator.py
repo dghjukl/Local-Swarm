@@ -365,7 +365,7 @@ class Swarm:
             m = self.team()[0]
             coord = {"model": m, "ctx_per_slot": max(8192, self.role("workers")["ctx_per_slot"]), "parallel": 1}
         async with self.pool.use(coord["model"], coord["ctx_per_slot"], coord["parallel"],
-                                 pin=not self.leaderless()) as url:
+                                 pin=not self.leaderless() and bool((self.cfg.get("manager") or {}).get("pin_coordinator", True))) as url:
             plan_res = await llm.chat_json(url, [
                 {"role": "system", "content": PLAN_SYSTEM.format(today=_today())},
                 {"role": "user", "content": question},

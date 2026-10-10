@@ -514,6 +514,37 @@ configs:
       workers: {team: [Qwen3.5-4B, Gemma-4-E4B-it], ctx_per_slot: 8192}
       manager: {max_cycles: 6, passages_per_task: 6, pages_per_search: 3, dispatch: both, coordinator_style: think, think_tokens: 1000, verify: false, attempts: {runs: [{temperature: 0.2}, {temperature: 0.7}, {temperature: 0.7}], resolver: {model: Qwen3.8-27B, ctx: 16384, max_tokens: 1500, when: split, min_free_ram_mb: 1500}}}
       gpu: {keep_reasoning_models: [gpt-oss, MiMo]}
+  # Big coordinator trial (2026-10-10, Chris): does a team of small workers add capability to a big model?
+  # Gemma-4-12B-it (QAT 4-bit, 7 GB, fits the GPU alone) directs; it is not pinned, so the pool unloads it while the
+  # teammates run. Teammates work in sets (worker_sets, by position in the team): each set side by side, the sets one
+  # after the other, so only one set sits on the GPU at a time. Same loop, prompts, research and sources as mgr-ex-base.
+  big12-alone:
+    description: "Gemma-4-12B directs the manager loop and does every step itself (the control: no team)"
+    overrides:
+      mode: manager
+      research: {passages_per_subquestion: 15}
+      coordinator: {model: Gemma-4-12B-it, ctx_per_slot: 16384, parallel: 1}
+      verifier: {model: Granite-4.1-3B}
+      workers: {team: [Gemma-4-12B-it], ctx_per_slot: 8192}
+      manager: {max_cycles: 6, passages_per_task: 6, pages_per_search: 3, coordinator_style: plain, verify: false, pin_coordinator: false}
+  big12-team2:
+    description: "Gemma-4-12B directs Qwen3.5-4B + Gemma-4-E4B (one set), every task to both"
+    overrides:
+      mode: manager
+      research: {passages_per_subquestion: 15}
+      coordinator: {model: Gemma-4-12B-it, ctx_per_slot: 16384, parallel: 1}
+      verifier: {model: Granite-4.1-3B}
+      workers: {team: [Qwen3.5-4B, Gemma-4-E4B-it], ctx_per_slot: 8192}
+      manager: {max_cycles: 6, passages_per_task: 6, pages_per_search: 3, dispatch: both, coordinator_style: plain, verify: false, pin_coordinator: false, worker_sets: [[0, 1]]}
+  big12-team4:
+    description: "Gemma-4-12B directs two sets, each a small and a bigger model: Qwen3.5-4B + Qwen3.5-9B, then Gemma-4-E4B + Apertus-8B"
+    overrides:
+      mode: manager
+      research: {passages_per_subquestion: 15}
+      coordinator: {model: Gemma-4-12B-it, ctx_per_slot: 16384, parallel: 1}
+      verifier: {model: Granite-4.1-3B}
+      workers: {team: [Qwen3.5-4B, Qwen3.5-9B, Gemma-4-E4B-it, Apertus-v1.5-8B], ctx_per_slot: 8192}
+      manager: {max_cycles: 6, passages_per_task: 6, pages_per_search: 3, dispatch: both, coordinator_style: plain, verify: false, pin_coordinator: false, worker_sets: [[0, 1], [2, 3]]}
   mgr-vote3-diverse:
     description: "3 attempts with different worker pairs (Qwen+Gemma t0.2, Qwen+Qwen t0.7, Gemma+Gemma t0.7), then MiMo votes"
     overrides:
@@ -901,6 +932,8 @@ groups:
   manager-both: [solo-MiMo-wide, mgr-both-same, mgr-both-duo, mgr-both-same-think, mgr-both-same-stepback]
   manager-combined: [solo-MiMo-wide, mgr-both-same-think, mgr-duo-think, mgr-same-think-verify, mgr-duo-think-verify]
   manager-experts: [solo-MiMo-wide, mgr-ex-base, mgr-ex-reports, mgr-ex-harder, mgr-ex-qwen9, mgr-ex-gemma12, mgr-ex-ornith]
+  # does the team add to a big model? Gemma-12B alone vs with 2 vs with 4 teammates; MiMo + team is the in-session anchor
+  big-coordinator: [mgr-ex-base, big12-alone, big12-team2, big12-team4]
   manager-vote: [solo-MiMo-wide, mgr-ex-base, mgr-vote3-same, mgr-vote3-diverse, mgr-vote-adaptive]
   manager-trust: [solo-MiMo-wide, mgr-ex-base, mgr-charter-all, mgr-trust, mgr-trust-all, mgr-trust-self]
   # v2 vs its best member alone and vs the bake-off winner (MiMo coordinating the old roles team)

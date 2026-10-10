@@ -290,6 +290,11 @@ async def run_manager(sw, question: str, subqs: list[str], groups: list[list[ev.
     trust_extra = int(tc.get("extra_cycles", 3))        # turns added (in total) to fix what a check finds   # full reports shown for the last N steps
     coord, w = sw.role("coordinator"), sw.role("workers")
     size = sw.cfg["research"]["passage_chars"]
+    # a big coordinator (e.g. Gemma-4-12B) can't stay loaded beside the workers: it is not pinned, so the pool
+    # unloads it while the workers run. worker_sets: [[0, 1], [2, 3]] runs the teammates (by position in the team)
+    # one set after the other, each set side by side, so only one set sits on the GPU at a time.
+    cpin = bool(mc.get("pin_coordinator", True))
+    worker_sets = [[int(i) for i in grp] for grp in (mc.get("worker_sets") or [])]
 
     slots = sw.team_slots() if sw.team() else []
     if not slots:  # the coordinator does every step itself
@@ -600,7 +605,7 @@ async def run_manager(sw, question: str, subqs: list[str], groups: list[list[ev.
         msgs = [{"role": "system", "content": TRUST_SYSTEM.format(today=today)}, {"role": "user", "content": user}]
         d: dict = {}
         try:
-            async with sw.pool.use(coord["model"], coord["ctx_per_slot"], coord["parallel"], pin=True) as url:
+            async with sw.pool.use(coord["model"], coord["ctx_per_slot"], coord["parallel"], pin=cpin) as url:
                 if style == "think":
                     try:
                         r = await llm.chat_json(url, llm.json_request(msgs, TRUST_SCHEMA), TRUST_SCHEMA, think=True,
@@ -685,7 +690,7 @@ async def run_manager(sw, question: str, subqs: list[str], groups: list[list[ev.
                 + (f" Expert (X) calls left: {ex_calls_max - ex_used}." if ex_model else "")
                 + " Decide the next step.")
         try:
-            async with sw.pool.use(coord["model"], coord["ctx_per_slot"], coord["parallel"], pin=True) as url:
+            async with sw.pool.use(coord["model"], coord["ctx_per_slot"], coord["parallel"], pin=cpin) as url:
                 res = await decide(url, user, schema)
         except llm.BudgetExhausted:
             break
@@ -759,7 +764,7 @@ async def run_manager(sw, question: str, subqs: list[str], groups: list[list[ev.
             if both and mod != coord["model"]:
                 par = copies[mod]  # copies of one model answer side by side on one server
             try:
-                async with sw.pool.use(mod, ctx, par, pin=(mod == coord["model"])) as url:
+                async with sw.pool.use(mod, ctx, par, pin=(cpin and mod == coord["model"])) as url:
                     wres = await llm.chat_json(url, [{"role": "system", "content": w_system},
                                                      {"role": "user", "content": wuser}], w_schema,
                                                max_tokens=w_tokens, temperature=temp)
@@ -771,7 +776,20 @@ async def run_manager(sw, question: str, subqs: list[str], groups: list[list[ev.
 
         who = [member[x] for x in letters] if both else [(label, model)]
         try:
-            outs = await asyncio.gather(*(do_task(lab, mod) for lab, mod in who))
+            if both and worker_sets:
+                # the sets answer one after the other; teammates inside a set answer side by side
+                order = [[i for i in grp if 0 <= i < len(who)] for grp in worker_sets]
+                order = [g for g in order if g]
+                rest = [i for i in range(len(who)) if all(i not in g for g in order)]
+                if rest:
+                    order.append(rest)
+                got_out: dict[int, dict] = {}
+                for grp in order:
+                    part = await asyncio.gather(*(do_task(*who[i]) for i in grp))
+                    got_out.update(dict(zip(grp, part)))
+                outs = [got_out[i] for i in range(len(who))]
+            else:
+                outs = await asyncio.gather(*(do_task(lab, mod) for lab, mod in who))
         except llm.BudgetExhausted:
             break
         secs = round(time.time() - t0, 1)
@@ -857,7 +875,7 @@ async def run_manager(sw, question: str, subqs: list[str], groups: list[list[ev.
     async def delta(txt: str) -> None:
         await send({"type": "answer_delta", "text": txt})
 
-    async with sw.pool.use(coord["model"], coord["ctx_per_slot"], coord["parallel"], pin=True) as url:
+    async with sw.pool.use(coord["model"], coord["ctx_per_slot"], coord["parallel"], pin=cpin) as url:
         shaky = trust_on and final_trust and final_trust.get("problems")
         wmsgs = [{"role": "system", "content": ch_lead + WRITE_SYSTEM.format(today=today)
                   + (STEP_BACK_WRITE if style == "step_back" else "") + (TRUST_WRITE if shaky else "")},

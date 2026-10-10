@@ -754,3 +754,60 @@ async def test_manager_charter_nudge_reaches_lead_and_workers(cfg, cards, mock_p
     assert st["worker_answers"] >= 2 and st["worker_notes_offered"] >= st["worker_notes_kept"] >= 0
     assert "worker_bad_citations" in st and "worker_found_unbacked" in st
     assert any("candidates" in e and "read_urls" in e for e in t["manager"]["log"])  # pages found vs read, per task
+
+
+async def test_manager_worker_sets_run_one_after_the_other_and_coordinator_is_unpinned(cfg, cards, mock_pool_cls):
+    """Big-coordinator trial: four teammates in two sets; only one set is on the GPU at a time and the
+    coordinator is not pinned, so the pool can unload it while the workers run."""
+    import asyncio
+    import copy
+
+    async def emit(e):
+        pass
+
+    c = copy.deepcopy(cfg)
+    c["mode"] = "manager"
+    team = ["Ministral-3-3B-Instruct", "Phi-4-mini-instruct", "LFM2.5-2.6B", "Granite-4.1-3B"]
+    c["workers"]["team"] = team
+    c["manager"] = {"max_cycles": 5, "passages_per_task": 3, "dispatch": "both", "pin_coordinator": False,
+                    "worker_sets": [[0, 1], [2, 3]]}
+    pool = mock_pool_cls(cfg, cards)
+    coord_model = c["coordinator"]["model"]
+    pins, inflight, peak, started = [], {"n": 0}, {"n": 0}, []
+    real_use = pool.use
+
+    def spy(model_id, ctx_per_slot, parallel=1, pin=False):
+        from contextlib import asynccontextmanager
+
+        @asynccontextmanager
+        async def cm():
+            if model_id == coord_model:
+                pins.append(pin)
+            elif model_id in team:
+                started.append(model_id)
+                inflight["n"] += 1
+                peak["n"] = max(peak["n"], inflight["n"])
+            try:
+                async with real_use(model_id, ctx_per_slot, parallel, pin) as url:
+                    if model_id in team:
+                        await asyncio.sleep(0.01)  # let the other teammates of the set overlap
+                    yield url
+            finally:
+                if model_id in team:
+                    inflight["n"] -= 1
+        return cm()
+
+    pool.use = spy
+    try:
+        sw = Swarm(c, pool, cards, FakeResearch())
+        prep = await sw.prepare("Tell me about the Eiffel Tower")
+        t = await sw.run("Tell me about the Eiffel Tower", emit, prepared=prep)
+    finally:
+        await pool.shutdown()
+    assert not t.get("error"), t.get("error")
+    assert pins and not any(pins)                       # the coordinator is never pinned
+    assert peak["n"] == 2                               # two teammates at a time, never all four
+    first = t["manager"]["log"][0]
+    assert [x["worker"] for x in first["results"]] == team   # results keep team order
+    assert started[:4] == [team[0], team[1], team[2], team[3]]
+    assert set(started[:2]) == {team[0], team[1]}       # set 1 starts before set 2

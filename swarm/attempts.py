@@ -80,7 +80,8 @@ async def run_attempts(sw, question: str, subqs: list[str], groups, evidence, se
         user = (f"Question: {question}\n\n" + "\n\n".join(_attempt_text(i + 1, t) for i, t in enumerate(attempts))
                 + f"\n\nCompare the {n} attempts.")
         try:
-            async with sw.pool.use(coord["model"], coord["ctx_per_slot"], coord["parallel"], pin=True) as url:
+            async with sw.pool.use(coord["model"], coord["ctx_per_slot"], coord["parallel"],
+                                   pin=bool((sw.cfg.get("manager") or {}).get("pin_coordinator", True))) as url:
                 r = await llm.chat_json(url, [{"role": "system", "content": VOTE_SYSTEM},
                                               {"role": "user", "content": user}], vote_schema(n),
                                         max_tokens=700, temperature=0.0)
