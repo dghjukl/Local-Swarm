@@ -33,6 +33,7 @@ from pathlib import Path
 import yaml
 
 from swarm import benchmarks, llm, procs
+from swarm.atomic import write_json_atomic
 from swarm.config import _merge, load_config
 from swarm.orchestrator import Swarm
 from swarm.paths import REPO, RUNTIME, repo_path
@@ -1012,7 +1013,7 @@ async def run(args) -> Path:
                     "block_domains": qmeta.get("block_domains"), "budget": budget, "frozen": frozen,
                     "judge2": (econf.get("judge2") or {}).get("model") if getattr(args, "judge2", False) else None,
                     "question_ids": [q["id"] for q in questions]}
-            (out / "meta.json").write_text(json.dumps(meta, indent=2), encoding="utf-8")
+            write_json_atomic(out / "meta.json", meta)
             done = {(r["config"], r["question_id"], r.get("repeat", 0)) for r in results}
             rec.say(f"Evaluation: {len(questions)} questions x {len(names)} configs x {args.repeats} repeat(s) -> {out}"
                     + (f" - resuming, {len(done)} runs already done" if resume_dir else ""))
@@ -1048,7 +1049,7 @@ async def run(args) -> Path:
                     rec.say("Preflight: configurations that use " + ", ".join(bad_models) + " will be skipped "
                             "(fix the model, then Resume-Last-Eval runs them)")
                 meta["preflight_failed"] = bad_models
-                (out / "meta.json").write_text(json.dumps(meta, indent=2), encoding="utf-8")
+                write_json_atomic(out / "meta.json", meta)
 
             # 1. shared evidence
             ev_dir = out / "evidence"
@@ -1088,7 +1089,7 @@ async def run(args) -> Path:
                     ok = sum(1 for d in prepared[q["id"]]["docs"] if not d["error"] and d["text"])
                     rec.say(f"evidence {q['id']}: {ok} sources ({web_ok} web) in {time.time() - t0:.0f}s "
                             f"({len(prepared[q['id']]['plan']['subquestions'])} sub-questions)")
-                (ev_dir / f"{q['id']}.json").write_text(json.dumps(prepared[q["id"]], indent=1), encoding="utf-8")
+                write_json_atomic(ev_dir / f"{q['id']}.json", prepared[q["id"]])
 
             # 2. every configuration on the same evidence
             traces = out / "traces"
@@ -1173,7 +1174,7 @@ async def run(args) -> Path:
                 await judge_all(results, qmap, pool, j2, rec, force=False,
                                 save=lambda: write_results(out / "results.jsonl", results), key="grade2")
                 meta["judge2"] = j2.get("model")
-                (out / "meta.json").write_text(json.dumps(meta, indent=2), encoding="utf-8")
+                write_json_atomic(out / "meta.json", meta)
             write_results(out / "results.jsonl", results)
         build_report(out, results, meta)
         rec.say(f"Report: {out / 'report.html'}")
