@@ -61,6 +61,9 @@ def reply(body: dict) -> str:
     if "worker" in props and "done" in props:  # manager mode: the coordinator picks the next step
         steps = len(re.findall(r"^\d+\. ", user.split("=== Steps so far ===")[-1], re.M))
         letters = props["worker"].get("enum", ["A"])
+        if "tool" in props and steps == 0:  # a tool-enabled coordinator asks for an exact calculation first
+            return json.dumps({"thought": "compute it exactly", "done": False, "worker": letters[0], "task": "",
+                               "search": "", "tool": {"name": "calc", "args": {"expression": "59 + 76 - 35"}}})
         if "nowhere" in user.split("=== Your evidence ===")[0]:  # a step that keeps failing
             if steps >= 3:
                 return json.dumps({"thought": "give up", "done": True, "worker": letters[0], "task": "", "search": ""})

@@ -545,6 +545,55 @@ configs:
       verifier: {model: Granite-4.1-3B}
       workers: {team: [Qwen3.5-4B, Qwen3.5-9B, Gemma-4-E4B-it, Apertus-v1.5-8B], ctx_per_slot: 8192}
       manager: {max_cycles: 6, passages_per_task: 6, pages_per_search: 3, dispatch: both, coordinator_style: plain, verify: false, pin_coordinator: false, worker_sets: [[0, 1], [2, 3]]}
+  mgr-ex-base-open:
+    description: "mgr-ex-base plus the entity-open step (coordinator names Wikipedia articles to open directly) and a shorter-query retry when a search returns nothing"
+    overrides:
+      mode: manager
+      research: {passages_per_subquestion: 15}
+      coordinator: {model: MiMo-V2.6-Distill-Qwen-9B, ctx_per_slot: 16384, parallel: 1}
+      verifier: {model: Granite-4.1-3B}
+      workers: {team: [Qwen3.5-4B, Gemma-4-E4B-it], ctx_per_slot: 8192}
+      manager: {max_cycles: 6, passages_per_task: 6, pages_per_search: 3, dispatch: both, coordinator_style: think, think_tokens: 1000, verify: false, open_entities: true, short_retry: true}
+      gpu: {keep_reasoning_models: [gpt-oss, MiMo]}
+  big12-resident:
+    description: "Gemma-4-12B stays loaded (pinned) beside two small teammates, Qwen3.5-4B + EXAONE-1.2B, all on the GPU: no model swapping (about 13 GB)"
+    overrides:
+      mode: manager
+      research: {passages_per_subquestion: 15}
+      coordinator: {model: Gemma-4-12B-it, ctx_per_slot: 12288, parallel: 1}
+      verifier: {model: Granite-4.1-3B}
+      workers: {team: [Qwen3.5-4B, EXAONE-4.0-1.2B], ctx_per_slot: 6144}
+      manager: {max_cycles: 6, passages_per_task: 6, pages_per_search: 3, dispatch: both, coordinator_style: plain, verify: false}
+  big12-resident-irg:
+    description: "big12-resident plus the interrogator (Granite-4.1-3B questions teammates when they disagree or give an unbacked 'found'; quotes are checked in code)"
+    overrides:
+      mode: manager
+      research: {passages_per_subquestion: 15}
+      coordinator: {model: Gemma-4-12B-it, ctx_per_slot: 12288, parallel: 1}
+      verifier: {model: Granite-4.1-3B}
+      workers: {team: [Qwen3.5-4B, EXAONE-4.0-1.2B], ctx_per_slot: 6144}
+      manager: {max_cycles: 6, passages_per_task: 6, pages_per_search: 3, dispatch: both, coordinator_style: plain, verify: false, interrogator: {model: Granite-4.1-3B, max_questions: 2, ctx_per_slot: 6144}}
+  mgr-ex-base-tools:
+    description: "mgr-ex-base plus the coordinator tool step: exact calculator, date, age and unit tools (results become cited facts)"
+    overrides:
+      mode: manager
+      research: {passages_per_subquestion: 15}
+      coordinator: {model: MiMo-V2.6-Distill-Qwen-9B, ctx_per_slot: 16384, parallel: 1}
+      verifier: {model: Granite-4.1-3B}
+      workers: {team: [Qwen3.5-4B, Gemma-4-E4B-it], ctx_per_slot: 8192}
+      manager: {max_cycles: 6, passages_per_task: 6, pages_per_search: 3, dispatch: both, coordinator_style: think, think_tokens: 1000, verify: false, tools: {enabled: [calc, date_diff, age_on, date_add, weekday, unit_convert], max_calls: 6}}
+      gpu: {keep_reasoning_models: [gpt-oss, MiMo]}
+  mgr-ex-base-tools-ws:
+    description: "mgr-ex-base-tools with durable workspaces (checkpoint every turn, resume after a stop, audit chain); plus the coordinator tool step: exact calculator, date, age and unit tools (results become cited facts)"
+    overrides:
+      mode: manager
+      research: {passages_per_subquestion: 15}
+      coordinator: {model: MiMo-V2.6-Distill-Qwen-9B, ctx_per_slot: 16384, parallel: 1}
+      verifier: {model: Granite-4.1-3B}
+      workers: {team: [Qwen3.5-4B, Gemma-4-E4B-it], ctx_per_slot: 8192}
+      manager: {max_cycles: 6, passages_per_task: 6, pages_per_search: 3, dispatch: both, coordinator_style: think, think_tokens: 1000, verify: false, tools: {enabled: [calc, date_diff, age_on, date_add, weekday, unit_convert], max_calls: 6}}
+      workspace: {root: runtime/workspaces}
+      gpu: {keep_reasoning_models: [gpt-oss, MiMo]}
   mgr-vote3-diverse:
     description: "3 attempts with different worker pairs (Qwen+Gemma t0.2, Qwen+Qwen t0.7, Gemma+Gemma t0.7), then MiMo votes"
     overrides:
@@ -933,6 +982,13 @@ groups:
   manager-combined: [solo-MiMo-wide, mgr-both-same-think, mgr-duo-think, mgr-same-think-verify, mgr-duo-think-verify]
   manager-experts: [solo-MiMo-wide, mgr-ex-base, mgr-ex-reports, mgr-ex-harder, mgr-ex-qwen9, mgr-ex-gemma12, mgr-ex-ornith]
   # does the team add to a big model? Gemma-12B alone vs with 2 vs with 4 teammates; MiMo + team is the in-session anchor
+  # entity-open + short-query retry vs the same team without it
+  search-open: [mgr-ex-base, mgr-ex-base-open]
+  # no-swap big coordinator: alone-resident vs with the interrogator (anchors: big12-alone, mgr-ex-base)
+  big-resident: [big12-alone, big12-resident, big12-resident-irg]
+  # tool step A/B on the 63 numeric/date questions
+  tools-numeric: [mgr-ex-base, mgr-ex-base-tools]
+  tools-durable: [mgr-ex-base-tools, mgr-ex-base-tools-ws]
   big-coordinator: [mgr-ex-base, big12-alone, big12-team2, big12-team4]
   manager-vote: [solo-MiMo-wide, mgr-ex-base, mgr-vote3-same, mgr-vote3-diverse, mgr-vote-adaptive]
   manager-trust: [solo-MiMo-wide, mgr-ex-base, mgr-charter-all, mgr-trust, mgr-trust-all, mgr-trust-self]

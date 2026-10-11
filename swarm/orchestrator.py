@@ -12,6 +12,7 @@ Every run is saved to runtime/runs/*.json so it can be scored later.
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import datetime as dt
 import json
 import re
@@ -22,7 +23,7 @@ from urllib.parse import urlparse
 import httpx
 
 from swarm import evidence as ev
-from swarm import scholar
+from swarm import ckpt, scholar
 from swarm import strategies as strat
 from swarm import llm
 from swarm.paths import RUNS
@@ -377,6 +378,24 @@ class Swarm:
         queries = queries[: self.cfg["research"]["max_search_queries"]] or [question]
         return {"mode": mode, "subquestions": subqs, "search_queries": queries, "seconds": round(plan_res.seconds, 2)}
 
+    async def _run_manager_from(self, question, subqs, groups, evidence, send, stage, trace, t_start,
+                                stage_times, today):
+        ck = ckpt.current()
+        if (self.cfg.get("manager") or {}).get("attempts"):  # several attempts + a vote
+            from swarm.attempts import run_attempts
+            out = await run_attempts(self, question, subqs, groups, evidence, send, stage, trace,
+                                     t_start, stage_times, today)
+        else:
+            from swarm.manager import run_manager
+            out = await run_manager(self, question, subqs, groups, evidence, send, stage, trace,
+                                    t_start, stage_times, today)
+        if ck is not None:
+            with contextlib.suppress(Exception):
+                ck.save("trace", out)
+                ck.ws.mark_done({"run_id": ck.ws.run_id})
+                ck.event("done")
+        return out
+
     async def run(self, question: str, emit: Emit, force_research: bool = False,
                   prepared: dict | None = None, save_dir=None) -> dict:
         trace: dict = {"question": question, "started": dt.datetime.now().isoformat(timespec="seconds"),
@@ -414,6 +433,23 @@ class Swarm:
             self.pool.plan_ahead([coord["model"]])
         await send({"type": "run_start", "question": question})
         try:
+            ck = ckpt.open_for(self.cfg, question) if self.mode() == "manager" else None
+            if ck is not None and ck.ws.is_done():  # this very run already finished: hand back its trace
+                done = ck.load("trace")
+                if done:
+                    await send({"type": "stage_note", "message": "resumed: this run had already finished"})
+                    return done
+            saved = ck.load("prep") if ck is not None else None
+            if saved:  # resume: the plan and the evidence were prepared before the stop
+                plan = saved["plan"]
+                trace["plan"] = plan
+                evidence = [ev.Passage(**d) for d in saved["evidence"]]
+                by = {p.id: p for p in evidence}
+                groups = [[by[i] for i in g if i in by] for g in saved["groups"]]
+                await send({"type": "stage_note", "message": f"resumed from {ck.ws.run_id}"})
+                ck.event("resume", cycle=(ck.load("manager") or {}).get("cycle"))
+                return await self._run_manager_from(question, plan["subquestions"], groups, evidence, send, stage,
+                                                    trace, t_start, stage_times, today)
             # ---------------- 1. plan
             await stage("plan", "Coordinator is planning")
             if prepared:
@@ -474,13 +510,12 @@ class Swarm:
                 return await self._finish_direct(question, send, stage, trace, t_start, today, no_sources=True)
 
             if self.mode() == "manager":  # the coordinator directs teammates turn by turn (swarm/manager.py)
-                from swarm.manager import run_manager
-                if (self.cfg.get("manager") or {}).get("attempts"):  # several attempts + a vote
-                    from swarm.attempts import run_attempts
-                    return await run_attempts(self, question, subqs, groups, evidence, send, stage, trace,
-                                              t_start, stage_times, today)
-                return await run_manager(self, question, subqs, groups, evidence, send, stage, trace,
-                                         t_start, stage_times, today)
+                if ck is not None:
+                    ck.save("prep", {"plan": plan, "evidence": [p.to_dict() for p in evidence],
+                                     "groups": [[p.id for p in g] for g in groups]})
+                    ck.event("start", question=question[:200])
+                return await self._run_manager_from(question, subqs, groups, evidence, send, stage, trace,
+                                                    t_start, stage_times, today)
 
             if self.mode() == "notebook":  # the team shares a notebook (swarm/notebook.py)
                 from swarm.notebook import run_notebook

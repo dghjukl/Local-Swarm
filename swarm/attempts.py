@@ -20,7 +20,7 @@ from __future__ import annotations
 import copy
 import time
 
-from swarm import llm
+from swarm import ckpt, llm
 
 VOTE_SYSTEM = """Several independent research attempts answered the same question. Compare them.
 - For each attempt, write its short final answer (a name, number, date... or "no answer").
@@ -108,8 +108,15 @@ async def run_attempts(sw, question: str, subqs: list[str], groups, evidence, se
                 cfg["workers"] = {**cfg["workers"], "team": list(over["team"])}
             sw.cfg = cfg
             t = dict(trace)  # the shared prefix (question, plan, evidence); each attempt adds its own parts
-            t = await run_manager(sw, question, subqs, groups, evidence, quiet, stage, t, t_start, stage_times,
-                                  today, publish=False)
+            ck = ckpt.current()
+            done_t = ck.load(f"attempt{k}_trace") if ck is not None else None
+            if done_t:  # this attempt finished before a stop: keep its result
+                t = done_t
+            else:
+                t = await run_manager(sw, question, subqs, groups, evidence, quiet, stage, t, t_start, stage_times,
+                                      today, publish=False, ckey=f"attempt{k}")
+                if ck is not None:
+                    ck.save(f"attempt{k}_trace", t)
             t["attempt_config"] = over
             attempts.append(t)
             if adaptive and len(attempts) == 2 and len(runs) > 2:

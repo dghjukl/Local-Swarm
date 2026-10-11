@@ -32,8 +32,9 @@ from pathlib import Path
 
 import yaml
 
-from swarm import benchmarks, llm, procs
+from swarm import ckpt
 from swarm.atomic import write_json_atomic
+from swarm import benchmarks, llm, procs
 from swarm.config import _merge, load_config
 from swarm.orchestrator import Swarm
 from swarm.paths import REPO, RUNTIME, repo_path
@@ -1134,6 +1135,7 @@ async def run(args) -> Path:
                         await rec.reset_peak()
                         # watchdog: one stuck question (a hung site or model) must not stall the whole night
                         limit = float(c.get("run_timeout_seconds") or econf.get("run_timeout_seconds", 1500))
+                        ckpt.set_tag(f"{out.name}-{name}-r{rep}")  # a restarted eval finds its workspaces
                         try:
                             if args.live:
                                 # the real task: this configuration plans, searches, reads and answers itself

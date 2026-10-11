@@ -811,3 +811,149 @@ async def test_manager_worker_sets_run_one_after_the_other_and_coordinator_is_un
     assert [x["worker"] for x in first["results"]] == team   # results keep team order
     assert started[:4] == [team[0], team[1], team[2], team[3]]
     assert set(started[:2]) == {team[0], team[1]}       # set 1 starts before set 2
+
+
+def test_shorten_and_open_schema():
+    from swarm.manager import _shorten, decision_schema
+    assert _shorten("What is the name of the mother of the first person to walk on the moon") == "name mother first person"
+    assert "open" in decision_schema(["A"], opens=True)["properties"]
+    assert "open" not in decision_schema(["A"])["properties"]
+
+
+@pytest.mark.asyncio
+async def test_manager_open_entities_mode_runs(cfg, cards, mock_pool_cls):
+    import copy
+
+    async def emit(e):
+        pass
+
+    c = copy.deepcopy(cfg)
+    c["mode"] = "manager"
+    c["workers"]["team"] = ["Ministral-3-3B-Instruct", "Phi-4-mini-instruct"]
+    c["manager"] = {"max_cycles": 3, "passages_per_task": 3, "dispatch": "both", "open_entities": True, "short_retry": True}
+    pool = mock_pool_cls(cfg, cards)
+    try:
+        sw = Swarm(c, pool, cards, FakeResearch())
+        prep = await sw.prepare("Tell me about the Eiffel Tower")
+        t = await sw.run("Tell me about the Eiffel Tower", emit, prepared=prep)
+    finally:
+        await pool.shutdown()
+    assert not t.get("error"), t.get("error")
+
+
+def test_quote_check_in_code():
+    from swarm.manager import quote_in_passages
+
+    class P:
+        def __init__(s, t): s.text = t
+    ps = [P("Nancy Lincoln, née Hanks, was the mother of Abraham Lincoln.")]
+    assert quote_in_passages("Nancy Lincoln, nee Hanks, was the mother", ps)
+    assert not quote_in_passages("Nancy Lincoln was born in Ohio in 1790", ps)
+    assert not quote_in_passages("", ps)
+
+
+@pytest.mark.asyncio
+async def test_manager_interrogator_mode_runs(cfg, cards, mock_pool_cls, monkeypatch):
+    import copy
+    import swarm.manager as mgr
+    monkeypatch.setattr(mgr, "agree", lambda results: False)  # force the "answers differ" flag
+
+    async def emit(e):
+        pass
+
+    c = copy.deepcopy(cfg)
+    c["mode"] = "manager"
+    c["workers"]["team"] = ["Ministral-3-3B-Instruct", "Phi-4-mini-instruct"]
+    c["manager"] = {"max_cycles": 3, "passages_per_task": 3, "dispatch": "both",
+                    "interrogator": {"model": "Granite-4.1-3B", "max_questions": 2}}
+    pool = mock_pool_cls(cfg, cards)
+    try:
+        sw = Swarm(c, pool, cards, FakeResearch())
+        prep = await sw.prepare("Tell me about the Eiffel Tower")
+        t = await sw.run("Tell me about the Eiffel Tower", emit, prepared=prep)
+    finally:
+        await pool.shutdown()
+    assert not t.get("error"), t.get("error")
+    assert t["stats"]["manager"]["interrogator"]["flagged"] >= 1
+
+
+@pytest.mark.asyncio
+async def test_manager_coordinator_tool_step_adds_a_cited_fact(cfg, cards, mock_pool_cls):
+    import copy
+
+    async def emit(e):
+        pass
+
+    c = copy.deepcopy(cfg)
+    c["mode"] = "manager"
+    c["workers"]["team"] = ["Ministral-3-3B-Instruct", "Phi-4-mini-instruct"]
+    c["manager"] = {"max_cycles": 4, "passages_per_task": 3, "dispatch": "both",
+                    "tools": {"enabled": ["calc", "date_diff"], "max_calls": 2}}
+    pool = mock_pool_cls(cfg, cards)
+    try:
+        sw = Swarm(c, pool, cards, FakeResearch())
+        prep = await sw.prepare("Tell me about the Eiffel Tower")
+        t = await sw.run("Tell me about the Eiffel Tower", emit, prepared=prep)
+    finally:
+        await pool.shutdown()
+    assert not t.get("error"), t.get("error")
+    log = t["manager"]["log"]
+    assert log[0]["tool"]["name"] == "calc" and log[0]["tool"]["ok"] and "= 100" in log[0]["result"]
+    notes = t["manager"]["notes"]
+    assert any("= 100" in n["fact"] and n["readers"] == ["tool"] for n in notes)
+    assert any(p["url"].startswith("tool://calc") for p in t["evidence_found"])
+    assert t["stats"]["manager"]["tools"]["calls"] == 1
+
+
+async def test_manager_checkpoints_and_resumes_a_stopped_run(cfg, cards, mock_pool_cls, tmp_path):
+    """With cfg["workspace"] the manager saves its state every turn; a rerun with the same run tag
+    returns a finished run as is, and a run that stopped before finishing resumes from its last
+    saved turn (same log, same notes, tool calls and audit chain recorded)."""
+    import copy
+    import json
+    from swarm import ckpt
+    from swarm.audit import Audit
+
+    events = []
+
+    async def emit(e):
+        events.append(e)
+
+    c = copy.deepcopy(cfg)
+    c["mode"] = "manager"
+    c["workers"]["team"] = ["Ministral-3-3B-Instruct", "Phi-4-mini-instruct"]
+    c["manager"] = {"max_cycles": 5, "passages_per_task": 3, "tools": {"enabled": ["calc"], "max_calls": 2}}
+    c["workspace"] = {"root": str(tmp_path / "ws"), "run": "t1"}
+    q = "Tell me about the Eiffel Tower"
+    pool = mock_pool_cls(cfg, cards)
+    try:
+        sw = Swarm(c, pool, cards, FakeResearch())
+        prep = await sw.prepare(q)
+        t1 = await sw.run(q, emit, prepared=prep)
+        run_dirs = [p for p in (tmp_path / "ws").iterdir() if p.is_dir()]
+        assert len(run_dirs) == 1 and (run_dirs[0] / "done.json").is_file()
+        for name in ("prep.json", "manager_state.json", "trace.json", "events.jsonl"):
+            assert (run_dirs[0] / name).is_file(), name
+        # 1. a finished run is handed back, not redone
+        events.clear()
+        t_again = await Swarm(c, pool, cards, FakeResearch()).run(q, emit, prepared=prep)
+        assert t_again["final"]["answer"] == t1["final"]["answer"]
+        assert any("already finished" in str(e.get("message", "")) for e in events)
+        # 2. a run that stopped part-way: remove the finish marks and run again
+        (run_dirs[0] / "done.json").unlink()
+        (run_dirs[0] / "trace.json").unlink()
+        saved = json.loads((run_dirs[0] / "manager_state.json").read_text(encoding="utf-8"))
+        events.clear()
+        t2 = await Swarm(c, pool, cards, FakeResearch()).run(q, emit, prepared=prep)
+    finally:
+        await pool.shutdown()
+        ckpt.clear()
+    assert not t2.get("error"), t2.get("error")
+    assert any("resumed" in str(e.get("message", "")) for e in events)
+    assert [s["task"] for s in t2["manager"]["log"][:len(saved["log"])]] == [s["task"] for s in saved["log"]]
+    assert len(t2["manager"]["notes"]) >= len(saved["notes"]) and t2["final"]["answer"]
+    chain = Audit(tmp_path / "ws" / "audit.db").verify()
+    assert chain.get("ok", True) is True, chain
+    from swarm.workspace import Workspace
+    calls = Workspace(tmp_path / "ws", run_dirs[0].name).read_records("tool_calls")
+    assert calls and calls[0]["tool"] == "calc"

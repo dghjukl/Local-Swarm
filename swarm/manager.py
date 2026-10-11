@@ -25,12 +25,15 @@ Everything (decisions, tasks, searches, results, who was picked) is kept in the 
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import re
 import time
 
-from swarm import evidence as ev
+from swarm import ckpt, evidence as ev
 from swarm import llm
-from swarm.notebook import Notebook, clean_citations
+from swarm import tools as _tools
+from swarm.toolreg import ToolRegistry
+from swarm.notebook import Note, Notebook, clean_citations
 
 MANAGER_SYSTEM = """You lead a small research team answering one question. Today is {today}.
 You already have some evidence passages. Your teammates can search the web and read sources for you,
@@ -201,7 +204,31 @@ def check_calc(expr: str, result: str) -> bool | None:
     return abs(val - got) <= max(0.005 * abs(val), 0.01)
 
 
-def decision_schema(letters: list[str], thought_len: int = 300) -> dict:
+def decision_schema(letters: list[str], thought_len: int = 300, opens: bool = False, tools: list[str] | None = None) -> dict:
+    sch = _decision_schema(letters, thought_len)
+    if tools:
+        sch["properties"]["tool"] = {"type": "object", "properties": {
+            "name": {"type": "string", "enum": [""] + list(tools)},
+            "args": {"type": "object", "additionalProperties": {"type": ["string", "number"]}}},
+            "required": ["name"]}
+    if opens:
+        sch["properties"]["open"] = {"type": "array", "maxItems": 2,
+                                     "items": {"type": "string", "maxLength": 80}}
+    return sch
+
+
+TOOL_NOTE = """- To compute something EXACTLY (arithmetic, dates, ages, day counts, unit conversions), do not ask a teammate:
+  put a tool call in `tool` ({{"name": ..., "args": {{...}}}}) and leave `search` empty. The result is added to the
+  workspace as a fact you can use. Tools:
+{menu}
+  Use a tool only when the numbers or dates it needs are already in the workspace or the question; leave `tool` out otherwise."""
+
+OPEN_NOTE = """- If the next fact is probably in the Wikipedia article of a named person, place, work or thing,
+  put that article's exact title in `open` (up to 2, e.g. ["Jane Eyre"]); the team opens those articles
+  directly. Use `open` for names in the question or in the workspace; use `search` for everything else."""
+
+
+def _decision_schema(letters: list[str], thought_len: int = 300) -> dict:
     return {
         "type": "object",
         "properties": {
@@ -213,6 +240,44 @@ def decision_schema(letters: list[str], thought_len: int = 300) -> dict:
         },
         "required": ["thought", "done", "worker", "task", "search"],
     }
+
+
+IRG_SYSTEM = """You are an interrogator. You never answer the research question and never add facts of your own.
+Your only job: read what the teammates reported and ask short, specific questions about anything that
+looks doubtful (a disagreement, a claim with no support, a number that does not match, a quote that may
+not exist). Each question goes to one teammate (or all) who will answer from the same passages.
+Ask only what is needed to settle the doubt, at most {n} questions. Output the JSON only."""
+
+IRG_ANSWER_SYSTEM = """You answer one checking question using ONLY the passages below.
+- answer: one or two sentences, or say the passages do not settle it.
+- quote: the exact words from one passage that support the answer (copied word for word), or empty.
+- found: true only if a passage really supports the answer.
+Output the JSON only."""
+
+IRG_ANSWER_SCHEMA = {"type": "object", "properties": {
+    "answer": {"type": "string", "maxLength": 400}, "quote": {"type": "string", "maxLength": 300},
+    "found": {"type": "boolean"}}, "required": ["answer", "quote", "found"]}
+
+
+def _norm(s: str) -> str:
+    import unicodedata
+    s = unicodedata.normalize("NFKD", s).encode("ascii", "ignore").decode()
+    return " ".join(re.findall(r"[a-z0-9]+", s.lower()))
+
+
+def quote_in_passages(quote: str, passages: list) -> bool:
+    """Code check: does the quoted sentence really appear (ignoring case and punctuation) in a passage?"""
+    q = _norm(quote)
+    return len(q) >= 12 and any(q in _norm(p.text) for p in passages)
+
+
+_STOP = set("the a an of in on at to for and or is was were are by with from that this which who what when where how did does do has have had its their his her as be been".split())
+
+
+def _shorten(q: str, n: int = 4) -> str:
+    """Key words of a long query: drop filler words, keep the first n."""
+    w = [x for x in re.findall(r"[\w'.-]+", q) if x.lower() not in _STOP]
+    return " ".join(w[:n]) or q
 
 
 def agree(results: list[dict]) -> bool:
@@ -261,7 +326,7 @@ def _report_lines(rep_: dict, indent: str = "      ") -> str:
 
 async def run_manager(sw, question: str, subqs: list[str], groups: list[list[ev.Passage]],
                       evidence: list[ev.Passage], send, stage, trace: dict, t_start: float,
-                      stage_times: dict, today: str, publish: bool = True) -> dict:
+                      stage_times: dict, today: str, publish: bool = True, ckey: str = "manager") -> dict:
     """publish=False: one attempt among several (swarm/attempts.py) - return the trace without
     announcing the final answer or saving the trace."""
     from swarm.orchestrator import _fmt_passages, _save
@@ -294,6 +359,18 @@ async def run_manager(sw, question: str, subqs: list[str], groups: list[list[ev.
     # unloads it while the workers run. worker_sets: [[0, 1], [2, 3]] runs the teammates (by position in the team)
     # one set after the other, each set side by side, so only one set sits on the GPU at a time.
     cpin = bool(mc.get("pin_coordinator", True))
+    open_on = bool(mc.get("open_entities", False))
+    tlc = mc.get("tools") or {}
+    tools_on = bool(tlc)
+    treg = ToolRegistry(enabled=tlc.get("enabled"), mcp_specs=tlc.get("mcp")) if tools_on else None
+    tool_used = 0
+    tool_max = int(tlc.get("max_calls", 6)) if tools_on else 0
+    if treg is not None and tlc.get("mcp"):
+        await treg.start()
+    irg = mc.get("interrogator") or {}
+    irg_on = bool(irg.get("model"))
+    irg_stats = {"flagged": 0, "questions": 0, "quote_ok": 0, "seconds": 0.0}
+    short_retry = bool(mc.get("short_retry", False))
     worker_sets = [[int(i) for i in grp] for grp in (mc.get("worker_sets") or [])]
 
     slots = sw.team_slots() if sw.team() else []
@@ -363,9 +440,20 @@ async def run_manager(sw, question: str, subqs: list[str], groups: list[list[ev.
             if s.get("repeat"):
                 out.append(f"{s['cycle']}. task: {s['task']} | search: \"{s['search']}\"\n   {s['result']}")
                 continue
+            if s.get("tool"):
+                out.append(f"{s['cycle']}. TOOL {s['tool']['name']} {s['tool'].get('args') or {}}\n   result "
+                           f"({'ok' if s['found'] else 'FAILED'}): {s['result']}")
+                continue
             line = f"{s['cycle']}. {'all teammates' if s.get('results') else s['worker'] + ' (' + s['model'] + ')'} task: {s['task']}"
+            if s.get("open"):
+                line += f" | opened: {', '.join(s['open'])}"
             if s["search"]:
                 line += f" | searched: \"{s['search']}\" ({s['new_passages']} new passages)"
+            if s.get("interrogation"):
+                line += "\n   INTERROGATOR (" + "; ".join(s["interrogation"]["flags"]) + "):"
+                for qa in s["interrogation"]["qa"]:
+                    line += (f"\n     Q to {qa['to']}: {qa['q']}\n     A: {qa['answer']}"
+                             f" [{'quote checked in the passages' if qa['quote_ok'] else 'no verified quote'}]")
             if s.get("results"):
                 for x in s["results"]:
                     chk = (f" [fact-check: {x['verified']} verified, {x['rejected']} rejected, "
@@ -430,7 +518,7 @@ async def run_manager(sw, question: str, subqs: list[str], groups: list[list[ev.
             vstats["failed"] += len(notes)
     think_tokens = int(mc.get("think_tokens", 1500))
     thought_len = 800 if style == "step_back" else 300
-    sys_decide = ch_lead + MANAGER_SYSTEM.format(today=today, both_note=both_note) + (STEP_BACK_DECIDE if style == "step_back" else "")
+    sys_decide = ch_lead + MANAGER_SYSTEM.format(today=today, both_note=both_note + (("\n" + OPEN_NOTE) if open_on else "") + (("\n" + TOOL_NOTE.format(menu=treg.menu())) if tools_on else "")) + (STEP_BACK_DECIDE if style == "step_back" else "")
     thinking = {"chars": 0, "calls": 0, "fallbacks": 0}
 
     async def decide(url: str, user: str, schema: dict):
@@ -459,16 +547,30 @@ async def run_manager(sw, question: str, subqs: list[str], groups: list[list[ev.
     w_system, w_schema = (REPORT_SYSTEM, REPORT_SCHEMA) if reports else (WORKER_SYSTEM, WORKER_SCHEMA)
     w_system = ch_work + w_system
 
-    async def search_and_pick(task: str, search: str, kk: int, who: str) -> tuple[list, list]:
+    async def search_and_pick(task: str, search: str, kk: int, who: str, opens: list | None = None) -> tuple[list, list]:
         """Run the search (if any), then pick the kk passages most relevant to the task: fresh results
         first, topped up with the most relevant passages already found."""
         nonlocal have_urls, known
         new = []
-        if search:
-            try:
-                docs = await sw._gather([search], send, max_pages=pages, scholarly=False, skip_urls=have_urls)
-            except Exception:
-                docs = []
+        if search or opens:
+            docs = []
+            if opens:
+                try:
+                    docs = await _tools.wikipedia_titles(opens, skip_urls=have_urls)
+                except Exception:
+                    docs = []
+                recs[who]["opens"] = recs[who].get("opens", 0) + len(docs)
+            if search:
+                try:
+                    docs += await sw._gather([search], send, max_pages=pages, scholarly=False, skip_urls=have_urls | {x.url for x in docs})
+                except Exception:
+                    pass
+                if short_retry and not docs and len(search.split()) > 4:
+                    short = _shorten(search)
+                    try:
+                        docs += await sw._gather([short], send, max_pages=pages, scholarly=False, skip_urls=have_urls)
+                    except Exception:
+                        pass
             have_urls |= {doc.url for doc in docs}
             new = ev.build_passages(docs, size=size)
             for p in new:
@@ -485,6 +587,56 @@ async def run_manager(sw, question: str, subqs: list[str], groups: list[list[ev.
 
     def failed_search(q: str) -> bool:
         return any(not s["found"] and s.get("search") and s["search"].lower() == q.lower() for s in log)
+
+    async def interrogate(flags: list, task: str, who: list, outs: list, results: list, picks: list, cycle: int):
+        """Question teammates about anything doubtful. Returns {flags, qa[{to,q,answer,quote_ok}]} or None."""
+        t0 = time.time()
+        nmax = int(irg.get("max_questions", 2))
+        labels = [lab for lab, _ in who]
+        irg_stats["flagged"] += 1
+        report = "\n".join(
+            f"{x['worker']} ({'found' if x['found'] else 'NOT found'}): {x['result']}\n  notes: "
+            + "; ".join(f"{n.get('fact', '')} {n.get('sources', '')}" for n in (d_.get('notes') or []) if isinstance(n, dict))
+            for (_, _), d_, x in zip(who, outs, results))
+        schema = {"type": "object", "properties": {"questions": {"type": "array", "maxItems": nmax, "items": {
+            "type": "object", "properties": {"to": {"type": "string", "enum": labels + ["all"]},
+                                             "question": {"type": "string", "maxLength": 200}},
+            "required": ["to", "question"]}}}, "required": ["questions"]}
+        try:
+            async with sw.pool.use(irg["model"], int(irg.get("ctx_per_slot", 8192)), 1) as url:
+                r = await llm.chat_json(url, [{"role": "system", "content": IRG_SYSTEM.format(n=nmax)},
+                                              {"role": "user", "content": f"Task: {task}\nWhy flagged: {'; '.join(flags)}\n\n"
+                                               f"Teammate reports:\n{report}\n\nAsk your questions."}],
+                                        schema, max_tokens=400, temperature=0.0)
+            qs = [q for q in (r.data or {}).get("questions", []) if isinstance(q, dict) and q.get("question")][:nmax]
+        except llm.BudgetExhausted:
+            raise
+        except Exception:
+            return None
+        qa = []
+        for q in qs:
+            targets = [w for w in who if q.get("to") in (w[0], "all")] or who[:1]
+            for lab, mod in targets[:2]:
+                ctx, par = server(mod)
+                if both and mod != coord["model"]:
+                    par = copies[mod]
+                try:
+                    async with sw.pool.use(mod, ctx, par, pin=(cpin and mod == coord["model"])) as url:
+                        ar = await llm.chat_json(url, [{"role": "system", "content": IRG_ANSWER_SYSTEM},
+                                                       {"role": "user", "content": f"Question: {q['question']}\n\nPassages:\n{_fmt_passages(picks, limit=900)}"}],
+                                                 IRG_ANSWER_SCHEMA, max_tokens=400, temperature=temp)
+                    a = ar.data if isinstance(ar.data, dict) else {}
+                except llm.BudgetExhausted:
+                    raise
+                except Exception:
+                    continue
+                ok = bool(a.get("found")) and quote_in_passages(str(a.get("quote", "")), picks)
+                irg_stats["questions"] += 1
+                irg_stats["quote_ok"] += int(ok)
+                qa.append({"to": lab, "q": str(q["question"])[:200], "answer": " ".join(str(a.get("answer", "")).split())[:300],
+                           "quote_ok": ok})
+        irg_stats["seconds"] = round(irg_stats["seconds"] + time.time() - t0, 1)
+        return {"flags": flags, "qa": qa} if qa else None
 
     async def expert_step(cycle: int, task: str, search: str, auto: bool) -> dict:
         """The expert reads more passages; if it still lacks the fact and suggests a new search, that
@@ -681,10 +833,43 @@ async def run_manager(sw, question: str, subqs: list[str], groups: list[list[ev.
     trust_rounds = 0
     limit = max_cycles
     cycle = 0
+    ck = ckpt.current()
+    own_ids = {p.id for p in evidence}
+    saved = ck.load(f"{ckey}_state") if ck is not None else None
+    if saved:  # resume a stopped run: everything the loop had built up by the end of its last whole turn
+        cycle, limit = int(saved["cycle"]), int(saved["limit"])
+        tool_used, ex_used, trust_rounds = saved["tool_used"], saved["ex_used"], saved["trust_rounds"]
+        log[:] = saved["log"]
+        trust_log[:] = saved["trust_log"]
+        for name_, dst in (("tstats", tstats), ("ex_stats", ex_stats), ("wstats", wstats), ("vstats", vstats),
+                           ("thinking", thinking), ("irg_stats", irg_stats), ("recs", recs)):
+            if isinstance(saved.get(name_), dict):
+                dst.update(saved[name_])
+        for d_ in saved["passages"]:
+            if d_["id"] not in by_id:
+                p_ = ev.Passage(**d_)
+                by_id[p_.id] = p_
+                book.valid.add(p_.id)
+                known.append(p_)
+                have_urls.add(p_.url)
+        for n_ in saved["notes"]:
+            book.notes.append(Note(**n_))
+        book.open_questions[:] = saved.get("open_questions", [])
+        book.rejected = saved.get("rejected", 0)
+        await send({"type": "stage_note", "message": f"resumed {ckey} after turn {cycle}"})
     while cycle < limit:
+        if ck is not None:
+            ck.save(f"{ckey}_state", {
+                "cycle": cycle, "limit": limit, "tool_used": tool_used, "ex_used": ex_used,
+                "trust_rounds": trust_rounds, "log": log, "trust_log": trust_log, "tstats": tstats,
+                "ex_stats": ex_stats, "wstats": wstats, "vstats": vstats, "thinking": thinking,
+                "irg_stats": irg_stats, "recs": recs, "notes": book.to_list(),
+                "open_questions": book.open_questions, "rejected": book.rejected,
+                "passages": [p.to_dict() for i_, p in by_id.items() if i_ not in own_ids]})
         cycle += 1
         can_x = bool(ex_model) and ex_used < ex_calls_max
-        schema = decision_schema(letters + (["X"] if can_x else []), thought_len)
+        schema = decision_schema(letters + (["X"] if can_x else []), thought_len, opens=open_on,
+                                 tools=treg.names() if tools_on and tool_used < tool_max else None)
         user = (head + f"\n=== Shared workspace ===\n{book.render_for_writer(limit=30)}\n\n=== Steps so far ===\n"
                 f"{steps_text()}\n\nThis is turn {cycle} of at most {limit}."
                 + (f" Expert (X) calls left: {ex_calls_max - ex_used}." if ex_model else "")
@@ -699,7 +884,8 @@ async def run_manager(sw, question: str, subqs: list[str], groups: list[list[ev.
                         "result": f"coordinator error: {type(e).__name__}"[:200], "new_passages": 0, "seconds": 0})
             break
         d = res.data if isinstance(res.data, dict) else {}
-        if d.get("done") or not str(d.get("task", "")).strip():
+        has_tool = bool(tools_on and isinstance(d.get("tool"), dict) and d["tool"].get("name") and tool_used < tool_max)
+        if d.get("done") or (not str(d.get("task", "")).strip() and not has_tool):
             if trust_on and trust_rounds < trust_rounds_max:
                 try:
                     tr = await trust_check(cycle)
@@ -718,9 +904,32 @@ async def run_manager(sw, question: str, subqs: list[str], groups: list[list[ev.
                     continue
             trace.setdefault("manager_stop", {"cycle": cycle, "thought": str(d.get("thought", ""))[:300]})
             break
+        tcall = d.get("tool") if tools_on else None
+        if isinstance(tcall, dict) and tcall.get("name") and tool_used < tool_max:
+            tool_used += 1
+            targs = tcall.get("args") if isinstance(tcall.get("args"), dict) else {}
+            tres = await treg.call(str(tcall["name"]), targs)
+            ttext = (f"{tcall['name']}({', '.join(f'{k}={v}' for k, v in targs.items())}) -> {tres['result']}"
+                     if tres["ok"] else f"{tcall['name']} failed: {tres['error']}")
+            tp = ev.Passage(id="", url=f"tool://{tcall['name']}/{tool_used}", title=f"tool {tcall['name']}",
+                            text=ttext, source="tool")
+            give_ids([tp])
+            if ck is not None:
+                ck.tool_call({"cycle": cycle, "tool": str(tcall["name"]), "args": targs, "ok": bool(tres["ok"]),
+                              "error": tres.get("error"), "result": ttext[:600], "passage": tp.id})
+            if tres["ok"]:
+                book.add(ttext, [tp.id], "tool", added_in=f"turn {cycle}")
+            log.append({"cycle": cycle, "letter": "T", "worker": "tool", "model": "-", "task": f"tool {tcall['name']}",
+                        "search": "", "found": bool(tres["ok"]), "notes_added": int(bool(tres["ok"])),
+                        "result": ttext[:400], "new_passages": 0, "read": [tp.id], "seconds": tres["seconds"],
+                        "reassigned": False, "tool": {"name": str(tcall["name"]), "args": targs, "ok": bool(tres["ok"]),
+                                                      "error": tres["error"], "passage": tp.id},
+                        "thought": str(d.get("thought", ""))[:300]})
+            continue
         L = d.get("worker") if d.get("worker") in member else letters[0]
         want_x = can_x and d.get("worker") == "X"
         task, search = str(d["task"]).strip(), str(d.get("search", "")).strip()
+        opens = [" ".join(str(x).split())[:80] for x in (d.get("open") or []) if str(x).strip()][:2] if open_on else []
         # did the coordinator take the last step's suggestion (structured reports)?
         prev_real = next((s for s in reversed(log) if not s.get("repeat")), None)
         sugs = [x.get("report") or {} for x in ((prev_real.get("results") or [prev_real]) if prev_real else [])]
@@ -754,7 +963,7 @@ async def run_manager(sw, question: str, subqs: list[str], groups: list[list[ev.
         label, model = member[L]
         t0 = time.time()
         await send({"type": "stage_note", "message": f"turn {cycle}: {label}: {task[:80]}"})
-        new, picks = await search_and_pick(task, search, k, label)
+        new, picks = await search_and_pick(task, search, k, label, opens=opens)
         notes_txt = book.render_for_writer(limit=10)
         wuser = (f"Larger question (for context): {question}\n\nYour task: {task}\n\n"
                  f"Facts the team already has:\n{notes_txt}\n\nPassages:\n{_fmt_passages(picks, limit=900)}")
@@ -836,9 +1045,21 @@ async def run_manager(sw, question: str, subqs: list[str], groups: list[list[ev.
             r["tasks"] += 1
             r["found"] += int(fnd)
             r["seconds"] = round(r["seconds"] + secs, 1)
+        interrog = None
+        if irg_on:
+            flags = []
+            found_ = [x for x in results if x["found"]]
+            if len(results) >= 2 and found_ and len(found_) < len(results):
+                flags.append("teammates disagree on whether it was found")
+            elif len(found_) >= 2 and not agree(results):
+                flags.append("teammates' answers differ")
+            if any(bool(d_.get("found")) and not x["found"] for (_, _), d_, x in zip(who, outs, results)):
+                flags.append("a teammate said found but gave nothing usable")
+            if flags:
+                interrog = await interrogate(flags, task, who, outs, results, picks, cycle)
         prev = log[-1] if log else None
         entry = {"cycle": cycle, "letter": "both" if both else L, "worker": "both" if both else label,
-                 "model": "+".join(m for _, m in who), "task": task, "search": search,
+                 "model": "+".join(m for _, m in who), "task": task, "search": search, "open": opens,
                  "thought": str(d.get("thought", ""))[:300], "found": any(x["found"] for x in results),
                  "result": results[0]["result"], "notes_added": sum(x["notes_added"] for x in results),
                  "new_passages": len(new), "read": [p.id for p in picks], "seconds": secs,
@@ -847,6 +1068,8 @@ async def run_manager(sw, question: str, subqs: list[str], groups: list[list[ev.
                  "read_urls": list(dict.fromkeys(p.url for p in picks)),
                  "reassigned": bool(not both and prev and prev["worker"] != label and _similar(prev["task"], task)),
                  "suggested": suggested, "followed": followed}
+        if interrog:
+            entry["interrogation"] = interrog
         if reports and not both:
             entry["report"] = results[0].get("report", {})
         if both:
@@ -903,11 +1126,16 @@ async def run_manager(sw, question: str, subqs: list[str], groups: list[list[ev.
     trace["worker_results"] = results
     stats = sw._stats(results, t_start, stage_times)
     stats["mode"] = "manager"
+    if treg is not None:
+        with contextlib.suppress(Exception):
+            await treg.close()
     stats["manager"] = {"turns": len(log), "searches": sum(1 for s in log if s["search"] and not s.get("repeat")),
                         "found": sum(1 for s in log if s["found"]),
                         "reassigned": sum(1 for s in log if s.get("reassigned")),
                         "repeats_blocked": sum(1 for s in log if s.get("repeat")),
                         "dispatch": "both" if both else "one",
+                        "interrogator": irg_stats if irg_on else None,
+                        "tools": ({"calls": len(treg.log), "ok": sum(1 for x in treg.log if x["ok"]), "log": treg.log[-20:]} if treg is not None else None),
                         "charter": {k: bool(charter.get(k)) for k in ("lead", "workers")},
                         **{f"worker_{k}": v for k, v in wstats.items()},
                         "coordinator_style": style, "thinking_chars": thinking["chars"],
