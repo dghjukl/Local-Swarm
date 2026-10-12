@@ -925,7 +925,7 @@ async def run_manager(sw, question: str, subqs: list[str], groups: list[list[ev.
             tname = str(tcall["name"])
             if tname.lower() in {"search", "web_search", "web", "google"}:
                 query = tool_search_query(targs, str(d.get("task", "")))
-                new, picks = await search_and_pick(str(d.get("task", "")) or query, query, k, letters[0])
+                new, picks = await search_and_pick(str(d.get("task", "")) or query, query, k, member[letters[0]][0])
                 tstats["tool_search_alias"] += 1
                 log.append({"cycle": cycle, "letter": "T", "worker": "tool-search", "model": "-",
                             "task": str(d.get("task", ""))[:300], "search": query, "found": bool(new),
