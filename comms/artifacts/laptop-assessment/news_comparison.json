@@ -1,0 +1,267 @@
+{
+  "overall": {
+    "pc": {
+      "blocked_401_403_429": 35,
+      "count": 55,
+      "ok": 17,
+      "status_counts": {
+        "200": 19,
+        "401": 5,
+        "403": 27,
+        "429": 3,
+        "error": 1
+      }
+    },
+    "thinkpad": {
+      "blocked_401_403_429": 32,
+      "count": 55,
+      "ok": 17,
+      "status_counts": {
+        "200": 17,
+        "401": 5,
+        "403": 27,
+        "error": 6
+      }
+    }
+  },
+  "per_domain": {
+    "apnews.com": {
+      "pc": {
+        "chars": 0,
+        "count": 5,
+        "ok": 0,
+        "status_counts": {
+          "403": 5
+        }
+      },
+      "thinkpad": {
+        "chars": 0,
+        "count": 5,
+        "ok": 0,
+        "status_counts": {
+          "403": 5
+        }
+      }
+    },
+    "arxiv.org": {
+      "pc": {
+        "chars": 32056,
+        "count": 10,
+        "ok": 10,
+        "status_counts": {
+          "200": 10
+        }
+      },
+      "thinkpad": {
+        "chars": 32056,
+        "count": 10,
+        "ok": 10,
+        "status_counts": {
+          "200": 10
+        }
+      }
+    },
+    "au.finance.yahoo.com": {
+      "pc": {
+        "chars": 2853,
+        "count": 1,
+        "ok": 1,
+        "status_counts": {
+          "200": 1
+        }
+      },
+      "thinkpad": {
+        "chars": 2853,
+        "count": 1,
+        "ok": 1,
+        "status_counts": {
+          "200": 1
+        }
+      }
+    },
+    "ca.finance.yahoo.com": {
+      "pc": {
+        "chars": 2673,
+        "count": 2,
+        "ok": 1,
+        "status_counts": {
+          "200": 1,
+          "error": 1
+        }
+      },
+      "thinkpad": {
+        "chars": 2673,
+        "count": 2,
+        "ok": 1,
+        "status_counts": {
+          "200": 1,
+          "error": 1
+        }
+      }
+    },
+    "ca.news.yahoo.com": {
+      "pc": {
+        "chars": 8492,
+        "count": 2,
+        "ok": 2,
+        "status_counts": {
+          "200": 2
+        }
+      },
+      "thinkpad": {
+        "chars": 8492,
+        "count": 2,
+        "ok": 2,
+        "status_counts": {
+          "200": 2
+        }
+      }
+    },
+    "m.youtube.com": {
+      "pc": {
+        "chars": 0,
+        "count": 3,
+        "ok": 0,
+        "status_counts": {
+          "429": 3
+        }
+      },
+      "thinkpad": {
+        "chars": 0,
+        "count": 3,
+        "ok": 0,
+        "status_counts": {
+          "error": 3
+        }
+      }
+    },
+    "seekingalpha.com": {
+      "pc": {
+        "chars": 0,
+        "count": 5,
+        "ok": 0,
+        "status_counts": {
+          "403": 5
+        }
+      },
+      "thinkpad": {
+        "chars": 0,
+        "count": 5,
+        "ok": 0,
+        "status_counts": {
+          "403": 5
+        }
+      }
+    },
+    "www.britannica.com": {
+      "pc": {
+        "chars": 0,
+        "count": 5,
+        "ok": 0,
+        "status_counts": {
+          "403": 5
+        }
+      },
+      "thinkpad": {
+        "chars": 0,
+        "count": 5,
+        "ok": 0,
+        "status_counts": {
+          "403": 5
+        }
+      }
+    },
+    "www.forbes.com": {
+      "pc": {
+        "chars": 7876,
+        "count": 5,
+        "ok": 3,
+        "status_counts": {
+          "200": 3,
+          "403": 2
+        }
+      },
+      "thinkpad": {
+        "chars": 7876,
+        "count": 5,
+        "ok": 3,
+        "status_counts": {
+          "200": 3,
+          "403": 2
+        }
+      }
+    },
+    "www.nytimes.com": {
+      "pc": {
+        "chars": 0,
+        "count": 5,
+        "ok": 0,
+        "status_counts": {
+          "403": 5
+        }
+      },
+      "thinkpad": {
+        "chars": 0,
+        "count": 5,
+        "ok": 0,
+        "status_counts": {
+          "403": 5
+        }
+      }
+    },
+    "www.realclearpolling.com": {
+      "pc": {
+        "chars": 0,
+        "count": 5,
+        "ok": 0,
+        "status_counts": {
+          "403": 5
+        }
+      },
+      "thinkpad": {
+        "chars": 0,
+        "count": 5,
+        "ok": 0,
+        "status_counts": {
+          "403": 5
+        }
+      }
+    },
+    "www.reuters.com": {
+      "pc": {
+        "chars": 0,
+        "count": 5,
+        "ok": 0,
+        "status_counts": {
+          "401": 5
+        }
+      },
+      "thinkpad": {
+        "chars": 0,
+        "count": 5,
+        "ok": 0,
+        "status_counts": {
+          "401": 5
+        }
+      }
+    },
+    "www.youtube.com": {
+      "pc": {
+        "chars": 0,
+        "count": 2,
+        "ok": 0,
+        "status_counts": {
+          "200": 2
+        }
+      },
+      "thinkpad": {
+        "chars": 0,
+        "count": 2,
+        "ok": 0,
+        "status_counts": {
+          "error": 2
+        }
+      }
+    }
+  }
+}

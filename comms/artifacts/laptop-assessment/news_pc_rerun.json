@@ -1,0 +1,508 @@
+{
+  "count": 55,
+  "ok": 17,
+  "status_counts": {
+    "200": 19,
+    "403": 27,
+    "error": 1,
+    "429": 3,
+    "401": 5
+  },
+  "rows": [
+    {
+      "url": "http://arxiv.org/abs/2401.01622v3",
+      "domain": "arxiv.org",
+      "status": 200,
+      "ok": true,
+      "chars": 3266,
+      "error": "",
+      "seconds": 0.9839999999967404
+    },
+    {
+      "url": "http://arxiv.org/abs/2401.03096v1",
+      "domain": "arxiv.org",
+      "status": 200,
+      "ok": true,
+      "chars": 3026,
+      "error": "",
+      "seconds": 0.35899999999674037
+    },
+    {
+      "url": "http://arxiv.org/abs/2401.09056v1",
+      "domain": "arxiv.org",
+      "status": 200,
+      "ok": true,
+      "chars": 3089,
+      "error": "",
+      "seconds": 0.375
+    },
+    {
+      "url": "http://arxiv.org/abs/2402.15498v1",
+      "domain": "arxiv.org",
+      "status": 200,
+      "ok": true,
+      "chars": 2977,
+      "error": "",
+      "seconds": 0.375
+    },
+    {
+      "url": "http://arxiv.org/abs/2403.04132v1",
+      "domain": "arxiv.org",
+      "status": 200,
+      "ok": true,
+      "chars": 2820,
+      "error": "",
+      "seconds": 0.375
+    },
+    {
+      "url": "http://arxiv.org/abs/2403.15457v3",
+      "domain": "arxiv.org",
+      "status": 200,
+      "ok": true,
+      "chars": 3828,
+      "error": "",
+      "seconds": 0.35899999999674037
+    },
+    {
+      "url": "http://arxiv.org/abs/2403.16083v2",
+      "domain": "arxiv.org",
+      "status": 200,
+      "ok": true,
+      "chars": 2736,
+      "error": "",
+      "seconds": 0.35899999999674037
+    },
+    {
+      "url": "http://arxiv.org/abs/2406.04485v4",
+      "domain": "arxiv.org",
+      "status": 200,
+      "ok": true,
+      "chars": 3787,
+      "error": "",
+      "seconds": 0.34400000001187436
+    },
+    {
+      "url": "http://arxiv.org/abs/2406.05917v1",
+      "domain": "arxiv.org",
+      "status": 200,
+      "ok": true,
+      "chars": 3440,
+      "error": "",
+      "seconds": 0.360000000015134
+    },
+    {
+      "url": "http://arxiv.org/abs/2406.06657v1",
+      "domain": "arxiv.org",
+      "status": 200,
+      "ok": true,
+      "chars": 3087,
+      "error": "",
+      "seconds": 0.34299999999348074
+    },
+    {
+      "url": "https://apnews.com/article/biden-white-house-ai-artificial-intelligence-7458d9d1bb537929c5dcfb5192695223",
+      "domain": "apnews.com",
+      "status": 403,
+      "ok": false,
+      "chars": 0,
+      "error": "Client error '403 Forbidden' for url 'https://apnews.com/article/biden-white-house-ai-artificial-intelligence-7458d9d1bb537929c5dcfb5192695223'\nFor more information check: https://developer.mozilla.or",
+      "seconds": 0.3129999999946449
+    },
+    {
+      "url": "https://apnews.com/article/brazil-election-lula-bolsonaro-trump-3b699682b8c69e9f845e0575a86c483c",
+      "domain": "apnews.com",
+      "status": 403,
+      "ok": false,
+      "chars": 0,
+      "error": "Client error '403 Forbidden' for url 'https://apnews.com/article/brazil-election-lula-bolsonaro-trump-3b699682b8c69e9f845e0575a86c483c'\nFor more information check: https://developer.mozilla.org/en-US/",
+      "seconds": 0.28099999998812564
+    },
+    {
+      "url": "https://apnews.com/article/cuba-diez-canel-economy-us-sanctions-135cb354448c99a52f6daa9972038624",
+      "domain": "apnews.com",
+      "status": 403,
+      "ok": false,
+      "chars": 0,
+      "error": "Client error '403 Forbidden' for url 'https://apnews.com/article/cuba-diez-canel-economy-us-sanctions-135cb354448c99a52f6daa9972038624'\nFor more information check: https://developer.mozilla.org/en-US/",
+      "seconds": 0.2340000000258442
+    },
+    {
+      "url": "https://apnews.com/article/elections-indiana-legislature-redistricting-congress-6d846e191d95f31126ceca7e2eba7e82",
+      "domain": "apnews.com",
+      "status": 403,
+      "ok": false,
+      "chars": 0,
+      "error": "Client error '403 Forbidden' for url 'https://apnews.com/article/elections-indiana-legislature-redistricting-congress-6d846e191d95f31126ceca7e2eba7e82'\nFor more information check: https://developer.mo",
+      "seconds": 0.26500000001396984
+    },
+    {
+      "url": "https://apnews.com/article/redistricting-congress-trump-gerrymandering-midterm-c26a343527d6d3da51abffec2da94088",
+      "domain": "apnews.com",
+      "status": 403,
+      "ok": false,
+      "chars": 0,
+      "error": "Client error '403 Forbidden' for url 'https://apnews.com/article/redistricting-congress-trump-gerrymandering-midterm-c26a343527d6d3da51abffec2da94088'\nFor more information check: https://developer.moz",
+      "seconds": 0.25
+    },
+    {
+      "url": "https://au.finance.yahoo.com/news/upcoming-anthropic-openai-ipos-could-140809671.html",
+      "domain": "au.finance.yahoo.com",
+      "status": 200,
+      "ok": true,
+      "chars": 2853,
+      "error": "",
+      "seconds": 0.6570000000065193
+    },
+    {
+      "url": "https://ca.finance.yahoo.com/news/feds-harker-says-interest-rate-150058740.html",
+      "domain": "ca.finance.yahoo.com",
+      "status": 200,
+      "ok": true,
+      "chars": 2673,
+      "error": "",
+      "seconds": 1.4679999999934807
+    },
+    {
+      "url": "https://ca.finance.yahoo.com/news/latest-trump-sending-witkoff-kushner-061812577.html",
+      "domain": "ca.finance.yahoo.com",
+      "status": "error",
+      "ok": false,
+      "chars": 0,
+      "error": "Client error '404 Not Found' for url 'https://ca.finance.yahoo.com/news/latest-trump-sending-witkoff-kushner-061812577.html'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HT",
+      "seconds": 0.8129999999946449
+    },
+    {
+      "url": "https://ca.news.yahoo.com/1-000-health-human-services-195000345.html",
+      "domain": "ca.news.yahoo.com",
+      "status": 200,
+      "ok": true,
+      "chars": 2188,
+      "error": "",
+      "seconds": 0.8910000000032596
+    },
+    {
+      "url": "https://ca.news.yahoo.com/darline-graham-ralph-norman-head-040619353.html",
+      "domain": "ca.news.yahoo.com",
+      "status": 200,
+      "ok": true,
+      "chars": 6304,
+      "error": "",
+      "seconds": 1.2650000000139698
+    },
+    {
+      "url": "https://m.youtube.com/watch?v=eWgkwHlqrTM",
+      "domain": "m.youtube.com",
+      "status": 429,
+      "ok": false,
+      "chars": 0,
+      "error": "Client error '429 Too Many Requests' for url 'https://www.google.com/sorry/index?continue=https://m.youtube.com/watch%3Fv%3DeWgkwHlqrTM&q=EgSsOCaeGLvStdYGIjBjSIHu7JdQtlvzwY1C5s-MXMtIr6JU5Lhea2IGn7_ext",
+      "seconds": 0.7969999999913853
+    },
+    {
+      "url": "https://m.youtube.com/watch?v=H58vbez_m4E",
+      "domain": "m.youtube.com",
+      "status": 429,
+      "ok": false,
+      "chars": 0,
+      "error": "Client error '429 Too Many Requests' for url 'https://www.google.com/sorry/index?continue=https://m.youtube.com/watch%3Fv%3DH58vbez_m4E&q=EgSsOCaeGL3StdYGIjBahuxW_groDsr06Ajl_fyqIX8HGxEnGdp3srlVKuHWD9",
+      "seconds": 0.5929999999934807
+    },
+    {
+      "url": "https://m.youtube.com/watch?v=iTfPTkd-T3U",
+      "domain": "m.youtube.com",
+      "status": 429,
+      "ok": false,
+      "chars": 0,
+      "error": "Client error '429 Too Many Requests' for url 'https://www.google.com/sorry/index?continue=https://m.youtube.com/watch%3Fv%3DiTfPTkd-T3U&q=EgSsOCaeGMDStdYGIjCM-2VoUtCfFO42iDH3Z2GBtVN2X3FkciBwr5hXqQeb6l",
+      "seconds": 0.7189999999827705
+    },
+    {
+      "url": "https://seekingalpha.com/article/4947278-feds-interest-rate-decision-september-16-2026",
+      "domain": "seekingalpha.com",
+      "status": 403,
+      "ok": false,
+      "chars": 0,
+      "error": "Client error '403 Forbidden' for url 'https://seekingalpha.com/article/4947278-feds-interest-rate-decision-september-16-2026'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/H",
+      "seconds": 0.46900000001187436
+    },
+    {
+      "url": "https://seekingalpha.com/article/4947505-soxx-22-billion-of-google-tpu-financing-comes-with-a-catch",
+      "domain": "seekingalpha.com",
+      "status": 403,
+      "ok": false,
+      "chars": 0,
+      "error": "Client error '403 Forbidden' for url 'https://seekingalpha.com/article/4947505-soxx-22-billion-of-google-tpu-financing-comes-with-a-catch'\nFor more information check: https://developer.mozilla.org/en-",
+      "seconds": 0.39000000001396984
+    },
+    {
+      "url": "https://seekingalpha.com/article/4948558-markets-are-pricing-an-october-surprise-the-iran-deal",
+      "domain": "seekingalpha.com",
+      "status": 403,
+      "ok": false,
+      "chars": 0,
+      "error": "Client error '403 Forbidden' for url 'https://seekingalpha.com/article/4948558-markets-are-pricing-an-october-surprise-the-iran-deal'\nFor more information check: https://developer.mozilla.org/en-US/do",
+      "seconds": 0.3909999999741558
+    },
+    {
+      "url": "https://seekingalpha.com/article/4949612-shares-of-mgm-resorts-are-irresistible-after-people-inc-throws-in-the-towel",
+      "domain": "seekingalpha.com",
+      "status": 403,
+      "ok": false,
+      "chars": 0,
+      "error": "Client error '403 Forbidden' for url 'https://seekingalpha.com/article/4949612-shares-of-mgm-resorts-are-irresistible-after-people-inc-throws-in-the-towel'\nFor more information check: https://develope",
+      "seconds": 0.42199999999138527
+    },
+    {
+      "url": "https://seekingalpha.com/article/4952680-what-investors-might-expect-from-septembers-inflation-report",
+      "domain": "seekingalpha.com",
+      "status": 403,
+      "ok": false,
+      "chars": 0,
+      "error": "Client error '403 Forbidden' for url 'https://seekingalpha.com/article/4952680-what-investors-might-expect-from-septembers-inflation-report'\nFor more information check: https://developer.mozilla.org/e",
+      "seconds": 0.4220000000204891
+    },
+    {
+      "url": "https://www.britannica.com/biography/Christine-Lagarde",
+      "domain": "www.britannica.com",
+      "status": 403,
+      "ok": false,
+      "chars": 0,
+      "error": "Client error '403 Forbidden' for url 'https://www.britannica.com/biography/Christine-Lagarde'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/403",
+      "seconds": 0.28099999998812564
+    },
+    {
+      "url": "https://www.britannica.com/biography/Jeffrey-Epstein",
+      "domain": "www.britannica.com",
+      "status": 403,
+      "ok": false,
+      "chars": 0,
+      "error": "Client error '403 Forbidden' for url 'https://www.britannica.com/biography/Jeffrey-Epstein'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/403",
+      "seconds": 0.26600000000325963
+    },
+    {
+      "url": "https://www.britannica.com/biography/Kamala-Harris",
+      "domain": "www.britannica.com",
+      "status": 403,
+      "ok": false,
+      "chars": 0,
+      "error": "Client error '403 Forbidden' for url 'https://www.britannica.com/biography/Kamala-Harris'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/403",
+      "seconds": 0.25
+    },
+    {
+      "url": "https://www.britannica.com/biography/Robert-F-Kennedy-Jr",
+      "domain": "www.britannica.com",
+      "status": 403,
+      "ok": false,
+      "chars": 0,
+      "error": "Client error '403 Forbidden' for url 'https://www.britannica.com/biography/Robert-F-Kennedy-Jr'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/403",
+      "seconds": 0.264999999984866
+    },
+    {
+      "url": "https://www.britannica.com/biography/Ursula-von-der-Leyen",
+      "domain": "www.britannica.com",
+      "status": 403,
+      "ok": false,
+      "chars": 0,
+      "error": "Client error '403 Forbidden' for url 'https://www.britannica.com/biography/Ursula-von-der-Leyen'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/403",
+      "seconds": 0.25
+    },
+    {
+      "url": "https://www.forbes.com/advisor/investing/oil-prices-today/",
+      "domain": "www.forbes.com",
+      "status": 403,
+      "ok": false,
+      "chars": 0,
+      "error": "Client error '403 Forbidden' for url 'https://www.forbes.com/advisor/investing/oil-prices-today/'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/403",
+      "seconds": 0.28200000000651926
+    },
+    {
+      "url": "https://www.forbes.com/companies/linkedin/",
+      "domain": "www.forbes.com",
+      "status": 200,
+      "ok": true,
+      "chars": 2288,
+      "error": "",
+      "seconds": 0.45300000000861473
+    },
+    {
+      "url": "https://www.forbes.com/lists/ai50/",
+      "domain": "www.forbes.com",
+      "status": 200,
+      "ok": true,
+      "chars": 3308,
+      "error": "",
+      "seconds": 0.3120000000053551
+    },
+    {
+      "url": "https://www.forbes.com/profile/elon-musk/",
+      "domain": "www.forbes.com",
+      "status": 200,
+      "ok": true,
+      "chars": 2288,
+      "error": "",
+      "seconds": 0.4379999999946449
+    },
+    {
+      "url": "https://www.forbes.com/sites/alisondurkee/2026/08/25/trump-could-be-ghislaine-maxwells-last-hope-but-still-unclear-if-hell",
+      "domain": "www.forbes.com",
+      "status": 403,
+      "ok": false,
+      "chars": 0,
+      "error": "Client error '403 Forbidden' for url 'https://www.forbes.com/sites/alisondurkee/2026/08/25/trump-could-be-ghislaine-maxwells-last-hope-but-still-unclear-if-hell'\nFor more information check: https://de",
+      "seconds": 0.28099999998812564
+    },
+    {
+      "url": "https://www.nytimes.com/1977/11/17/archives/rod-carew-wins-vote-as-mvp-carew-of-twins-388-is-named-american.html",
+      "domain": "www.nytimes.com",
+      "status": 403,
+      "ok": false,
+      "chars": 0,
+      "error": "Client error '403 Forbidden' for url 'https://www.nytimes.com/1977/11/17/archives/rod-carew-wins-vote-as-mvp-carew-of-twins-388-is-named-american.html'\nFor more information check: https://developer.mo",
+      "seconds": 0.39100000000325963
+    },
+    {
+      "url": "https://www.nytimes.com/2023/04/10/world/asia/china-military-exercises-taiwan.html",
+      "domain": "www.nytimes.com",
+      "status": 403,
+      "ok": false,
+      "chars": 0,
+      "error": "Client error '403 Forbidden' for url 'https://www.nytimes.com/2023/04/10/world/asia/china-military-exercises-taiwan.html'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/",
+      "seconds": 0.32800000000861473
+    },
+    {
+      "url": "https://www.nytimes.com/2024/10/04/world/middleeast/ayatollah-khamenei-iran.html",
+      "domain": "www.nytimes.com",
+      "status": 403,
+      "ok": false,
+      "chars": 0,
+      "error": "Client error '403 Forbidden' for url 'https://www.nytimes.com/2024/10/04/world/middleeast/ayatollah-khamenei-iran.html'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/St",
+      "seconds": 0.3909999999741558
+    },
+    {
+      "url": "https://www.nytimes.com/2025/01/21/business/economy/trump-usmca-trade-deal-mexico-canada-autos.html",
+      "domain": "www.nytimes.com",
+      "status": 403,
+      "ok": false,
+      "chars": 0,
+      "error": "Client error '403 Forbidden' for url 'https://www.nytimes.com/2025/01/21/business/economy/trump-usmca-trade-deal-mexico-canada-autos.html'\nFor more information check: https://developer.mozilla.org/en-",
+      "seconds": 0.32800000000861473
+    },
+    {
+      "url": "https://www.nytimes.com/2026/02/12/technology/anthropic-valuation-380-billion-funding.html",
+      "domain": "www.nytimes.com",
+      "status": 403,
+      "ok": false,
+      "chars": 0,
+      "error": "Client error '403 Forbidden' for url 'https://www.nytimes.com/2026/02/12/technology/anthropic-valuation-380-billion-funding.html'\nFor more information check: https://developer.mozilla.org/en-US/docs/W",
+      "seconds": 0.32800000000861473
+    },
+    {
+      "url": "https://www.realclearpolling.com/",
+      "domain": "www.realclearpolling.com",
+      "status": 403,
+      "ok": false,
+      "chars": 0,
+      "error": "Client error '403 Forbidden' for url 'https://www.realclearpolling.com/'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/403",
+      "seconds": 0.28099999998812564
+    },
+    {
+      "url": "https://www.realclearpolling.com/elections/senate/2026/georgia",
+      "domain": "www.realclearpolling.com",
+      "status": 403,
+      "ok": false,
+      "chars": 0,
+      "error": "Client error '403 Forbidden' for url 'https://www.realclearpolling.com/elections/senate/2026/georgia'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/403",
+      "seconds": 0.28200000000651926
+    },
+    {
+      "url": "https://www.realclearpolling.com/latest-polls/governor",
+      "domain": "www.realclearpolling.com",
+      "status": 403,
+      "ok": false,
+      "chars": 0,
+      "error": "Client error '403 Forbidden' for url 'https://www.realclearpolling.com/latest-polls/governor'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/403",
+      "seconds": 0.29699999999138527
+    },
+    {
+      "url": "https://www.realclearpolling.com/polls/governor/general/2026/iowa/lahn-vs-sand",
+      "domain": "www.realclearpolling.com",
+      "status": 403,
+      "ok": false,
+      "chars": 0,
+      "error": "Client error '403 Forbidden' for url 'https://www.realclearpolling.com/polls/governor/general/2026/iowa/lahn-vs-sand'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Stat",
+      "seconds": 0.32800000000861473
+    },
+    {
+      "url": "https://www.realclearpolling.com/polls/state-of-the-union/generic-congressional-vote",
+      "domain": "www.realclearpolling.com",
+      "status": 403,
+      "ok": false,
+      "chars": 0,
+      "error": "Client error '403 Forbidden' for url 'https://www.realclearpolling.com/polls/state-of-the-union/generic-congressional-vote'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTT",
+      "seconds": 0.2659999999741558
+    },
+    {
+      "url": "https://www.reuters.com/business/anthropic-considers-releasing-new-ai-model-ahead-ipo-sources-say-2026-09-19/",
+      "domain": "www.reuters.com",
+      "status": 401,
+      "ok": false,
+      "chars": 0,
+      "error": "Client error '401 HTTP Forbidden' for url 'https://www.reuters.com/business/anthropic-considers-releasing-new-ai-model-ahead-ipo-sources-say-2026-09-19/'\nFor more information check: https://developer.",
+      "seconds": 0.39000000001396984
+    },
+    {
+      "url": "https://www.reuters.com/business/ecbs-lagarde-keeps-door-open-early-exit-2026-09-18/",
+      "domain": "www.reuters.com",
+      "status": 401,
+      "ok": false,
+      "chars": 0,
+      "error": "Client error '401 HTTP Forbidden' for url 'https://www.reuters.com/business/ecbs-lagarde-keeps-door-open-early-exit-2026-09-18/'\nFor more information check: https://developer.mozilla.org/en-US/docs/We",
+      "seconds": 0.26600000000325963
+    },
+    {
+      "url": "https://www.reuters.com/business/ecbs-lagarde-says-it-would-not-be-good-idea-run-french-president-2026-09-30/",
+      "domain": "www.reuters.com",
+      "status": 401,
+      "ok": false,
+      "chars": 0,
+      "error": "Client error '401 HTTP Forbidden' for url 'https://www.reuters.com/business/ecbs-lagarde-says-it-would-not-be-good-idea-run-french-president-2026-09-30/'\nFor more information check: https://developer.",
+      "seconds": 0.35899999999674037
+    },
+    {
+      "url": "https://www.reuters.com/business/finance/key-candidates-replace-ecb-president-lagarde-2026-09-15/",
+      "domain": "www.reuters.com",
+      "status": 401,
+      "ok": false,
+      "chars": 0,
+      "error": "Client error '401 HTTP Forbidden' for url 'https://www.reuters.com/business/finance/key-candidates-replace-ecb-president-lagarde-2026-09-15/'\nFor more information check: https://developer.mozilla.org/",
+      "seconds": 0.32800000000861473
+    },
+    {
+      "url": "https://www.reuters.com/business/lower-us-treasury-yield-view-persists-despite-biggest-quarterly-surge-since-1994-202",
+      "domain": "www.reuters.com",
+      "status": 401,
+      "ok": false,
+      "chars": 0,
+      "error": "Client error '401 HTTP Forbidden' for url 'https://www.reuters.com/business/lower-us-treasury-yield-view-persists-despite-biggest-quarterly-surge-since-1994-202'\nFor more information check: https://de",
+      "seconds": 0.28099999998812564
+    },
+    {
+      "url": "https://www.youtube.com/",
+      "domain": "www.youtube.com",
+      "status": 200,
+      "ok": false,
+      "chars": 0,
+      "error": "",
+      "seconds": 0.5160000000032596
+    },
+    {
+      "url": "https://www.youtube.com/@OpenAI",
+      "domain": "www.youtube.com",
+      "status": 200,
+      "ok": false,
+      "chars": 0,
+      "error": "",
+      "seconds": 0.5309999999881256
+    }
+  ]
+}
