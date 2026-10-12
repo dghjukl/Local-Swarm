@@ -24,3 +24,7 @@ Targeted manager tests: 3 passed. The full Local Swarm suite was not green befor
 The result does not meet the success condition: it is worse than the base score and the observed registry failure rate is above 10%. Cycle 1 must not start from this state. The most direct next step is a fresh 46-question rerun after commit `2b6ce8a`, once Chris decides whether to spend the additional GPU time; no forecast cycle was started.
 
 Artifacts: `runtime/evals/20261012-0849/results.jsonl`, `report.md`, `report.html`.
+
+## Post-patch validation attempt
+
+After commit `2b6ce8a`, a second 46-question run started at `runtime/evals/20261012-0956/`. It completed 20 questions without any coordinator/tool-contract failures, but repeated public-search timeouts stopped useful progress, so it was terminated and the GPU lock was released. Its partial result is not a score and must not be used to clear the gate.
