@@ -14,6 +14,17 @@ def git_commit(root) -> str | None:
 
 def assert_pinned_commit(root, expected: str, *, tag: str | None = None) -> str:
     actual = git_commit(root)
+    if expected.startswith("tag:"):
+        expected_tag = expected[4:]
+        try:
+            actual_tag = subprocess.check_output(
+                ["git", "-C", str(root), "describe", "--tags", "--exact-match", "HEAD"],
+                text=True, stderr=subprocess.DEVNULL).strip()
+        except (OSError, subprocess.CalledProcessError):
+            actual_tag = ""
+        if actual and actual_tag == expected_tag:
+            return actual
+        raise RuntimeError(f"pinned swarm tag mismatch: expected {expected_tag}, imported {actual_tag or actual}")
     if not actual or (actual != expected and not actual.startswith(expected)):
         label = f" tag {tag}" if tag else ""
         raise RuntimeError(f"pinned swarm{label} mismatch: expected {expected}, imported {actual}")
