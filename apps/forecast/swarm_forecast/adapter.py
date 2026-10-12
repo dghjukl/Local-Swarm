@@ -64,6 +64,35 @@ def clamp(p: float, lo: float = 0.01, hi: float = 0.99) -> float:
     return min(hi, max(lo, float(p)))
 
 
+def _source_notes(trace: dict, answer: str, manager_notes: list[str]) -> list[str]:
+    if manager_notes:
+        return manager_notes[:15]
+    sources = (trace.get("final") or {}).get("sources") or []
+    titles = []
+    for source in sources:
+        if isinstance(source, dict):
+            title = source.get("title") or source.get("name") or source.get("url")
+        else:
+            title = str(source)
+        if title:
+            titles.append(f"Source: {title}")
+    return (titles + [str(answer)[:1500]])[:15]
+
+
+def no_forecast_reason(trace: dict, answer: str, probability: float | None, reasons: list[str]) -> str | None:
+    if not (trace.get("evidence") or []):
+        return "empty_evidence"
+    if not ((trace.get("final") or {}).get("sources") or []):
+        return "empty_sources"
+    text = " ".join([answer or "", *reasons])
+    if probability is not None and 0.499 <= probability <= 0.501 and re.search(
+        r"no (findings|evidence|information|data)|zero information|not (enough|sufficient) (evidence|information)",
+        text, re.I,
+    ):
+        return "uninformative_near_half"
+    return None
+
+
 def normalize_forecast(raw: dict | None, answer: str) -> tuple[float | None, dict]:
     d = raw if isinstance(raw, dict) else {}
     p = d.get("probability")
@@ -126,8 +155,9 @@ class SwarmSession:
             if not isinstance(trace, dict) or trace.get("error"):
                 raise RuntimeError((trace or {}).get("error") if isinstance(trace, dict) else "no trace")
             answer = ((trace.get("final") or {}).get("answer")) or ""
-            notes = [n.get("fact", "") for n in ((trace.get("manager") or {}).get("notes") or [])
-                     if n.get("status") != "unsupported"][:15]
+            manager_notes = [n.get("fact", "") for n in ((trace.get("manager") or {}).get("notes") or [])
+                             if n.get("status") != "unsupported"]
+            notes = _source_notes(trace, answer, manager_notes)
             extract = self.extractor or default_extractor
             raw = await extract(self.handle, question, mode, answer, notes)
             p, parts = normalize_forecast(raw, answer)
@@ -140,10 +170,11 @@ class SwarmSession:
                     p = None
                     parts["inconsistent"] = True
                     parts["inconsistent_reason"] = f"extracted probability disagreed with explicit YES estimate {explicit:.0%}"
-            if not notes:
+            missing_reason = no_forecast_reason(trace, answer, p, parts.get("reasons", []))
+            if missing_reason:
                 p = None
                 parts["no_forecast"] = True
-                parts["no_forecast_reason"] = "no research findings were recorded"
+                parts["no_forecast_reason"] = missing_reason
             out.update(parts)
             out["probability"] = p
             out["trace_file"] = str(trace.get("trace_file") or (trace.get("final") or {}).get("trace") or "")
@@ -208,6 +239,7 @@ async def real_factory(overrides: dict) -> _RealHandle:
     from swarm.registry import scan_models
     from swarm.tools import DirectResearch
     from swarm_forecast.versioning import assert_pinned_commit
+    from swarm.paths import LLAMA_SERVER, MODELS
 
     app_config = Path(__file__).resolve().parent.parent / "config" / "default.yaml"
     pinned = __import__("yaml").safe_load(app_config.read_text(encoding="utf-8")).get("swarm", {})
@@ -215,7 +247,15 @@ async def real_factory(overrides: dict) -> _RealHandle:
     assert_pinned_commit(swarm_root, str(pinned.get("pinned_commit", "")), tag=pinned.get("pinned_tag"))
 
     cfg = deep_merge(load_config(), {k: v for k, v in overrides.items() if not k.startswith("_")})
+    if not LLAMA_SERVER.exists():
+        raise RuntimeError(f"llama-server binary missing: {LLAMA_SERVER}")
+    requested = {str((cfg.get("coordinator") or {}).get("model", "")),
+                 str((cfg.get("verifier") or {}).get("model", ""))}
+    requested.update(str(x) for x in ((cfg.get("workers") or {}).get("team") or []))
     cards = scan_models()
+    missing = sorted(name for name in requested if name and name not in cards)
+    if missing:
+        raise RuntimeError(f"model paths missing under {MODELS}: {', '.join(missing)}")
 
     async def quiet(e):
         pass

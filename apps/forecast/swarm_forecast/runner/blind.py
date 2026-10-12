@@ -21,6 +21,7 @@ async def run_blind(markets: list[dict], session, log: RecordLog, today: str, pr
     for r in prior:
         attempts[str(r["market_id"])] = attempts.get(str(r["market_id"]), 0) + 1
     done = failed = 0
+    gate = None
     for m in markets:
         mid = str(m["market_id"])
         if mid in ok or attempts.get(mid, 0) >= MAX_ATTEMPTS:
@@ -33,4 +34,14 @@ async def run_blind(markets: list[dict], session, log: RecordLog, today: str, pr
         failed += int(rec.get("probability") is None)
         if progress:
             progress("blind", mid, rec)
-    return {"ran": done, "failed": failed}
+        observed = log.read()
+        if len(observed) >= 30:
+            first = observed[:30]
+            no_forecasts = sum(bool(r.get("no_forecast")) for r in first)
+            if no_forecasts / 30 > 0.25:
+                gate = {"stop": True, "observed": 30, "no_forecast": no_forecasts,
+                        "rate": no_forecasts / 30,
+                        "reasons": {k: sum(1 for r in first if r.get("no_forecast_reason") == k)
+                                    for k in sorted({r.get("no_forecast_reason") for r in first if r.get("no_forecast_reason")})}}
+                break
+    return {"ran": done, "failed": failed, "gate": gate}

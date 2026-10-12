@@ -41,3 +41,33 @@ def test_empty_research_becomes_no_forecast(tmp_path):
     s = SwarmSession(factory=factory, extractor=extractor, save_dir=tmp_path)
     result = asyncio.run(s.forecast({"market_id": "m", "question": "Q", "today": "2026-10-12", "end_date": "2026-11-01", "rules": ""}, "blind"))
     assert result["probability"] is None and result["no_forecast"]
+
+
+def test_solo_evidence_and_sources_are_not_no_forecast(tmp_path):
+    class Handle:
+        stamp = {}
+        def __init__(self): self.swarm = self
+        async def run(self, *args, **kwargs):
+            return {"evidence": [{"fact": "supported"}], "final": {"answer": "Evidence supports YES.", "sources": [{"title": "Official source"}]}}
+        async def close(self): pass
+
+    async def factory(_): return Handle()
+    async def extractor(*_): return {"probability": 0.7, "reasons": ["supported"]}
+    s = SwarmSession(factory=factory, extractor=extractor, save_dir=tmp_path)
+    result = asyncio.run(s.forecast({"market_id": "m", "question": "Q", "today": "2026-10-12", "end_date": "2026-11-01", "rules": ""}, "blind"))
+    assert result["probability"] == 0.7 and not result.get("no_forecast")
+
+
+def test_near_half_empty_information_is_no_forecast(tmp_path):
+    class Handle:
+        stamp = {}
+        def __init__(self): self.swarm = self
+        async def run(self, *args, **kwargs):
+            return {"evidence": [{"fact": "none"}], "final": {"answer": "There is zero information available.", "sources": [{"title": "Search"}]}}
+        async def close(self): pass
+
+    async def factory(_): return Handle()
+    async def extractor(*_): return {"probability": 0.5, "reasons": ["zero information"]}
+    s = SwarmSession(factory=factory, extractor=extractor, save_dir=tmp_path)
+    result = asyncio.run(s.forecast({"market_id": "m", "question": "Q", "today": "2026-10-12", "end_date": "2026-11-01", "rules": ""}, "blind"))
+    assert result["probability"] is None and result["no_forecast_reason"] == "uninformative_near_half"

@@ -89,6 +89,11 @@ async def run_cycle(cycle_dir: str | Path, pool: list[dict], rules: dict, quick,
                 summary["blind"] = await blindmod.run_blind(chosen_markets, quick, blind_log, today, progress)
             else:
                 summary["blind"] = await blindmod.run_blind(pool, quick, blind_log, today, progress)
+                if (summary["blind"].get("gate") or {}).get("stop"):
+                    summary["status"] = "no_forecast_gate"
+                    summary["gate"] = summary["blind"]["gate"]
+                    await quick.close()
+                    return summary
                 chosen = selmod.choose_by_gap(blind_log.read(), markets, rules["x"], rules["min_gap"])
             picks = {"mode": rules["mode"], "picks": chosen, "saved": blindmod.now_iso(),
                      "baselines": {"random": selmod.random_picks(pool, len(chosen), rules["seed"]),

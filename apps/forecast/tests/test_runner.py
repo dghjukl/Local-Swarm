@@ -30,7 +30,7 @@ class FakeHandle:
 
     async def run(self, text, emit, force_research=False, save_dir=None):
         self.calls.append(text)
-        return {"final": {"answer": "Evidence is mixed."}, "manager": {"notes": [{"fact": "a fact", "status": "supported"}]},
+        return {"evidence": [{"fact": "a fact"}], "final": {"answer": "Evidence is mixed.", "sources": [{"title": "fixture"}]}, "manager": {"notes": [{"fact": "a fact", "status": "supported"}]},
                 "stats": {"total_seconds": 1.0}}
 
     async def close(self):
