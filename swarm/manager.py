@@ -221,7 +221,21 @@ TOOL_NOTE = """- To compute something EXACTLY (arithmetic, dates, ages, day coun
   put a tool call in `tool` ({{"name": ..., "args": {{...}}}}) and leave `search` empty. The result is added to the
   workspace as a fact you can use. Tools:
 {menu}
-  Use a tool only when the numbers or dates it needs are already in the workspace or the question; leave `tool` out otherwise."""
+  Use a tool only when the numbers or dates it needs are already in the workspace or the question; leave `tool` out otherwise.
+  To search the web use the `search` field, never `tool`."""
+
+
+def tool_search_query(args: dict | None, task: str) -> str:
+    """Normalize the coordinator's occasional search-as-tool form into a web query."""
+    args = args if isinstance(args, dict) else {}
+    for key in ("query", "q", "text"):
+        value = args.get(key)
+        if isinstance(value, str) and value.strip():
+            return " ".join(value.split())[:120]
+    for value in args.values():
+        if isinstance(value, str) and value.strip():
+            return " ".join(value.split())[:120]
+    return " ".join(str(task or "").split())[:120]
 
 OPEN_NOTE = """- If the next fact is probably in the Wikipedia article of a named person, place, work or thing,
   put that article's exact title in `open` (up to 2, e.g. ["Jane Eyre"]); the team opens those articles
@@ -710,7 +724,7 @@ async def run_manager(sw, question: str, subqs: list[str], groups: list[list[ev.
     # citations and arithmetic are checked by code, "supported" steps by a second model.
     tstats = {"checks": 0, "said_ready": 0, "ready": 0, "sent_back": 0, "steps": 0, "said_supported": 0,
               "bad_citation": 0, "overclaimed": 0, "calc_checked": 0, "calc_wrong": 0, "unanswered_parts": 0,
-              "failed": 0}
+              "failed": 0, "tool_search_alias": 0}
     trust_log: list[dict] = []
     tver = tc.get("verifier") or (sw.team()[0] if sw.team() else ver["model"])
 
@@ -908,21 +922,32 @@ async def run_manager(sw, question: str, subqs: list[str], groups: list[list[ev.
         if isinstance(tcall, dict) and tcall.get("name") and tool_used < tool_max:
             tool_used += 1
             targs = tcall.get("args") if isinstance(tcall.get("args"), dict) else {}
-            tres = await treg.call(str(tcall["name"]), targs)
-            ttext = (f"{tcall['name']}({', '.join(f'{k}={v}' for k, v in targs.items())}) -> {tres['result']}"
-                     if tres["ok"] else f"{tcall['name']} failed: {tres['error']}")
-            tp = ev.Passage(id="", url=f"tool://{tcall['name']}/{tool_used}", title=f"tool {tcall['name']}",
+            tname = str(tcall["name"])
+            if tname.lower() in {"search", "web_search", "web", "google"}:
+                query = tool_search_query(targs, str(d.get("task", "")))
+                new, picks = await search_and_pick(str(d.get("task", "")) or query, query, k, letters[0])
+                tstats["tool_search_alias"] += 1
+                log.append({"cycle": cycle, "letter": "T", "worker": "tool-search", "model": "-",
+                            "task": str(d.get("task", ""))[:300], "search": query, "found": bool(new),
+                            "notes_added": 0, "result": f"tool_search_alias -> {query}", "new_passages": len(new),
+                            "read": [p.id for p in picks], "seconds": 0, "reassigned": False,
+                            "tool": {"name": tname, "args": targs, "alias": "tool_search_alias", "query": query}})
+                continue
+            tres = await treg.call(tname, targs)
+            ttext = (f"{tname}({', '.join(f'{k}={v}' for k, v in targs.items())}) -> {tres['result']}"
+                     if tres["ok"] else f"{tname} failed: {tres['error']}")
+            tp = ev.Passage(id="", url=f"tool://{tname}/{tool_used}", title=f"tool {tname}",
                             text=ttext, source="tool")
             give_ids([tp])
             if ck is not None:
-                ck.tool_call({"cycle": cycle, "tool": str(tcall["name"]), "args": targs, "ok": bool(tres["ok"]),
+                ck.tool_call({"cycle": cycle, "tool": tname, "args": targs, "ok": bool(tres["ok"]),
                               "error": tres.get("error"), "result": ttext[:600], "passage": tp.id})
             if tres["ok"]:
                 book.add(ttext, [tp.id], "tool", added_in=f"turn {cycle}")
-            log.append({"cycle": cycle, "letter": "T", "worker": "tool", "model": "-", "task": f"tool {tcall['name']}",
+            log.append({"cycle": cycle, "letter": "T", "worker": "tool", "model": "-", "task": f"tool {tname}",
                         "search": "", "found": bool(tres["ok"]), "notes_added": int(bool(tres["ok"])),
                         "result": ttext[:400], "new_passages": 0, "read": [tp.id], "seconds": tres["seconds"],
-                        "reassigned": False, "tool": {"name": str(tcall["name"]), "args": targs, "ok": bool(tres["ok"]),
+                        "reassigned": False, "tool": {"name": tname, "args": targs, "ok": bool(tres["ok"]),
                                                       "error": tres["error"], "passage": tp.id},
                         "thought": str(d.get("thought", ""))[:300]})
             continue
