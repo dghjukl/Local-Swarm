@@ -13,7 +13,7 @@ def test_market_normalize_and_filters():
 
 
 def test_snapshot_resolver_and_scoring(tmp_path):
-    path = tmp_path / "batch.jsonl"; append_snapshot(path, [{"market_id": "x", "question": "q"}])
+    path = tmp_path / "batch.jsonl"; assert append_snapshot(path, [{"market_id": "x", "question": "q"}]) == 1; assert append_snapshot(path, [{"market_id": "x", "question": "q"}]) == 0
     assert json.loads(path.read_text())["market"]["market_id"] == "x"
     assert resolve_market({"market_id": "x"}, {"result": "yes"})["outcome"] == "yes"
     f = [{"probability": .8, "outcome": 1, "entry_price": .6}, {"probability": .2, "outcome": 0, "entry_price": .1}]
