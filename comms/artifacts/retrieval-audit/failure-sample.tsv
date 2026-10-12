@@ -1,0 +1,31 @@
+market_id	category	question	type	top_domains	rough_diagnosis
+1005343	crypto	Puffpaw FDV above $50M one day after launch?	no-prob	polymarket.com,.lines.com,octagonai.co,puffpaw.xyz,app.opinion.trade	market-site-only / token data
+1294069	crypto	Hurupay FDV above $20M one day after launch?	no-prob	polymarket.com,bitrue.com,octagonai.co,predictspeed.com,app.kelvon.com	market-site-only / token data
+3222415	crypto	Will Gold dip to $3,500 by December?	usable-uncertainty	marketwatch.com,finance.yahoo.com,cmegroup.com,investing.com,tradingnewsterminal.com	fine but evidence mixed
+676741	crypto	Will Apple be largest company by market cap?	usable-uncertainty	finance.yahoo.com,alpha-sense.com,fool.com,microsoft.com,moneycontrol.com	fine
+1281084	elections	Will Republicans win CA-23?	no-prob	yahoo.com,270towin.com,electoratehq.com,foxnews.com,nbcnews.com	wrong entity / forecast noise
+1284219	elections	Will Democrats win NY-01?	no-prob	270towin.com,nytimes.com,economist.com,msn.com,natesilver.net	fine but no extractable answer
+1281068	elections	Will Republicans win CA-20?	usable-uncertainty	yahoo.com,270towin.com,abc10.com,electoratehq.com,natesilver.net	fine
+1283321	elections	Will Democrats win IL-01?	usable-uncertainty	msn.com,270towin.com,cbsnews.com,natesilver.net,nbcnews.com	wrong entity risk
+2243896	geopolitics/war	Russia-Ukraine ceasefire by Oct 31?	no-prob	yahoo.com,aljazeera.com,bloomberg.com,nytimes.com,finance.yahoo.com	stale / no clear result
+3089558	geopolitics/war	Will Russia capture Novyi Donbas?	no-prob	msn.com,polymarket.com,kyivpost.com,uacontrolmap.com,youtube.com	market-site-only / stale
+1116581	geopolitics/war	Will U.S. invade Colombia?	usable-uncertainty	aljazeera.com,msn.com,nytimes.com,riotimesonline.com,upi.com	fine
+1194695	geopolitics/war	Will Russia invade another country?	usable-uncertainty	nytimes.com,aljazeera.com,castellum.ai,forbes.com,ksat.com	fine but broad question
+2589813	other	Will Fed raise rates 25 bps?	no-prob	msn.com,federalreserve.gov,thestreet.com,worldbank.org,admiralmarkets.com	fine but extraction failure
+2941849	other	Will Bank of Canada raise 25 bps?	no-prob	bankofamerica.com,msn.com,bnnbloomberg.ca,techtimes.com,finance.yahoo.com	fine but extraction failure
+3685385	other	No next Gemini Pro release by Nov 1?	usable-uncertainty	geeky-gadgets.com,computerworld.com,google.com,google.com.nf,msn.com	fine but stale roadmap
+3809076	other	Will D.C. United win on Sep 5?	usable-uncertainty	bleachernation.com,dcunited.com,flashscore.info,mlssoccer.com,si.com	fine
+1038568	politics	Will Nansen launch a token?	no-prob	nansen.ai,finance.yahoo.com,gate.com,jdsupra.com,msn.com	wrong category/entity
+1067835	politics	Will Lighter reach $10?	no-prob	coinmarketcap.com,crypto-reporter.com,goodreturns.in,mexc.com,paxhistoria.co	market-site-only / token data
+1339767	politics	Will Bitcoin dip to $50,000?	usable-uncertainty	247wallst.com,finance.yahoo.com,aol.com,kaggle.com,tiktok.com	fine but weak source mix
+1403679	politics	Romanian PM out by Dec 31?	usable-uncertainty	agerpres.ro,aljazeera.com,aol.com,cbc.ca,romania-insider.com	fine
+680951	sports	Will inflation exceed 5%?	no-prob	seekingalpha.com,calculator.net,in2013dollars.com,investors.com,morningstar.com	wrong pool category
+680954	sports	Will inflation exceed 10%?	no-prob	finance.yahoo.com,bls.gov,fool.com,in2013dollars.com,signalforge-ai.com	wrong pool category
+1892491	sports	Will Golden State Valkyries win WNBA Finals?	usable-uncertainty	nba.com,sports.yahoo.com,basketball-reference.com,cbsnews.com,msn.com	fine
+2431412	tech/AI	Will Google have best AI model at year end?	no-prob	geeky-gadgets.com,artificialanalysis.ai,androidheadlines.com,forbes.com,arena.ai	market-site / leaderboard ambiguity
+3072308	tech/AI	Will Claude score 55%+ on HLE?	no-prob	anthropic.com,vellum.ai,youtube.com,artificialanalysis.ai,europeanaquatics.org	wrong entity / no result
+1295980	tech/AI	Will OpenAI announce glasses?	usable-uncertainty	cnbc.com,linkedin.com,macobserver.com,msn.com,techrepublic.com	fine
+1295982	tech/AI	Will OpenAI announce a phone?	usable-uncertainty	geeky-gadgets.com,lines.com,creati.ai,decrypt.co,metapress.com	fine but weak source mix
+5170734	tech/AI	Will a major AI model release occur before year end?	no-prob	google.com,msn.com,arxiv.org,doi.org,arena.ai	wrong format / broad entity
+5329587	other	Will Flávio Bolsonaro reach the runoff?	usable-uncertainty	folha.uol.com.br,google.com,msn.com,yahoo.com,polymarket.com	entity ambiguity
+2110577	politics	Will the Fed cut rates at the next meeting?	usable-uncertainty	federalreserve.gov,msn.com,reuters.com,finance.yahoo.com,bloomberg.com	fine / current-data dependent

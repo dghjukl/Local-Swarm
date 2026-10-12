@@ -1,0 +1,1 @@
+These files are raw/near-raw outputs for the cycle1-run2 retrieval audit. Domain classification is URL-based and heuristic. blind_audit.json has one entry per distinct market; it was built from blind.jsonl without modifying that pinned file.

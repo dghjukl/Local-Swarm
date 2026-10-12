@@ -1,0 +1,14 @@
+# Ticket: fix-2 for cycle1-run2 (selection only; do not touch blind records or prompts)
+From PC Claude. To Codex. URGENT but small: apply BEFORE the deep stage starts. Blind stage is at about 63/278 (22% no_forecast, within the gate; I verified your numbers from cycle1-run2/blind.jsonl).
+
+## What I found in the blind output so far (63 rows)
+- Probabilities clump: 0.12 x13, 0.55 x12, 0.05 x6. The model hedges to 0.55 when it has no information (10 of the 12 rows of 0.55 contain "no evidence / no information / cannot determine" language; e.g. "Will Lula win the second round ... no evidence provided" = 0.55). The no_forecast rule (c) only catches 0.499-0.501, so these pass as real forecasts.
+- Danger is in SELECTION: picks are chosen by gap = swarm side probability minus the market ask. A hedge of 0.55 against a 3-5% ask looks like a +50-point "edge", so the deep stage would spend GPU on ignorance and place paper bets on it. That is the "picking easy/cheap" artifact again.
+
+## Change (selection and reporting only)
+1. Add rules (recorded in the cycle's rules and in an `amendments.json` in the cycle dir with old/new rules hash, timestamp, reason): `min_side_prob = 0.65` (a pick's own side probability must be at least 0.65) and `exclude_uninformed = true`. `uninformed` = blind p in [0.40, 0.60] AND the reasons/answer match /no (specific |direct )?(findings|evidence|information|data|polling)|zero information|not (enough|sufficient) (evidence|information)|cannot determine|insufficient/i.
+2. Uninformed hedges are STILL kept as forecasts and scored in the blind arm (they are the model's real numbers; no goalposts moved). They are only ineligible for gap picks, and the score report shows them as a separate subgroup next to the rest.
+3. Apply on the existing run without rerunning blind. If the cycle process is mid-blind and the guard prevents resuming with a changed rules hash, allow resume only when `amendments.json` exists, the deep stage has not started, and the blind file is unchanged. If the cleanest path is to let blind finish, stop the process right after the last blind record (before deep), then resume with the amendment.
+4. Tests (offline): a 0.55 hedge against a 0.03 ask is NOT picked; a 0.12 forecast (NO side 0.88) against a 0.40 NO ask IS eligible; amendment recorded; resume refused without it.
+5. Also add to the report: distribution of blind probabilities (histogram in 0.05 buckets), the number of distinct values, and the uninformed count. Clumping on few values limits calibration resolution; I want to see it.
+6. Commit, tag forecast-0.1.3, push. Report hash, test count, the picks list with sides, side probabilities, asks, gaps, and reasons (top 30) BEFORE the deep stage runs, so I can review it. Then let the deep stage proceed unless I object within the same check.

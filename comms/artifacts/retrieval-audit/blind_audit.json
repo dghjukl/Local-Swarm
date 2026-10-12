@@ -1,0 +1,2969 @@
+[
+  {
+    "market_id": "1005343",
+    "trace_file": "20261012-130806-771.json",
+    "market_site_contact": true,
+    "market_domains": [
+      "polymarket.com"
+    ],
+    "blind_probability": null,
+    "market_last_price": 0.28,
+    "abs_gap": null,
+    "usable": false
+  },
+  {
+    "market_id": "1013248",
+    "trace_file": "20261012-123654-411.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.15,
+    "market_last_price": 0.32,
+    "abs_gap": 0.17,
+    "usable": true
+  },
+  {
+    "market_id": "1038568",
+    "trace_file": "20261012-125536-083.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": null,
+    "market_last_price": 0.06,
+    "abs_gap": null,
+    "usable": false
+  },
+  {
+    "market_id": "1067835",
+    "trace_file": "20261012-120451-208.json",
+    "market_site_contact": true,
+    "market_domains": [
+      "polymarket.com"
+    ],
+    "blind_probability": null,
+    "market_last_price": 0.089,
+    "abs_gap": null,
+    "usable": false
+  },
+  {
+    "market_id": "1090002",
+    "trace_file": "20261012-133649-724.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.12,
+    "market_last_price": 0.087,
+    "abs_gap": 0.033,
+    "usable": true
+  },
+  {
+    "market_id": "1090005",
+    "trace_file": "20261012-131947-922.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.05,
+    "market_last_price": 0.886,
+    "abs_gap": 0.836,
+    "usable": true
+  },
+  {
+    "market_id": "1090024",
+    "trace_file": "20261012-122610-637.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.92,
+    "market_last_price": 0.928,
+    "abs_gap": 0.008,
+    "usable": true
+  },
+  {
+    "market_id": "1090043",
+    "trace_file": "20261012-130419-033.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.05,
+    "market_last_price": 0.037,
+    "abs_gap": 0.013,
+    "usable": true
+  },
+  {
+    "market_id": "1090045",
+    "trace_file": "20261012-133548-774.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.05,
+    "market_last_price": 0.05,
+    "abs_gap": 0,
+    "usable": true
+  },
+  {
+    "market_id": "1090046",
+    "trace_file": "20261012-125809-512.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.03,
+    "market_last_price": 0.783,
+    "abs_gap": 0.753,
+    "usable": true
+  },
+  {
+    "market_id": "1097262",
+    "trace_file": "20261012-130442-350.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.12,
+    "market_last_price": 0.05,
+    "abs_gap": 0.07,
+    "usable": true
+  },
+  {
+    "market_id": "1107878",
+    "trace_file": "20261012-134020-090.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.05,
+    "market_last_price": 0.05,
+    "abs_gap": 0,
+    "usable": true
+  },
+  {
+    "market_id": "1108137",
+    "trace_file": "20261012-132259-253.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.03,
+    "market_last_price": 0.08,
+    "abs_gap": 0.05,
+    "usable": true
+  },
+  {
+    "market_id": "1115638",
+    "trace_file": "20261012-131237-348.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.05,
+    "market_last_price": 0.03,
+    "abs_gap": 0.02,
+    "usable": true
+  },
+  {
+    "market_id": "1116062",
+    "trace_file": "20261012-132105-240.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.12,
+    "market_last_price": 0.05,
+    "abs_gap": 0.07,
+    "usable": true
+  },
+  {
+    "market_id": "1116581",
+    "trace_file": "20261012-124710-886.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.02,
+    "market_last_price": 0.038,
+    "abs_gap": 0.018,
+    "usable": true
+  },
+  {
+    "market_id": "1117222",
+    "trace_file": "20261012-130315-145.json",
+    "market_site_contact": true,
+    "market_domains": [
+      "polymarket.com"
+    ],
+    "blind_probability": 0.06,
+    "market_last_price": 0.11,
+    "abs_gap": 0.05,
+    "usable": true
+  },
+  {
+    "market_id": "1125386",
+    "trace_file": "20261012-131507-802.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.05,
+    "market_last_price": 0.08,
+    "abs_gap": 0.03,
+    "usable": true
+  },
+  {
+    "market_id": "1131150",
+    "trace_file": "20261012-120305-958.json",
+    "market_site_contact": true,
+    "market_domains": [
+      "polymarket.com"
+    ],
+    "blind_probability": null,
+    "market_last_price": 0.034,
+    "abs_gap": null,
+    "usable": false
+  },
+  {
+    "market_id": "1194657",
+    "trace_file": "20261012-114603-239.json",
+    "market_site_contact": true,
+    "market_domains": [
+      "polymarket.com"
+    ],
+    "blind_probability": 0.12,
+    "market_last_price": 0.11,
+    "abs_gap": 0.01,
+    "usable": true
+  },
+  {
+    "market_id": "1194695",
+    "trace_file": "20261012-131004-419.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.08,
+    "market_last_price": 0.05,
+    "abs_gap": 0.03,
+    "usable": true
+  },
+  {
+    "market_id": "1198966",
+    "trace_file": "20261012-130655-759.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.12,
+    "market_last_price": 0.065,
+    "abs_gap": 0.055,
+    "usable": true
+  },
+  {
+    "market_id": "1235568",
+    "trace_file": "20261012-115205-934.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.62,
+    "market_last_price": 0.335,
+    "abs_gap": 0.285,
+    "usable": true
+  },
+  {
+    "market_id": "1280988",
+    "trace_file": "20261012-120238-532.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.9,
+    "market_last_price": 0.04,
+    "abs_gap": 0.86,
+    "usable": true
+  },
+  {
+    "market_id": "1281068",
+    "trace_file": "20261012-121142-270.json",
+    "market_site_contact": true,
+    "market_domains": [
+      "manifold.markets"
+    ],
+    "blind_probability": 0.82,
+    "market_last_price": 0.965,
+    "abs_gap": 0.145,
+    "usable": true
+  },
+  {
+    "market_id": "1281084",
+    "trace_file": "20261012-121205-861.json",
+    "market_site_contact": true,
+    "market_domains": [
+      "manifold.markets"
+    ],
+    "blind_probability": null,
+    "market_last_price": 0.959,
+    "abs_gap": null,
+    "usable": false
+  },
+  {
+    "market_id": "1281180",
+    "trace_file": "20261012-120602-583.json",
+    "market_site_contact": true,
+    "market_domains": [
+      "manifold.markets"
+    ],
+    "blind_probability": 0.82,
+    "market_last_price": 0.04,
+    "abs_gap": 0.78,
+    "usable": true
+  },
+  {
+    "market_id": "1281197",
+    "trace_file": "20261012-122523-642.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.62,
+    "market_last_price": 0.95,
+    "abs_gap": 0.33,
+    "usable": true
+  },
+  {
+    "market_id": "1282841",
+    "trace_file": "20261012-123006-616.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.55,
+    "market_last_price": 0.969,
+    "abs_gap": 0.419,
+    "usable": true
+  },
+  {
+    "market_id": "1282952",
+    "trace_file": "20261012-123031-005.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.15,
+    "market_last_price": 0.96,
+    "abs_gap": 0.81,
+    "usable": true
+  },
+  {
+    "market_id": "1283040",
+    "trace_file": "20261012-122719-773.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.62,
+    "market_last_price": 0.87,
+    "abs_gap": 0.25,
+    "usable": true
+  },
+  {
+    "market_id": "1283321",
+    "trace_file": "20261012-122501-223.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.05,
+    "market_last_price": 0.965,
+    "abs_gap": 0.915,
+    "usable": true
+  },
+  {
+    "market_id": "1283345",
+    "trace_file": "20261012-121048-225.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.35,
+    "market_last_price": 0.935,
+    "abs_gap": 0.585,
+    "usable": true
+  },
+  {
+    "market_id": "1283544",
+    "trace_file": "20261012-123519-677.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.22,
+    "market_last_price": 0.968,
+    "abs_gap": 0.748,
+    "usable": true
+  },
+  {
+    "market_id": "1283568",
+    "trace_file": "20261012-123452-974.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.72,
+    "market_last_price": 0.962,
+    "abs_gap": 0.242,
+    "usable": true
+  },
+  {
+    "market_id": "1283953",
+    "trace_file": "20261012-122835-397.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.62,
+    "market_last_price": 0.964,
+    "abs_gap": 0.344,
+    "usable": true
+  },
+  {
+    "market_id": "1283961",
+    "trace_file": "20261012-123220-631.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.15,
+    "market_last_price": 0.97,
+    "abs_gap": 0.82,
+    "usable": true
+  },
+  {
+    "market_id": "1284033",
+    "trace_file": "20261012-122940-100.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.55,
+    "market_last_price": 0.88,
+    "abs_gap": 0.33,
+    "usable": true
+  },
+  {
+    "market_id": "1284219",
+    "trace_file": "20261012-124045-684.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": null,
+    "market_last_price": 0.16,
+    "abs_gap": null,
+    "usable": false
+  },
+  {
+    "market_id": "1284403",
+    "trace_file": "20261012-123054-473.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.55,
+    "market_last_price": 0.94,
+    "abs_gap": 0.39,
+    "usable": true
+  },
+  {
+    "market_id": "1284419",
+    "trace_file": "20261012-123844-334.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.62,
+    "market_last_price": 0.2,
+    "abs_gap": 0.42,
+    "usable": true
+  },
+  {
+    "market_id": "1284495",
+    "trace_file": "20261012-122632-333.json",
+    "market_site_contact": true,
+    "market_domains": [
+      ".pollingforecast.com"
+    ],
+    "blind_probability": 0.52,
+    "market_last_price": 0.967,
+    "abs_gap": 0.447,
+    "usable": true
+  },
+  {
+    "market_id": "1284919",
+    "trace_file": "20261012-122408-718.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.72,
+    "market_last_price": 0.96,
+    "abs_gap": 0.24,
+    "usable": true
+  },
+  {
+    "market_id": "1284944",
+    "trace_file": "20261012-120808-740.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.52,
+    "market_last_price": 0.04,
+    "abs_gap": 0.48,
+    "usable": true
+  },
+  {
+    "market_id": "1285063",
+    "trace_file": "20261012-124117-893.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.55,
+    "market_last_price": 0.042,
+    "abs_gap": 0.508,
+    "usable": true
+  },
+  {
+    "market_id": "1285103",
+    "trace_file": "20261012-123316-927.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.72,
+    "market_last_price": 0.965,
+    "abs_gap": 0.245,
+    "usable": true
+  },
+  {
+    "market_id": "1294069",
+    "trace_file": "20261012-131626-321.json",
+    "market_site_contact": true,
+    "market_domains": [
+      "polymarket.com"
+    ],
+    "blind_probability": null,
+    "market_last_price": 0.041,
+    "abs_gap": null,
+    "usable": false
+  },
+  {
+    "market_id": "1294072",
+    "trace_file": "20261012-132321-551.json",
+    "market_site_contact": true,
+    "market_domains": [
+      "polymarket.com"
+    ],
+    "blind_probability": null,
+    "market_last_price": 0.03,
+    "abs_gap": null,
+    "usable": false
+  },
+  {
+    "market_id": "1294367",
+    "trace_file": "20261012-125915-088.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": null,
+    "market_last_price": 0.03,
+    "abs_gap": null,
+    "usable": false
+  },
+  {
+    "market_id": "1295978",
+    "trace_file": "20261012-132931-192.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.12,
+    "market_last_price": 0.04,
+    "abs_gap": 0.08,
+    "usable": true
+  },
+  {
+    "market_id": "1295980",
+    "trace_file": "20261012-132839-774.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.15,
+    "market_last_price": 0.12,
+    "abs_gap": 0.03,
+    "usable": true
+  },
+  {
+    "market_id": "1295982",
+    "trace_file": "20261012-130633-317.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.15,
+    "market_last_price": 0.048,
+    "abs_gap": 0.102,
+    "usable": true
+  },
+  {
+    "market_id": "1295985",
+    "trace_file": "20261012-132705-161.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.12,
+    "market_last_price": 0.063,
+    "abs_gap": 0.057,
+    "usable": true
+  },
+  {
+    "market_id": "1296001",
+    "trace_file": "20261012-132409-066.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": null,
+    "market_last_price": 0.788,
+    "abs_gap": null,
+    "usable": false
+  },
+  {
+    "market_id": "1302781",
+    "trace_file": "20261012-125051-639.json",
+    "market_site_contact": true,
+    "market_domains": [
+      "polymarket.com"
+    ],
+    "blind_probability": null,
+    "market_last_price": 0.057,
+    "abs_gap": null,
+    "usable": false
+  },
+  {
+    "market_id": "1316930",
+    "trace_file": "20261012-133150-820.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.2,
+    "market_last_price": 0.042,
+    "abs_gap": 0.158,
+    "usable": true
+  },
+  {
+    "market_id": "1321564",
+    "trace_file": "20261012-130830-568.json",
+    "market_site_contact": true,
+    "market_domains": [
+      "news.kalshi.com"
+    ],
+    "blind_probability": 0.05,
+    "market_last_price": 0.508,
+    "abs_gap": 0.458,
+    "usable": true
+  },
+  {
+    "market_id": "1339767",
+    "trace_file": "20261012-120214-381.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.55,
+    "market_last_price": 0.06,
+    "abs_gap": 0.49,
+    "usable": true
+  },
+  {
+    "market_id": "1370033",
+    "trace_file": "20261012-125001-677.json",
+    "market_site_contact": true,
+    "market_domains": [
+      "polymarket.com"
+    ],
+    "blind_probability": null,
+    "market_last_price": 0.35,
+    "abs_gap": null,
+    "usable": false
+  },
+  {
+    "market_id": "1394887",
+    "trace_file": "20261012-134402-320.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.55,
+    "market_last_price": 0.938,
+    "abs_gap": 0.388,
+    "usable": true
+  },
+  {
+    "market_id": "1403679",
+    "trace_file": "20261012-130139-124.json",
+    "market_site_contact": true,
+    "market_domains": [
+      "polymarket.com"
+    ],
+    "blind_probability": 0.85,
+    "market_last_price": 0.828,
+    "abs_gap": 0.022,
+    "usable": true
+  },
+  {
+    "market_id": "1421651",
+    "trace_file": "20261012-133620-725.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.85,
+    "market_last_price": 0.21,
+    "abs_gap": 0.64,
+    "usable": true
+  },
+  {
+    "market_id": "1469737",
+    "trace_file": "20261012-122810-334.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.72,
+    "market_last_price": 0.877,
+    "abs_gap": 0.157,
+    "usable": true
+  },
+  {
+    "market_id": "1494713",
+    "trace_file": "20261012-125258-787.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.25,
+    "market_last_price": 0.041,
+    "abs_gap": 0.209,
+    "usable": true
+  },
+  {
+    "market_id": "1535123",
+    "trace_file": "20261012-131843-859.json",
+    "market_site_contact": true,
+    "market_domains": [
+      "polymarket.com",
+      "manifold.markets"
+    ],
+    "blind_probability": null,
+    "market_last_price": 0.143,
+    "abs_gap": null,
+    "usable": false
+  },
+  {
+    "market_id": "1544502",
+    "trace_file": "20261012-130355-779.json",
+    "market_site_contact": true,
+    "market_domains": [
+      "polymarket.com",
+      "kalshi.com"
+    ],
+    "blind_probability": 0.12,
+    "market_last_price": 0.13,
+    "abs_gap": 0.01,
+    "usable": true
+  },
+  {
+    "market_id": "1553248",
+    "trace_file": "20261012-130100-177.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.2,
+    "market_last_price": 0.053,
+    "abs_gap": 0.147,
+    "usable": true
+  },
+  {
+    "market_id": "1601453",
+    "trace_file": "20261012-124746-791.json",
+    "market_site_contact": true,
+    "market_domains": [
+      "polymarket.com"
+    ],
+    "blind_probability": null,
+    "market_last_price": 0.07,
+    "abs_gap": null,
+    "usable": false
+  },
+  {
+    "market_id": "1651336",
+    "trace_file": "20261012-124844-093.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.07,
+    "market_last_price": 0.062,
+    "abs_gap": 0.008,
+    "usable": true
+  },
+  {
+    "market_id": "1719961",
+    "trace_file": "20261012-133845-600.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.35,
+    "market_last_price": 0.949,
+    "abs_gap": 0.599,
+    "usable": true
+  },
+  {
+    "market_id": "1721031",
+    "trace_file": "20261012-125648-635.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.15,
+    "market_last_price": 0.671,
+    "abs_gap": 0.521,
+    "usable": true
+  },
+  {
+    "market_id": "1892487",
+    "trace_file": "20261012-134122-728.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.05,
+    "market_last_price": 0.46,
+    "abs_gap": 0.41,
+    "usable": true
+  },
+  {
+    "market_id": "1892491",
+    "trace_file": "20261012-133822-833.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.15,
+    "market_last_price": 0.534,
+    "abs_gap": 0.384,
+    "usable": true
+  },
+  {
+    "market_id": "2071657",
+    "trace_file": "20261012-124907-896.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.12,
+    "market_last_price": 0.07,
+    "abs_gap": 0.05,
+    "usable": true
+  },
+  {
+    "market_id": "2100453",
+    "trace_file": "20261012-130740-383.json",
+    "market_site_contact": true,
+    "market_domains": [
+      "polymarket.com"
+    ],
+    "blind_probability": null,
+    "market_last_price": 0.05,
+    "abs_gap": null,
+    "usable": false
+  },
+  {
+    "market_id": "2109822",
+    "trace_file": "20261012-124409-850.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": null,
+    "market_last_price": 0.031,
+    "abs_gap": null,
+    "usable": false
+  },
+  {
+    "market_id": "2109881",
+    "trace_file": "20261012-130237-101.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.02,
+    "market_last_price": 0.64,
+    "abs_gap": 0.62,
+    "usable": true
+  },
+  {
+    "market_id": "2110576",
+    "trace_file": "20261012-113459-700.json",
+    "market_site_contact": true,
+    "market_domains": [
+      "polymarket.com"
+    ],
+    "blind_probability": 0.12,
+    "market_last_price": 0.164,
+    "abs_gap": 0.044,
+    "usable": true
+  },
+  {
+    "market_id": "2110577",
+    "trace_file": "20261012-114118-311.json",
+    "market_site_contact": true,
+    "market_domains": [
+      "polymarket.com",
+      "manifold.markets"
+    ],
+    "blind_probability": 0.55,
+    "market_last_price": 0.4,
+    "abs_gap": 0.15,
+    "usable": true
+  },
+  {
+    "market_id": "2110578",
+    "trace_file": "20261012-113702-008.json",
+    "market_site_contact": true,
+    "market_domains": [
+      "polymarket.com"
+    ],
+    "blind_probability": 0.55,
+    "market_last_price": 0.27,
+    "abs_gap": 0.28,
+    "usable": true
+  },
+  {
+    "market_id": "2110579",
+    "trace_file": "20261012-115254-036.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.82,
+    "market_last_price": 0.11,
+    "abs_gap": 0.71,
+    "usable": true
+  },
+  {
+    "market_id": "2125857",
+    "trace_file": "20261012-122437-583.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.7,
+    "market_last_price": 0.92,
+    "abs_gap": 0.22,
+    "usable": true
+  },
+  {
+    "market_id": "2125867",
+    "trace_file": "20261012-120327-442.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.15,
+    "market_last_price": 0.04,
+    "abs_gap": 0.11,
+    "usable": true
+  },
+  {
+    "market_id": "2232194",
+    "trace_file": "20261012-123822-176.json",
+    "market_site_contact": true,
+    "market_domains": [
+      "polymarket.com"
+    ],
+    "blind_probability": 0.55,
+    "market_last_price": 0.11,
+    "abs_gap": 0.44,
+    "usable": true
+  },
+  {
+    "market_id": "2241741",
+    "trace_file": "20261012-131805-179.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.35,
+    "market_last_price": 0.12,
+    "abs_gap": 0.23,
+    "usable": true
+  },
+  {
+    "market_id": "2243896",
+    "trace_file": "20261012-133522-734.json",
+    "market_site_contact": true,
+    "market_domains": [
+      "polymarket.com"
+    ],
+    "blind_probability": null,
+    "market_last_price": 0.046,
+    "abs_gap": null,
+    "usable": false
+  },
+  {
+    "market_id": "2264327",
+    "trace_file": "20261012-113728-573.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.05,
+    "market_last_price": 0.033,
+    "abs_gap": 0.017,
+    "usable": true
+  },
+  {
+    "market_id": "2299952",
+    "trace_file": "20261012-130333-599.json",
+    "market_site_contact": true,
+    "market_domains": [
+      "polymarket.com"
+    ],
+    "blind_probability": 0.05,
+    "market_last_price": 0.26,
+    "abs_gap": 0.21,
+    "usable": true
+  },
+  {
+    "market_id": "2362980",
+    "trace_file": "20261012-124203-537.json",
+    "market_site_contact": true,
+    "market_domains": [
+      "polymarket.com"
+    ],
+    "blind_probability": 0.15,
+    "market_last_price": 0.05,
+    "abs_gap": 0.1,
+    "usable": true
+  },
+  {
+    "market_id": "2374271",
+    "trace_file": "20261012-125118-337.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.05,
+    "market_last_price": 0.026,
+    "abs_gap": 0.024,
+    "usable": true
+  },
+  {
+    "market_id": "2382819",
+    "trace_file": "20261012-132228-655.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.08,
+    "market_last_price": 0.041,
+    "abs_gap": 0.039,
+    "usable": true
+  },
+  {
+    "market_id": "2414701",
+    "trace_file": "20261012-124935-755.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.05,
+    "market_last_price": 0.08,
+    "abs_gap": 0.03,
+    "usable": true
+  },
+  {
+    "market_id": "2431412",
+    "trace_file": "20261012-124226-084.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": null,
+    "market_last_price": 0.43,
+    "abs_gap": null,
+    "usable": false
+  },
+  {
+    "market_id": "2431413",
+    "trace_file": "20261012-131445-848.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.55,
+    "market_last_price": 0.41,
+    "abs_gap": 0.14,
+    "usable": true
+  },
+  {
+    "market_id": "2431414",
+    "trace_file": "20261012-132457-969.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.55,
+    "market_last_price": 0.082,
+    "abs_gap": 0.468,
+    "usable": true
+  },
+  {
+    "market_id": "2467467",
+    "trace_file": "20261012-125937-940.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.15,
+    "market_last_price": 0.05,
+    "abs_gap": 0.1,
+    "usable": true
+  },
+  {
+    "market_id": "2468325",
+    "trace_file": "20261012-120746-569.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": null,
+    "market_last_price": 0.049,
+    "abs_gap": null,
+    "usable": false
+  },
+  {
+    "market_id": "2485818",
+    "trace_file": "20261012-120653-100.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.12,
+    "market_last_price": 0.05,
+    "abs_gap": 0.07,
+    "usable": true
+  },
+  {
+    "market_id": "2487276",
+    "trace_file": "20261012-120723-474.json",
+    "market_site_contact": true,
+    "market_domains": [
+      "polymarket.com"
+    ],
+    "blind_probability": 0.17,
+    "market_last_price": 0.13,
+    "abs_gap": 0.04,
+    "usable": true
+  },
+  {
+    "market_id": "2589813",
+    "trace_file": "20261012-114143-271.json",
+    "market_site_contact": true,
+    "market_domains": [
+      "polymarket.com"
+    ],
+    "blind_probability": null,
+    "market_last_price": 0.17,
+    "abs_gap": null,
+    "usable": false
+  },
+  {
+    "market_id": "2677132",
+    "trace_file": "20261012-125446-670.json",
+    "market_site_contact": true,
+    "market_domains": [
+      "polymarket.com"
+    ],
+    "blind_probability": null,
+    "market_last_price": 0.11,
+    "abs_gap": null,
+    "usable": false
+  },
+  {
+    "market_id": "2747434",
+    "trace_file": "20261012-125516-881.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.28,
+    "market_last_price": 0.12,
+    "abs_gap": 0.16,
+    "usable": true
+  },
+  {
+    "market_id": "2749366",
+    "trace_file": "20261012-130510-493.json",
+    "market_site_contact": true,
+    "market_domains": [
+      "polymarket.com"
+    ],
+    "blind_probability": 0.05,
+    "market_last_price": 0.033,
+    "abs_gap": 0.017,
+    "usable": true
+  },
+  {
+    "market_id": "2757892",
+    "trace_file": "20261012-113900-212.json",
+    "market_site_contact": true,
+    "market_domains": [
+      "polymarket.com"
+    ],
+    "blind_probability": 0.05,
+    "market_last_price": 0.008,
+    "abs_gap": 0.042,
+    "usable": true
+  },
+  {
+    "market_id": "2757899",
+    "trace_file": "20261012-114935-141.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.12,
+    "market_last_price": 0.08,
+    "abs_gap": 0.04,
+    "usable": true
+  },
+  {
+    "market_id": "2757900",
+    "trace_file": "20261012-114533-965.json",
+    "market_site_contact": true,
+    "market_domains": [
+      "polymarket.com"
+    ],
+    "blind_probability": 0.05,
+    "market_last_price": 0.23,
+    "abs_gap": 0.18,
+    "usable": true
+  },
+  {
+    "market_id": "2787889",
+    "trace_file": "20261012-124502-428.json",
+    "market_site_contact": true,
+    "market_domains": [
+      "polymarket.com"
+    ],
+    "blind_probability": 0.2,
+    "market_last_price": 0.14,
+    "abs_gap": 0.06,
+    "usable": true
+  },
+  {
+    "market_id": "2787891",
+    "trace_file": "20261012-130723-277.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.12,
+    "market_last_price": 0.11,
+    "abs_gap": 0.01,
+    "usable": true
+  },
+  {
+    "market_id": "2852811",
+    "trace_file": "20261012-134310-598.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.9,
+    "market_last_price": 0.963,
+    "abs_gap": 0.063,
+    "usable": true
+  },
+  {
+    "market_id": "2866301",
+    "trace_file": "20261012-121021-333.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.95,
+    "market_last_price": 0.95,
+    "abs_gap": 0,
+    "usable": true
+  },
+  {
+    "market_id": "2941849",
+    "trace_file": "20261012-113824-719.json",
+    "market_site_contact": true,
+    "market_domains": [
+      "polymarkettrader.com",
+      "polymarket.com"
+    ],
+    "blind_probability": null,
+    "market_last_price": 0.153,
+    "abs_gap": null,
+    "usable": false
+  },
+  {
+    "market_id": "3072308",
+    "trace_file": "20261012-125416-151.json",
+    "market_site_contact": true,
+    "market_domains": [
+      "polymarket.com"
+    ],
+    "blind_probability": null,
+    "market_last_price": 0.824,
+    "abs_gap": null,
+    "usable": false
+  },
+  {
+    "market_id": "3072309",
+    "trace_file": "20261012-124533-256.json",
+    "market_site_contact": true,
+    "market_domains": [
+      "polymarket.com"
+    ],
+    "blind_probability": null,
+    "market_last_price": 0.43,
+    "abs_gap": null,
+    "usable": false
+  },
+  {
+    "market_id": "3072310",
+    "trace_file": "20261012-132524-534.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.15,
+    "market_last_price": 0.24,
+    "abs_gap": 0.09,
+    "usable": true
+  },
+  {
+    "market_id": "3072319",
+    "trace_file": "20261012-130210-270.json",
+    "market_site_contact": true,
+    "market_domains": [
+      "polymarket.com"
+    ],
+    "blind_probability": 0.12,
+    "market_last_price": 0.44,
+    "abs_gap": 0.32,
+    "usable": true
+  },
+  {
+    "market_id": "3072352",
+    "trace_file": "20261012-131713-411.json",
+    "market_site_contact": true,
+    "market_domains": [
+      "polymarket.com"
+    ],
+    "blind_probability": 0.15,
+    "market_last_price": 0.8,
+    "abs_gap": 0.65,
+    "usable": true
+  },
+  {
+    "market_id": "3089558",
+    "trace_file": "20261012-133256-443.json",
+    "market_site_contact": true,
+    "market_domains": [
+      "polymarket.com"
+    ],
+    "blind_probability": null,
+    "market_last_price": 0.08,
+    "abs_gap": null,
+    "usable": false
+  },
+  {
+    "market_id": "3208508",
+    "trace_file": "20261012-125556-710.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": null,
+    "market_last_price": 0.05,
+    "abs_gap": null,
+    "usable": false
+  },
+  {
+    "market_id": "3212218",
+    "trace_file": "20261012-115859-177.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.55,
+    "market_last_price": 0.52,
+    "abs_gap": 0.03,
+    "usable": true
+  },
+  {
+    "market_id": "3222415",
+    "trace_file": "20261012-125748-577.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.55,
+    "market_last_price": 0.1,
+    "abs_gap": 0.45,
+    "usable": true
+  },
+  {
+    "market_id": "3224927",
+    "trace_file": "20261012-130608-005.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": null,
+    "market_last_price": 0.22,
+    "abs_gap": null,
+    "usable": false
+  },
+  {
+    "market_id": "3251056",
+    "trace_file": "20261012-132909-314.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.05,
+    "market_last_price": 0.4,
+    "abs_gap": 0.35,
+    "usable": true
+  },
+  {
+    "market_id": "3251602",
+    "trace_file": "20261012-114713-254.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.55,
+    "market_last_price": 0.948,
+    "abs_gap": 0.398,
+    "usable": true
+  },
+  {
+    "market_id": "3251603",
+    "trace_file": "20261012-113134-143.json",
+    "market_site_contact": true,
+    "market_domains": [
+      "polymarkettrader.com"
+    ],
+    "blind_probability": 0.55,
+    "market_last_price": 0.058,
+    "abs_gap": 0.492,
+    "usable": true
+  },
+  {
+    "market_id": "3344896",
+    "trace_file": "20261012-134427-573.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": null,
+    "market_last_price": 0.65,
+    "abs_gap": null,
+    "usable": false
+  },
+  {
+    "market_id": "3357489",
+    "trace_file": "20261012-132751-271.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.05,
+    "market_last_price": 0.32,
+    "abs_gap": 0.27,
+    "usable": true
+  },
+  {
+    "market_id": "3358720",
+    "trace_file": "20261012-133756-000.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.95,
+    "market_last_price": 0.22,
+    "abs_gap": 0.73,
+    "usable": true
+  },
+  {
+    "market_id": "3372768",
+    "trace_file": "20261012-134059-240.json",
+    "market_site_contact": true,
+    "market_domains": [
+      "polymarket.com"
+    ],
+    "blind_probability": null,
+    "market_last_price": 0.132,
+    "abs_gap": null,
+    "usable": false
+  },
+  {
+    "market_id": "3399459",
+    "trace_file": "20261012-114910-865.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.05,
+    "market_last_price": 0.85,
+    "abs_gap": 0.8,
+    "usable": true
+  },
+  {
+    "market_id": "3399468",
+    "trace_file": "20261012-131421-286.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.55,
+    "market_last_price": 0.56,
+    "abs_gap": 0.01,
+    "usable": true
+  },
+  {
+    "market_id": "3399934",
+    "trace_file": "20261012-123407-890.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.62,
+    "market_last_price": 0.937,
+    "abs_gap": 0.317,
+    "usable": true
+  },
+  {
+    "market_id": "3491438",
+    "trace_file": "20261012-120514-389.json",
+    "market_site_contact": true,
+    "market_domains": [
+      "polymarket.com"
+    ],
+    "blind_probability": 0.18,
+    "market_last_price": 0.08,
+    "abs_gap": 0.1,
+    "usable": true
+  },
+  {
+    "market_id": "3501951",
+    "trace_file": "20261012-124436-005.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.05,
+    "market_last_price": 0.06,
+    "abs_gap": 0.01,
+    "usable": true
+  },
+  {
+    "market_id": "3532189",
+    "trace_file": "20261012-131304-379.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.15,
+    "market_last_price": 0.42,
+    "abs_gap": 0.27,
+    "usable": true
+  },
+  {
+    "market_id": "3532191",
+    "trace_file": "20261012-132433-223.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.1,
+    "market_last_price": 0.41,
+    "abs_gap": 0.31,
+    "usable": true
+  },
+  {
+    "market_id": "3553889",
+    "trace_file": "20261012-125140-035.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.15,
+    "market_last_price": 0.13,
+    "abs_gap": 0.02,
+    "usable": true
+  },
+  {
+    "market_id": "3553897",
+    "trace_file": "20261012-123950-786.json",
+    "market_site_contact": true,
+    "market_domains": [
+      "polymarket.com"
+    ],
+    "blind_probability": 0.12,
+    "market_last_price": 0.14,
+    "abs_gap": 0.02,
+    "usable": true
+  },
+  {
+    "market_id": "3554313",
+    "trace_file": "20261012-115922-009.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.35,
+    "market_last_price": 0.92,
+    "abs_gap": 0.57,
+    "usable": true
+  },
+  {
+    "market_id": "3554471",
+    "trace_file": "20261012-114027-085.json",
+    "market_site_contact": true,
+    "market_domains": [
+      "polymarket.com"
+    ],
+    "blind_probability": null,
+    "market_last_price": 0.38,
+    "abs_gap": null,
+    "usable": false
+  },
+  {
+    "market_id": "3554472",
+    "trace_file": "20261012-133217-553.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.5,
+    "market_last_price": 0.12,
+    "abs_gap": 0.38,
+    "usable": true
+  },
+  {
+    "market_id": "3554657",
+    "trace_file": "20261012-114211-391.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.2,
+    "market_last_price": 0.27,
+    "abs_gap": 0.07,
+    "usable": true
+  },
+  {
+    "market_id": "3554659",
+    "trace_file": "20261012-132728-458.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": null,
+    "market_last_price": 0.709,
+    "abs_gap": null,
+    "usable": false
+  },
+  {
+    "market_id": "3565807",
+    "trace_file": "20261012-125838-532.json",
+    "market_site_contact": true,
+    "market_domains": [
+      "polymarket.com"
+    ],
+    "blind_probability": 0.55,
+    "market_last_price": 0.056,
+    "abs_gap": 0.494,
+    "usable": true
+  },
+  {
+    "market_id": "3667937",
+    "trace_file": "20261012-113335-003.json",
+    "market_site_contact": true,
+    "market_domains": [
+      "polymarket.com"
+    ],
+    "blind_probability": 0.12,
+    "market_last_price": 0.1,
+    "abs_gap": 0.02,
+    "usable": true
+  },
+  {
+    "market_id": "3685385",
+    "trace_file": "20261012-114404-617.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.15,
+    "market_last_price": 0.903,
+    "abs_gap": 0.753,
+    "usable": true
+  },
+  {
+    "market_id": "3741671",
+    "trace_file": "20261012-115031-493.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.12,
+    "market_last_price": 0.3,
+    "abs_gap": 0.18,
+    "usable": true
+  },
+  {
+    "market_id": "3748314",
+    "trace_file": "20261012-123720-132.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.55,
+    "market_last_price": 0.3,
+    "abs_gap": 0.25,
+    "usable": true
+  },
+  {
+    "market_id": "3764664",
+    "trace_file": "20261012-114342-519.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.05,
+    "market_last_price": 0.04,
+    "abs_gap": 0.01,
+    "usable": true
+  },
+  {
+    "market_id": "3809076",
+    "trace_file": "20261012-114739-411.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.15,
+    "market_last_price": 0.24,
+    "abs_gap": 0.09,
+    "usable": true
+  },
+  {
+    "market_id": "3860600",
+    "trace_file": "20261012-120624-458.json",
+    "market_site_contact": true,
+    "market_domains": [
+      "polymarket.com"
+    ],
+    "blind_probability": 0.35,
+    "market_last_price": 0.11,
+    "abs_gap": 0.24,
+    "usable": true
+  },
+  {
+    "market_id": "3865962",
+    "trace_file": "20261012-125623-224.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.5,
+    "market_last_price": 0.21,
+    "abs_gap": 0.29,
+    "usable": true
+  },
+  {
+    "market_id": "3900266",
+    "trace_file": "20261012-115822-271.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.12,
+    "market_last_price": 0.075,
+    "abs_gap": 0.045,
+    "usable": true
+  },
+  {
+    "market_id": "3900397",
+    "trace_file": "20261012-115228-739.json",
+    "market_site_contact": true,
+    "market_domains": [
+      "polymarket.com"
+    ],
+    "blind_probability": 0.12,
+    "market_last_price": 0.09,
+    "abs_gap": 0.03,
+    "usable": true
+  },
+  {
+    "market_id": "3902370",
+    "trace_file": "20261012-131143-725.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.15,
+    "market_last_price": 0.62,
+    "abs_gap": 0.47,
+    "usable": true
+  },
+  {
+    "market_id": "4118937",
+    "trace_file": "20261012-114437-799.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.25,
+    "market_last_price": 0.22,
+    "abs_gap": 0.03,
+    "usable": true
+  },
+  {
+    "market_id": "4178411",
+    "trace_file": "20261012-114803-552.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.12,
+    "market_last_price": 0.796,
+    "abs_gap": 0.676,
+    "usable": true
+  },
+  {
+    "market_id": "4178748",
+    "trace_file": "20261012-122744-427.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.55,
+    "market_last_price": 0.879,
+    "abs_gap": 0.329,
+    "usable": true
+  },
+  {
+    "market_id": "4182986",
+    "trace_file": "20261012-113306-407.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": null,
+    "market_last_price": 0.31,
+    "abs_gap": null,
+    "usable": false
+  },
+  {
+    "market_id": "4218313",
+    "trace_file": "20261012-123150-573.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": null,
+    "market_last_price": 0.87,
+    "abs_gap": null,
+    "usable": false
+  },
+  {
+    "market_id": "4223524",
+    "trace_file": "20261012-123749-785.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.12,
+    "market_last_price": 0.18,
+    "abs_gap": 0.06,
+    "usable": true
+  },
+  {
+    "market_id": "4319439",
+    "trace_file": "20261012-131906-834.json",
+    "market_site_contact": true,
+    "market_domains": [
+      "polymarket.com"
+    ],
+    "blind_probability": 0.15,
+    "market_last_price": 0.53,
+    "abs_gap": 0.38,
+    "usable": true
+  },
+  {
+    "market_id": "4319440",
+    "trace_file": "20261012-131648-421.json",
+    "market_site_contact": true,
+    "market_domains": [
+      "polymarket.com"
+    ],
+    "blind_probability": 0.05,
+    "market_last_price": 0.037,
+    "abs_gap": 0.013,
+    "usable": true
+  },
+  {
+    "market_id": "4338145",
+    "trace_file": "20261012-124633-177.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": null,
+    "market_last_price": 0.09,
+    "abs_gap": null,
+    "usable": false
+  },
+  {
+    "market_id": "4346270",
+    "trace_file": "20261012-113426-986.json",
+    "market_site_contact": true,
+    "market_domains": [
+      "polymarket.com"
+    ],
+    "blind_probability": 0.15,
+    "market_last_price": 0.06,
+    "abs_gap": 0.09,
+    "usable": true
+  },
+  {
+    "market_id": "4397027",
+    "trace_file": "20261012-131537-883.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.08,
+    "market_last_price": 0.17,
+    "abs_gap": 0.09,
+    "usable": true
+  },
+  {
+    "market_id": "4397202",
+    "trace_file": "20261012-113528-949.json",
+    "market_site_contact": true,
+    "market_domains": [
+      "polymarket.com"
+    ],
+    "blind_probability": null,
+    "market_last_price": 0.53,
+    "abs_gap": null,
+    "usable": false
+  },
+  {
+    "market_id": "4411997",
+    "trace_file": "20261012-113605-562.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.55,
+    "market_last_price": 0.93,
+    "abs_gap": 0.38,
+    "usable": true
+  },
+  {
+    "market_id": "4412321",
+    "trace_file": "20261012-133028-117.json",
+    "market_site_contact": true,
+    "market_domains": [
+      "manifold.markets"
+    ],
+    "blind_probability": 0.95,
+    "market_last_price": 0.8,
+    "abs_gap": 0.15,
+    "usable": true
+  },
+  {
+    "market_id": "4412323",
+    "trace_file": "20261012-130857-146.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.02,
+    "market_last_price": 0.019,
+    "abs_gap": 0.001,
+    "usable": true
+  },
+  {
+    "market_id": "4424732",
+    "trace_file": "20261012-113201-559.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.015,
+    "market_last_price": 0.094,
+    "abs_gap": 0.079,
+    "usable": true
+  },
+  {
+    "market_id": "4567308",
+    "trace_file": "20261012-132138-126.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.12,
+    "market_last_price": 0.059,
+    "abs_gap": 0.061,
+    "usable": true
+  },
+  {
+    "market_id": "4599796",
+    "trace_file": "20261012-130030-148.json",
+    "market_site_contact": true,
+    "market_domains": [
+      "polymarket.com"
+    ],
+    "blind_probability": null,
+    "market_last_price": 0.23,
+    "abs_gap": null,
+    "usable": false
+  },
+  {
+    "market_id": "4620250",
+    "trace_file": "20261012-114509-830.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.35,
+    "market_last_price": 0.08,
+    "abs_gap": 0.27,
+    "usable": true
+  },
+  {
+    "market_id": "4640288",
+    "trace_file": "20261012-133359-238.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.2,
+    "market_last_price": 0.129,
+    "abs_gap": 0.071,
+    "usable": true
+  },
+  {
+    "market_id": "4640848",
+    "trace_file": "20261012-115113-593.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.12,
+    "market_last_price": 0.249,
+    "abs_gap": 0.129,
+    "usable": true
+  },
+  {
+    "market_id": "4641065",
+    "trace_file": "20261012-115527-345.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.6,
+    "market_last_price": 0.79,
+    "abs_gap": 0.19,
+    "usable": true
+  },
+  {
+    "market_id": "4664662",
+    "trace_file": "20261012-132032-021.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.55,
+    "market_last_price": 0.52,
+    "abs_gap": 0.03,
+    "usable": true
+  },
+  {
+    "market_id": "4688838",
+    "trace_file": "20261012-133322-474.json",
+    "market_site_contact": true,
+    "market_domains": [
+      "polymarket.com"
+    ],
+    "blind_probability": 0.15,
+    "market_last_price": 0.06,
+    "abs_gap": 0.09,
+    "usable": true
+  },
+  {
+    "market_id": "4713483",
+    "trace_file": "20261012-134334-416.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.15,
+    "market_last_price": 0.44,
+    "abs_gap": 0.29,
+    "usable": true
+  },
+  {
+    "market_id": "4713484",
+    "trace_file": "20261012-131117-740.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.55,
+    "market_last_price": 0.35,
+    "abs_gap": 0.2,
+    "usable": true
+  },
+  {
+    "market_id": "4743423",
+    "trace_file": "20261012-124020-396.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.22,
+    "market_last_price": 0.19,
+    "abs_gap": 0.03,
+    "usable": true
+  },
+  {
+    "market_id": "4761462",
+    "trace_file": "20261012-133937-803.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": null,
+    "market_last_price": 0.8,
+    "abs_gap": null,
+    "usable": false
+  },
+  {
+    "market_id": "4824600",
+    "trace_file": "20261012-120124-645.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.62,
+    "market_last_price": 0.62,
+    "abs_gap": 0,
+    "usable": true
+  },
+  {
+    "market_id": "4824602",
+    "trace_file": "20261012-114847-927.json",
+    "market_site_contact": true,
+    "market_domains": [
+      "polymarket.com"
+    ],
+    "blind_probability": 0.12,
+    "market_last_price": 0.38,
+    "abs_gap": 0.26,
+    "usable": true
+  },
+  {
+    "market_id": "4826264",
+    "trace_file": "20261012-115641-990.json",
+    "market_site_contact": true,
+    "market_domains": [
+      "polymarket.com"
+    ],
+    "blind_probability": null,
+    "market_last_price": 0.043,
+    "abs_gap": null,
+    "usable": false
+  },
+  {
+    "market_id": "4853905",
+    "trace_file": "20261012-113924-953.json",
+    "market_site_contact": true,
+    "market_domains": [
+      "polymarket.com"
+    ],
+    "blind_probability": 0.75,
+    "market_last_price": 0.89,
+    "abs_gap": 0.14,
+    "usable": true
+  },
+  {
+    "market_id": "4867451",
+    "trace_file": "20261012-115440-131.json",
+    "market_site_contact": true,
+    "market_domains": [
+      "polymarket.com"
+    ],
+    "blind_probability": 0.35,
+    "market_last_price": 0.14,
+    "abs_gap": 0.21,
+    "usable": true
+  },
+  {
+    "market_id": "4881659",
+    "trace_file": "20261012-115321-524.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": null,
+    "market_last_price": 0.24,
+    "abs_gap": null,
+    "usable": false
+  },
+  {
+    "market_id": "4882040",
+    "trace_file": "20261012-114233-140.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.12,
+    "market_last_price": 0.1,
+    "abs_gap": 0.02,
+    "usable": true
+  },
+  {
+    "market_id": "4936101",
+    "trace_file": "20261012-114621-177.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": null,
+    "market_last_price": 0.038,
+    "abs_gap": null,
+    "usable": false
+  },
+  {
+    "market_id": "4936105",
+    "trace_file": "20261012-115756-453.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.55,
+    "market_last_price": 0.17,
+    "abs_gap": 0.38,
+    "usable": true
+  },
+  {
+    "market_id": "4936106",
+    "trace_file": "20261012-120058-958.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": null,
+    "market_last_price": 0.034,
+    "abs_gap": null,
+    "usable": false
+  },
+  {
+    "market_id": "4951229",
+    "trace_file": "20261012-114650-323.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.55,
+    "market_last_price": 0.07,
+    "abs_gap": 0.48,
+    "usable": true
+  },
+  {
+    "market_id": "5008726",
+    "trace_file": "20261012-114001-514.json",
+    "market_site_contact": true,
+    "market_domains": [
+      "polymarket.com"
+    ],
+    "blind_probability": 0.25,
+    "market_last_price": 0.8,
+    "abs_gap": 0.55,
+    "usable": true
+  },
+  {
+    "market_id": "5091133",
+    "trace_file": "20261012-113245-615.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.25,
+    "market_last_price": 0.17,
+    "abs_gap": 0.08,
+    "usable": true
+  },
+  {
+    "market_id": "5164765",
+    "trace_file": "20261012-115345-318.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.55,
+    "market_last_price": 0.06,
+    "abs_gap": 0.49,
+    "usable": true
+  },
+  {
+    "market_id": "5170730",
+    "trace_file": "20261012-114822-420.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": null,
+    "market_last_price": 0.025,
+    "abs_gap": null,
+    "usable": false
+  },
+  {
+    "market_id": "5170731",
+    "trace_file": "20261012-115704-426.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.55,
+    "market_last_price": 0.05,
+    "abs_gap": 0.5,
+    "usable": true
+  },
+  {
+    "market_id": "5170733",
+    "trace_file": "20261012-120031-758.json",
+    "market_site_contact": true,
+    "market_domains": [
+      "polymarket.com"
+    ],
+    "blind_probability": 0.5,
+    "market_last_price": 0.17,
+    "abs_gap": 0.33,
+    "usable": true
+  },
+  {
+    "market_id": "5170734",
+    "trace_file": "20261012-115547-051.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": null,
+    "market_last_price": 0.3,
+    "abs_gap": null,
+    "usable": false
+  },
+  {
+    "market_id": "5170739",
+    "trace_file": "20261012-115406-434.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": null,
+    "market_last_price": 0.41,
+    "abs_gap": null,
+    "usable": false
+  },
+  {
+    "market_id": "5170763",
+    "trace_file": "20261012-113400-014.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": null,
+    "market_last_price": 0.033,
+    "abs_gap": null,
+    "usable": false
+  },
+  {
+    "market_id": "5170764",
+    "trace_file": "20261012-114048-995.json",
+    "market_site_contact": true,
+    "market_domains": [
+      "polymarket.com"
+    ],
+    "blind_probability": 0.5,
+    "market_last_price": 0.061,
+    "abs_gap": 0.439,
+    "usable": true
+  },
+  {
+    "market_id": "5170770",
+    "trace_file": "20261012-115500-957.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": null,
+    "market_last_price": 0.07,
+    "abs_gap": null,
+    "usable": false
+  },
+  {
+    "market_id": "5170787",
+    "trace_file": "20261012-114958-615.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": null,
+    "market_last_price": 0.57,
+    "abs_gap": null,
+    "usable": false
+  },
+  {
+    "market_id": "5170792",
+    "trace_file": "20261012-115943-380.json",
+    "market_site_contact": true,
+    "market_domains": [
+      "polymarket.com"
+    ],
+    "blind_probability": null,
+    "market_last_price": 0.084,
+    "abs_gap": null,
+    "usable": false
+  },
+  {
+    "market_id": "5177575",
+    "trace_file": "20261012-120007-146.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.15,
+    "market_last_price": 0.08,
+    "abs_gap": 0.07,
+    "usable": true
+  },
+  {
+    "market_id": "5180413",
+    "trace_file": "20261012-113758-440.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.68,
+    "market_last_price": 0.941,
+    "abs_gap": 0.261,
+    "usable": true
+  },
+  {
+    "market_id": "5190747",
+    "trace_file": "20261012-132202-646.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.55,
+    "market_last_price": 0.6,
+    "abs_gap": 0.05,
+    "usable": true
+  },
+  {
+    "market_id": "5240812",
+    "trace_file": "20261012-113059-262.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.12,
+    "market_last_price": 0.04,
+    "abs_gap": 0.08,
+    "usable": true
+  },
+  {
+    "market_id": "5329587",
+    "trace_file": "20261012-115137-973.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.05,
+    "market_last_price": 0.51,
+    "abs_gap": 0.46,
+    "usable": true
+  },
+  {
+    "market_id": "5330020",
+    "trace_file": "20261012-115618-994.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.55,
+    "market_last_price": 0.65,
+    "abs_gap": 0.1,
+    "usable": true
+  },
+  {
+    "market_id": "5339986",
+    "trace_file": "20261012-134455-805.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.15,
+    "market_last_price": 0.73,
+    "abs_gap": 0.58,
+    "usable": true
+  },
+  {
+    "market_id": "5340072",
+    "trace_file": "20261012-114308-870.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.55,
+    "market_last_price": 0.11,
+    "abs_gap": 0.44,
+    "usable": true
+  },
+  {
+    "market_id": "5401795",
+    "trace_file": "20261012-115730-553.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.12,
+    "market_last_price": 0.41,
+    "abs_gap": 0.29,
+    "usable": true
+  },
+  {
+    "market_id": "5447182",
+    "trace_file": "20261012-134536-827.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.7,
+    "market_last_price": 0.76,
+    "abs_gap": 0.06,
+    "usable": true
+  },
+  {
+    "market_id": "566760",
+    "trace_file": "20261012-132012-762.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.15,
+    "market_last_price": 0.04,
+    "abs_gap": 0.11,
+    "usable": true
+  },
+  {
+    "market_id": "567689",
+    "trace_file": "20261012-131349-209.json",
+    "market_site_contact": true,
+    "market_domains": [
+      "polymarket.com"
+    ],
+    "blind_probability": 0.06,
+    "market_last_price": 0.05,
+    "abs_gap": 0.01,
+    "usable": true
+  },
+  {
+    "market_id": "618454",
+    "trace_file": "20261012-131925-072.json",
+    "market_site_contact": true,
+    "market_domains": [
+      "polymarket.com"
+    ],
+    "blind_probability": null,
+    "market_last_price": 0.13,
+    "abs_gap": null,
+    "usable": false
+  },
+  {
+    "market_id": "629397",
+    "trace_file": "20261012-122548-147.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.15,
+    "market_last_price": 0.87,
+    "abs_gap": 0.72,
+    "usable": true
+  },
+  {
+    "market_id": "629451",
+    "trace_file": "20261012-123344-731.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.82,
+    "market_last_price": 0.963,
+    "abs_gap": 0.143,
+    "usable": true
+  },
+  {
+    "market_id": "629477",
+    "trace_file": "20261012-120957-643.json",
+    "market_site_contact": true,
+    "market_domains": [
+      "manifold.markets"
+    ],
+    "blind_probability": 0.68,
+    "market_last_price": 0.96,
+    "abs_gap": 0.28,
+    "usable": true
+  },
+  {
+    "market_id": "630692",
+    "trace_file": "20261012-121117-209.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.42,
+    "market_last_price": 0.968,
+    "abs_gap": 0.548,
+    "usable": true
+  },
+  {
+    "market_id": "630706",
+    "trace_file": "20261012-120927-568.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.9,
+    "market_last_price": 0.954,
+    "abs_gap": 0.054,
+    "usable": true
+  },
+  {
+    "market_id": "630760",
+    "trace_file": "20261012-122915-895.json",
+    "market_site_contact": true,
+    "market_domains": [
+      ".pollingforecast.com",
+      "polymarket.com"
+    ],
+    "blind_probability": 0.87,
+    "market_last_price": 0.966,
+    "abs_gap": 0.096,
+    "usable": true
+  },
+  {
+    "market_id": "630818",
+    "trace_file": "20261012-120900-813.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.68,
+    "market_last_price": 0.88,
+    "abs_gap": 0.2,
+    "usable": true
+  },
+  {
+    "market_id": "630925",
+    "trace_file": "20261012-123121-193.json",
+    "market_site_contact": true,
+    "market_domains": [
+      "polymarket.com"
+    ],
+    "blind_probability": 0.87,
+    "market_last_price": 0.84,
+    "abs_gap": 0.03,
+    "usable": true
+  },
+  {
+    "market_id": "631018",
+    "trace_file": "20261012-122347-025.json",
+    "market_site_contact": true,
+    "market_domains": [
+      "polymarket.com"
+    ],
+    "blind_probability": 0.35,
+    "market_last_price": 0.93,
+    "abs_gap": 0.58,
+    "usable": true
+  },
+  {
+    "market_id": "665218",
+    "trace_file": "20261012-125220-615.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.35,
+    "market_last_price": 0.043,
+    "abs_gap": 0.307,
+    "usable": true
+  },
+  {
+    "market_id": "665270",
+    "trace_file": "20261012-130010-959.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.05,
+    "market_last_price": 0.03,
+    "abs_gap": 0.02,
+    "usable": true
+  },
+  {
+    "market_id": "665330",
+    "trace_file": "20261012-124603-365.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.12,
+    "market_last_price": 0.03,
+    "abs_gap": 0.09,
+    "usable": true
+  },
+  {
+    "market_id": "665427",
+    "trace_file": "20261012-124818-270.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.12,
+    "market_last_price": 0.108,
+    "abs_gap": 0.012,
+    "usable": true
+  },
+  {
+    "market_id": "665513",
+    "trace_file": "20261012-120833-755.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.55,
+    "market_last_price": 0.06,
+    "abs_gap": 0.49,
+    "usable": true
+  },
+  {
+    "market_id": "665521",
+    "trace_file": "20261012-125027-927.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.17,
+    "market_last_price": 0.045,
+    "abs_gap": 0.125,
+    "usable": true
+  },
+  {
+    "market_id": "665532",
+    "trace_file": "20261012-131824-010.json",
+    "market_site_contact": true,
+    "market_domains": [
+      "polymarket.com"
+    ],
+    "blind_probability": null,
+    "market_last_price": 0.04,
+    "abs_gap": null,
+    "usable": false
+  },
+  {
+    "market_id": "666599",
+    "trace_file": "20261012-132644-031.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.12,
+    "market_last_price": 0.036,
+    "abs_gap": 0.084,
+    "usable": true
+  },
+  {
+    "market_id": "666657",
+    "trace_file": "20261012-120403-756.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.12,
+    "market_last_price": 0.09,
+    "abs_gap": 0.03,
+    "usable": true
+  },
+  {
+    "market_id": "666829",
+    "trace_file": "20261012-125323-997.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.02,
+    "market_last_price": 0.09,
+    "abs_gap": 0.07,
+    "usable": true
+  },
+  {
+    "market_id": "667004",
+    "trace_file": "20261012-124729-253.json",
+    "market_site_contact": true,
+    "market_domains": [
+      "polymarket.com"
+    ],
+    "blind_probability": 0.5,
+    "market_last_price": 0.036,
+    "abs_gap": 0.464,
+    "usable": true
+  },
+  {
+    "market_id": "668591",
+    "trace_file": "20261012-132619-036.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.05,
+    "market_last_price": 0.043,
+    "abs_gap": 0.007,
+    "usable": true
+  },
+  {
+    "market_id": "676518",
+    "trace_file": "20261012-131603-015.json",
+    "market_site_contact": true,
+    "market_domains": [
+      "polymarket.com",
+      "forecast.agenticlearning.ai"
+    ],
+    "blind_probability": null,
+    "market_last_price": 0.12,
+    "abs_gap": null,
+    "usable": false
+  },
+  {
+    "market_id": "676741",
+    "trace_file": "20261012-131739-682.json",
+    "market_site_contact": true,
+    "market_domains": [
+      "longforecast.com"
+    ],
+    "blind_probability": 0.62,
+    "market_last_price": 0.19,
+    "abs_gap": 0.43,
+    "usable": true
+  },
+  {
+    "market_id": "676837",
+    "trace_file": "20261012-120150-222.json",
+    "market_site_contact": true,
+    "market_domains": [
+      "manifold.markets"
+    ],
+    "blind_probability": 0.15,
+    "market_last_price": 0.056,
+    "abs_gap": 0.094,
+    "usable": true
+  },
+  {
+    "market_id": "677404",
+    "trace_file": "20261012-120428-246.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.12,
+    "market_last_price": 0.07,
+    "abs_gap": 0.05,
+    "usable": true
+  },
+  {
+    "market_id": "678414",
+    "trace_file": "20261012-132551-052.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.95,
+    "market_last_price": 0.96,
+    "abs_gap": 0.01,
+    "usable": true
+  },
+  {
+    "market_id": "678416",
+    "trace_file": "20261012-133456-387.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.62,
+    "market_last_price": 0.038,
+    "abs_gap": 0.582,
+    "usable": true
+  },
+  {
+    "market_id": "680951",
+    "trace_file": "20261012-132347-709.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": null,
+    "market_last_price": 0.07,
+    "abs_gap": null,
+    "usable": false
+  },
+  {
+    "market_id": "680952",
+    "trace_file": "20261012-134207-734.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.35,
+    "market_last_price": 0.04,
+    "abs_gap": 0.31,
+    "usable": true
+  },
+  {
+    "market_id": "680954",
+    "trace_file": "20261012-134145-472.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": null,
+    "market_last_price": 0.03,
+    "abs_gap": null,
+    "usable": false
+  },
+  {
+    "market_id": "687642",
+    "trace_file": "20261012-125351-645.json",
+    "market_site_contact": true,
+    "market_domains": [
+      "manifold.markets"
+    ],
+    "blind_probability": 0.25,
+    "market_last_price": 0.036,
+    "abs_gap": 0.214,
+    "usable": true
+  },
+  {
+    "market_id": "687676",
+    "trace_file": "20261012-124349-818.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.12,
+    "market_last_price": 0.052,
+    "abs_gap": 0.068,
+    "usable": true
+  },
+  {
+    "market_id": "687677",
+    "trace_file": "20261012-124249-279.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.05,
+    "market_last_price": 0.033,
+    "abs_gap": 0.017,
+    "usable": true
+  },
+  {
+    "market_id": "691340",
+    "trace_file": "20261012-132954-100.json",
+    "market_site_contact": true,
+    "market_domains": [
+      "polymarket.com",
+      "polymarketanalytics.com"
+    ],
+    "blind_probability": null,
+    "market_last_price": 0.06,
+    "abs_gap": null,
+    "usable": false
+  },
+  {
+    "market_id": "700396",
+    "trace_file": "20261012-124141-104.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.05,
+    "market_last_price": 0.1,
+    "abs_gap": 0.05,
+    "usable": true
+  },
+  {
+    "market_id": "701741",
+    "trace_file": "20261012-125200-370.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": null,
+    "market_last_price": 0.022,
+    "abs_gap": null,
+    "usable": false
+  },
+  {
+    "market_id": "705808",
+    "trace_file": "20261012-131323-402.json",
+    "market_site_contact": true,
+    "market_domains": [
+      "polymarket.com",
+      "polymarkettrader.com"
+    ],
+    "blind_probability": 0.15,
+    "market_last_price": 0.17,
+    "abs_gap": 0.02,
+    "usable": true
+  },
+  {
+    "market_id": "705809",
+    "trace_file": "20261012-131051-787.json",
+    "market_site_contact": true,
+    "market_domains": [
+      "polymarket.com"
+    ],
+    "blind_probability": null,
+    "market_last_price": 0.117,
+    "abs_gap": null,
+    "usable": false
+  },
+  {
+    "market_id": "716823",
+    "trace_file": "20261012-131031-317.json",
+    "market_site_contact": true,
+    "market_domains": [
+      "polymarket.com",
+      ".polymarkettrade.app"
+    ],
+    "blind_probability": null,
+    "market_last_price": 0.22,
+    "abs_gap": null,
+    "usable": false
+  },
+  {
+    "market_id": "716827",
+    "trace_file": "20261012-130535-796.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": null,
+    "market_last_price": 0.042,
+    "abs_gap": null,
+    "usable": false
+  },
+  {
+    "market_id": "716829",
+    "trace_file": "20261012-120538-100.json",
+    "market_site_contact": true,
+    "market_domains": [
+      "polymarket.com"
+    ],
+    "blind_probability": null,
+    "market_last_price": 0.03,
+    "abs_gap": null,
+    "usable": false
+  },
+  {
+    "market_id": "716904",
+    "trace_file": "20261012-130920-060.json",
+    "market_site_contact": true,
+    "market_domains": [
+      "polymarket.com"
+    ],
+    "blind_probability": null,
+    "market_last_price": 0.083,
+    "abs_gap": null,
+    "usable": false
+  },
+  {
+    "market_id": "716941",
+    "trace_file": "20261012-123548-834.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.27,
+    "market_last_price": 0.94,
+    "abs_gap": 0.67,
+    "usable": true
+  },
+  {
+    "market_id": "902970",
+    "trace_file": "20261012-123250-521.json",
+    "market_site_contact": true,
+    "market_domains": [
+      "polymarket.com",
+      "polymarket.ink"
+    ],
+    "blind_probability": 0.05,
+    "market_last_price": 0.91,
+    "abs_gap": 0.86,
+    "usable": true
+  },
+  {
+    "market_id": "936450",
+    "trace_file": "20261012-131209-339.json",
+    "market_site_contact": true,
+    "market_domains": [
+      "polymarket.com"
+    ],
+    "blind_probability": 0.15,
+    "market_last_price": 0.046,
+    "abs_gap": 0.104,
+    "usable": true
+  },
+  {
+    "market_id": "942841",
+    "trace_file": "20261012-123913-054.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.32,
+    "market_last_price": 0.72,
+    "abs_gap": 0.4,
+    "usable": true
+  },
+  {
+    "market_id": "942878",
+    "trace_file": "20261012-122656-724.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.28,
+    "market_last_price": 0.92,
+    "abs_gap": 0.64,
+    "usable": true
+  },
+  {
+    "market_id": "944314",
+    "trace_file": "20261012-123431-800.json",
+    "market_site_contact": true,
+    "market_domains": [
+      "polymarket.com"
+    ],
+    "blind_probability": 0.27,
+    "market_last_price": 0.9,
+    "abs_gap": 0.63,
+    "usable": true
+  },
+  {
+    "market_id": "KXAOCRUN-28-27JAN01",
+    "trace_file": "20261012-130939-536.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.12,
+    "market_last_price": 0.1,
+    "abs_gap": 0.02,
+    "usable": true
+  },
+  {
+    "market_id": "KXBOUGAINVILLEIND-27JAN01",
+    "trace_file": "20261012-133111-968.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.15,
+    "market_last_price": 0.12,
+    "abs_gap": 0.03,
+    "usable": true
+  },
+  {
+    "market_id": "KXCABLEAVE-26MAY22-26NOV",
+    "trace_file": "20261012-113642-346.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.99,
+    "market_last_price": 0.23,
+    "abs_gap": 0.76,
+    "usable": true
+  },
+  {
+    "market_id": "KXCABLEAVE-26MAY22-27JAN",
+    "trace_file": "20261012-123626-780.json",
+    "market_site_contact": true,
+    "market_domains": [
+      "kalshi.com"
+    ],
+    "blind_probability": 0.85,
+    "market_last_price": 0.62,
+    "abs_gap": 0.23,
+    "usable": true
+  },
+  {
+    "market_id": "KXKAMALARUN-28-27JAN01",
+    "trace_file": "20261012-133428-603.json",
+    "market_site_contact": true,
+    "market_domains": [
+      "polymarket.com"
+    ],
+    "blind_probability": 0.82,
+    "market_last_price": 0.07,
+    "abs_gap": 0.75,
+    "usable": true
+  },
+  {
+    "market_id": "KXMEDIARELEASESPIDERMAN-DEC26",
+    "trace_file": "20261012-124317-769.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.12,
+    "market_last_price": 0.22,
+    "abs_gap": 0.1,
+    "usable": true
+  },
+  {
+    "market_id": "KXNEWSOMRUN-28-27JAN01",
+    "trace_file": "20261012-134236-971.json",
+    "market_site_contact": true,
+    "market_domains": [
+      "manifold.markets"
+    ],
+    "blind_probability": 0.25,
+    "market_last_price": 0.13,
+    "abs_gap": 0.12,
+    "usable": true
+  },
+  {
+    "market_id": "KXRSIANNOUNCE-29-27JAN01",
+    "trace_file": "20261012-125712-201.json",
+    "market_site_contact": true,
+    "market_domains": [
+      "polymarket.com"
+    ],
+    "blind_probability": 0.12,
+    "market_last_price": 0.1,
+    "abs_gap": 0.02,
+    "usable": true
+  },
+  {
+    "market_id": "KXTRUMPRUN-27JAN01",
+    "trace_file": "20261012-133910-413.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.2,
+    "market_last_price": 0.057,
+    "abs_gap": 0.143,
+    "usable": true
+  },
+  {
+    "market_id": "KXUSAIREGULATOR-28JAN01-27JAN01",
+    "trace_file": "20261012-132815-787.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.35,
+    "market_last_price": 0.12,
+    "abs_gap": 0.23,
+    "usable": true
+  },
+  {
+    "market_id": "KXVANCERUN-28-27JAN01",
+    "trace_file": "20261012-133728-692.json",
+    "market_site_contact": false,
+    "market_domains": [],
+    "blind_probability": 0.5,
+    "market_last_price": 0.05,
+    "abs_gap": 0.45,
+    "usable": true
+  }
+]
+

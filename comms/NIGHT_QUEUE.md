@@ -12,7 +12,7 @@ Order matters. One item at a time. Codex may not add items.
    ticket: pilot cycle on data\pilot60 (60 questions). Refresh prices immediately before starting (24 h rule). Do not change config. Same report as item 1 plus score table.
    stop if: any stage error rate above 10%.
 
-3. status: blocked   prereq: item 2 done (report written)
+3. status: done (by PC Claude directly from pilot60 files; no Codex run needed)   prereq: item 2 done (report written)
    ticket: comms/2026-10-12-pc-to-codex-forecast-defects-diagnose.md
    what: READ-ONLY diagnosis of two defects found in smoke1 (probability 0.95 contradicts the swarm's own ~20% estimate; many blind forecasts default to exactly 0.5 on empty research). No code or config changes.
    stop if: it would require editing code/config or rerunning the model.

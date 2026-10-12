@@ -1,0 +1,4 @@
+2b159b0d3ba08f4ee810ce599d5f5b3b  Resident-Interrogator-Pilot.bat.j12
+02d73367bd3951468679a4bced5f219f  configs.yaml.j12
+fc516355b0500cb35080b7489421fde3  manager.py.j12
+e022eb97aca48557e109236794ec0735  test_integration.py.j12

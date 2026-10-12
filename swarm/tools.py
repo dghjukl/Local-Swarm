@@ -305,6 +305,39 @@ async def wikipedia(query: str, n: int = 2) -> list[Doc]:
         return [d for d in docs if isinstance(d, Doc)]
 
 
+async def wikipedia_titles(titles: list[str], skip_urls: set | None = None) -> list[Doc]:
+    """Open named Wikipedia articles directly (redirects followed). A title that doesn't exist falls
+    back to the top search hit for that title."""
+    skip = skip_urls or set()
+    out: list[Doc] = []
+    async with httpx.AsyncClient(timeout=15, headers={"User-Agent": UA}) as c:
+        async def one(title: str) -> Doc | None:
+            for attempt in range(2):
+                r = await c.get(WIKI_API, params={"action": "query", "prop": "extracts", "explaintext": 1,
+                                                  "titles": title, "format": "json", "redirects": 1})
+                r.raise_for_status()
+                for p in r.json().get("query", {}).get("pages", {}).values():
+                    if p.get("extract"):
+                        t = p.get("title", title)
+                        return Doc("https://en.wikipedia.org/wiki/" + t.replace(" ", "_"),
+                                   f"{t} - Wikipedia", p["extract"], "wikipedia")
+                if attempt == 0:
+                    s = await c.get(WIKI_API, params={"action": "query", "list": "search", "srsearch": title,
+                                                      "srlimit": 1, "format": "json"})
+                    s.raise_for_status()
+                    hits = s.json().get("query", {}).get("search", [])
+                    if not hits:
+                        return None
+                    title = hits[0]["title"]
+            return None
+
+        docs = await asyncio.gather(*(one(t) for t in titles if t.strip()), return_exceptions=True)
+        for d in docs:
+            if isinstance(d, Doc) and d.url not in skip and all(d.url != o.url for o in out):
+                out.append(d)
+    return out
+
+
 def research_mcp_available(cfg: dict | None = None) -> bool:
     """research-mcp is used only when the config asks for it (research.backend: research-mcp);
     the built-in backend has news search and better article extraction."""

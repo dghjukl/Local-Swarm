@@ -1,0 +1,73 @@
+Cycle: cycle1-run2 blind traces; 278 distinct markets; 11,481 search-result/fetch URL observations; 1,856 distinct domains.
+
+Class counts
+other                         5,423
+aggregator                    1,546
+wikipedia                     1,402
+mainstream news                 972
+scholarly                       919
+social/video                    345
+polls/election data             260
+prediction-market/forecast      221
+crypto/finance data             156
+government/official             120
+sports data                     117
+
+Top domains
+en.wikipedia.org 1308
+doi.org 754
+msn.com 585
+yahoo.com 416
+finance.yahoo.com 347
+youtube.com 199
+polymarket.com 190
+arxiv.org 150
+nytimes.com 137
+270towin.com 129
+sports.yahoo.com 125
+aljazeera.com 124
+picturethispost.com 94
+theguardian.com 68
+britannica.com 65
+realclearpolling.com 61
+tradingview.com 61
+247wallst.com 61
+cryptobriefing.com 60
+binance.com 59
+octagonai.co 58
+reuters.com 58
+note.com 57
+apnews.com 56
+usatoday.com 54
+natesilver.net 53
+coinmarketcap.com 51
+linkedin.com 49
+en.m.wikipedia.org 48
+electoratehq.com 48
+cnn.com 46
+tiktok.com 45
+arena.ai 45
+forbes.com 42
+riotimesonline.com 40
+financefeeds.com 40
+tradingeconomics.com 39
+tech.yahoo.com 39
+aol.com 36
+foxnews.com 36
+
+Blind traces with zero fetched mainstream-news domains: 20/278.
+Prediction/forecast URL contact: 88/278 distinct markets.
+Deep prediction/forecast URL contact: 11/30 traces.
+
+Category/theme compact counts (traces, zero-mainstream-news, fetched URLs)
+AI 1,0,10
+crypto 42,9,420
+elections 50,0,499
+entertainment 4,0,40
+geopolitics/war 40,1,399
+other 39,2,390
+politics 49,1,483
+sports 13,1,129
+tech/AI 40,6,400
+
+Themes: asset-threshold 42,9,420; deadline 45,1,443; election 45,0,449; entertainment 3,0,30; geopolitics 45,1,449; other 41,2,410; sports 13,1,129; tech 44,6,440.

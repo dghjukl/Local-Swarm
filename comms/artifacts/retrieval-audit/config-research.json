@@ -1,0 +1,18 @@
+{
+  "max_search_queries": 4,
+  "results_per_query": 5,
+  "wikipedia_results": 2,
+  "max_pages": 10,
+  "passages_per_subquestion": 15,
+  "passage_chars": 900,
+  "fetch_workers": 3,
+  "backend": "builtin",
+  "news_results_per_query": 4,
+  "scholarly": true,
+  "scholarly_results": 2,
+  "scholarly_queries": 1,
+  "scholarly_sources": ["openalex", "arxiv", "pubmed", "crossref", "ads"],
+  "max_papers": 6,
+  "split_by_subquestion": false,
+  "split_max_pages": 4
+}

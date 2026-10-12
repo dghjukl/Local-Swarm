@@ -1,0 +1,7 @@
+Metadata-Version: 2.4
+Name: swarm-forecast
+Version: 0.1.0
+Summary: Forecast application built on a pinned Local Swarm checkout
+Requires-Python: <3.14,>=3.13
+Requires-Dist: pyyaml>=6.0
+Requires-Dist: local-swarm
