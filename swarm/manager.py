@@ -923,7 +923,7 @@ async def run_manager(sw, question: str, subqs: list[str], groups: list[list[ev.
             tool_used += 1
             targs = tcall.get("args") if isinstance(tcall.get("args"), dict) else {}
             tname = str(tcall["name"])
-            if tname.lower() in {"search", "web_search", "web", "google"}:
+            if tname.lower() in {"search", "web_search", "web", "google", "tool_search_alias"}:
                 query = tool_search_query(targs, str(d.get("task", "")))
                 new, picks = await search_and_pick(str(d.get("task", "")) or query, query, k, member[letters[0]][0])
                 tstats["tool_search_alias"] += 1
