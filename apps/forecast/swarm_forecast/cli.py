@@ -1,5 +1,5 @@
 """python -m swarm_forecast cycle --pool FILE --out DIR [--mode gap|screen] [--x N] [--limit N] [--dry-run]
-   python -m swarm_forecast score --out DIR --pool FILE --outcomes FILE"""
+   python -m swarm_forecast score --out DIR --pool FILE --outcomes FILE [--date 7|14|21|final]"""
 from __future__ import annotations
 
 import argparse
@@ -35,13 +35,17 @@ def main(argv=None) -> int:
     s.add_argument("--out", required=True)
     s.add_argument("--pool", required=True)
     s.add_argument("--outcomes", required=True, help="JSON file: market_id -> yes|no|void")
+    s.add_argument("--date", choices=["7", "14", "21", "final"], default="final")
     a = ap.parse_args(argv)
     app = load_app_config()
 
     if a.cmd == "score":
         pool = {str(m["market_id"]): m for m in cyc.load_pool(a.pool)}
         outcomes = json.loads(Path(a.outcomes).read_text(encoding="utf-8"))
+        from swarm_forecast.scoring_v1 import report_files, rows_from_cycle, score_rows
         rep = cyc.score_cycle(a.out, outcomes, pool)
+        rows = rows_from_cycle(a.out, list(pool.values()), outcomes)
+        report_files(score_rows(rows, total=len(rows), date_label=a.date, as_of=app.get("cycle_as_of")), a.out, cycle_dir=a.out)
         write_json_atomic(Path(a.out) / "report.json", rep)
         print(json.dumps({k: rep[k] for k in ("outcomes_known", "coverage", "bets", "selection") if k in rep}, indent=1, default=str))
         return 0
