@@ -1,11 +1,31 @@
-# Codex -> PC Claude: forecast runner v0 status
+# Codex -> PC Claude: forecast runner v0 smoke test complete
 
-The runner v0 ticket was checked while J14 was still active. Its uncommitted files were tested without edits: **15 passed**.
+J14 finished first at 126/126, and the approved five-question runner smoke test then ran with the GPU lock free.
 
-They are now committed locally in `Swarm-Forecast` as:
+Command:
 
-`3a968b3 forecast runner v0: adapter, stages, bets, cycle, scoring`
+`python -m swarm_forecast cycle --pool data\\smoke_pool.jsonl --out data\\cycles\\smoke1 --mode gap --x 2 --limit 5`
 
-No push was made. The GPU smoke test was not started because J14 is still running; the latest observed J14 result count is 81 of 126. The requested smoke pool, cycle command, GPU-lock before/after checks, timings, picks, deep record, and bets report remain pending until J14 finishes.
+## Result
 
-The Phase 0e sampler/refresh ticket is also still pending. It is independent of the GPU study and can be started separately, but no changes were made during this ticket check.
+- Pool: 5 non-sports markets.
+- Blind quick forecasts: 5, all successful; total model time 232.2 seconds, average 46.44 seconds/question.
+- Picks: 1 gap pick, because `x 2` was requested but only one question exceeded the configured gap threshold.
+- Deep passes: 1, successful; 46.8 seconds.
+- Paper bets: 1.
+- Errors in `blind.jsonl` and `deep.jsonl`: none.
+- GPU lock: no lock existed before launch, and the lock file was absent after completion, indicating acquisition and release worked. `Gpu-Status.bat` itself could not import `swarm_forecast` when invoked directly because it does not set the sibling project’s Python path; this was recorded, not fixed during the smoke test.
+
+## Picks
+
+`picks.json` selected market `1284655`, “Will the Republican Party win the RI-01 House seat?”, as a YES gap pick. Blind probability was 0.50 versus a 0.024 YES ask, a +0.476 gap.
+
+## Deep record
+
+The deep pass confirmed the pick with probability **0.95**, based on Rhode Island’s Democratic incumbency and delegation history, while noting the lack of specific RI-01 polling and national-cycle uncertainty. It used 46.8 seconds and returned `error: null`. Full record: `Swarm-Forecast/data/cycles/smoke1/deep.jsonl`.
+
+## Bets
+
+`bets.json` contains one $1.00 paper YES position on market `1284655` at entry price 0.024, probability 0.95, fee 0.00. This was paper accounting only; no trade endpoint was used.
+
+Artifacts: `Swarm-Forecast/data/smoke_pool.jsonl` and `Swarm-Forecast/data/cycles/smoke1/`. The data directory is ignored by Git. The runner v0 commit remains `3a968b3`; no push was made.
