@@ -37,8 +37,11 @@ def normalize_market(source: str, raw: dict) -> dict:
                 "last_price": (float(raw.get("lastTradePrice")) if raw.get("lastTradePrice") is not None else (float(prices[0]) if prices else None)),
                 "spread": float(raw.get("spread")) if raw.get("spread") is not None else None,
                 "volume": raw.get("volume") or raw.get("volumeNum"), "liquidity": raw.get("liquidity") or raw.get("liquidityNum"),
-                "category": raw.get("category"), "series": None, "event_ticker": (raw.get("events") or [{}])[0].get("id") if isinstance(raw.get("events"), list) and raw.get("events") else None,
-                "tags": raw.get("tags", []), "combo_status": raw.get("comboStatus"), "neg_risk": raw.get("negRisk"),
+                "category": raw.get("category") or ((raw.get("events") or [{}])[0].get("category") if isinstance(raw.get("events"), list) and raw.get("events") else None),
+                "series": ((raw.get("series") or [{}])[0].get("ticker") if isinstance(raw.get("series"), list) and raw.get("series") else raw.get("seriesSlug") or (((raw.get("events") or [{}])[0].get("series") or [{}])[0].get("ticker") if isinstance(raw.get("events"), list) and raw.get("events") else None)),
+                "event_ticker": (raw.get("events") or [{}])[0].get("id") if isinstance(raw.get("events"), list) and raw.get("events") else None,
+                "tags": raw.get("tags") or ((raw.get("events") or [{}])[0].get("tags", []) if isinstance(raw.get("events"), list) and raw.get("events") else []),
+                "combo_status": raw.get("comboStatus"), "neg_risk": raw.get("negRisk"),
                 "fetched_at": datetime.now(timezone.utc).isoformat(), "raw_hash": _hash(raw), "raw": raw}
     yes = raw.get("yes_bid_dollars", raw.get("yes_bid")); no = raw.get("no_bid_dollars", raw.get("no_bid"))
     def cents(value):
@@ -56,10 +59,10 @@ def normalize_market(source: str, raw: dict) -> dict:
             "fetched_at": datetime.now(timezone.utc).isoformat(), "raw_hash": _hash(raw), "raw": raw}
 
 
-def pull_polymarket(limit=100, cap=2000, min_liquidity=1000, now=None, sleep_s=1.0):
+def pull_polymarket(limit=100, cap=2000, min_liquidity=1000, now=None, sleep_s=1.0, max_days=60):
     now = now or datetime.now(timezone.utc)
     params = {"closed": "false", "end_date_min": (now + timedelta(days=7)).isoformat(),
-              "end_date_max": (now + timedelta(days=60)).isoformat(), "limit": limit,
+              "end_date_max": (now + timedelta(days=max_days)).isoformat(), "limit": limit,
               "order": "volumeNum", "ascending": "false", "liquidity_num_min": min_liquidity}
     result = []
     for offset in range(0, cap, limit):
@@ -86,13 +89,46 @@ def pull_kalshi(cap=5000, sleep_s=1.0):
     return result[:cap]
 
 
+def pull_kalshi_categories(categories, cap=10000, per_category_cap=1500, sleep_s=1.0):
+    result, seen, counts = [], set(), {}
+    for category in categories:
+        cursor = ""
+        category_added = 0
+        while len(result) < cap:
+            params = {"status": "open", "limit": 200, "with_nested_markets": "true", "category": category}
+            if cursor: params["cursor"] = cursor
+            page = fetch_json("https://external-api.kalshi.com/trade-api/v2/events?" + urlencode(params))
+            events = page.get("events", []) if isinstance(page, dict) else []
+            for event in events:
+                event_category = event.get("category") or category
+                nested = event.get("markets", [])
+                counts[event_category] = counts.get(event_category, 0) + len(nested)
+                for raw in nested:
+                    ticker = raw.get("ticker")
+                    if ticker in seen: continue
+                    seen.add(ticker)
+                    raw = dict(raw); raw["category"] = event_category; raw["series_ticker"] = event.get("series_ticker")
+                    raw["event_market_count"] = len(nested)
+                    result.append(normalize_market("kalshi", raw))
+                    category_added += 1
+                    if len(result) >= cap or category_added >= per_category_cap: break
+                if len(result) >= cap or category_added >= per_category_cap: break
+            cursor = page.get("cursor") if isinstance(page, dict) else ""
+            if not cursor or not events or len(result) >= cap or category_added >= per_category_cap: break
+            time.sleep(sleep_s)
+        if len(result) >= cap: break
+    pull_kalshi_categories.category_counts = counts
+    pull_kalshi_categories.last_capped = len(result) >= cap
+    return result[:cap]
+
+
 def filter_markets(markets: list[dict], *, now=None, min_days=7, max_days=60, min_liquidity=0,
                    max_spread=0.15, min_length=20, max_length=300):
     now = now or datetime.now(timezone.utc)
     kept, dropped = [], {"not_binary": 0, "date": 0, "liquidity": 0, "spread": 0, "price": 0, "text": 0, "rules": 0, "joke": 0, "event_cap": 0}
     for m in markets:
         q = str(m.get("question", "")); outcomes = [str(x).lower() for x in m.get("outcomes", [])]
-        if set(outcomes) != {"yes", "no"} or m.get("is_combo") or m.get("combo_status") or (m.get("source") == "polymarket" and m.get("neg_risk") and not m.get("event_ticker")): dropped["not_binary"] += 1; continue
+        if set(outcomes) != {"yes", "no"} or m.get("is_combo"): dropped["not_binary"] += 1; continue
         if len(q) < min_length or len(q) > max_length: dropped["text"] += 1; continue
         if not m.get("resolution_rule") or (m.get("source") == "kalshi" and not m.get("raw", {}).get("rules_primary")): dropped["rules"] += 1; continue
         try:
@@ -117,5 +153,6 @@ def filter_markets(markets: list[dict], *, now=None, min_days=7, max_days=60, mi
         per_event.setdefault(key, []).append(m)
     for key, rows in per_event.items():
         rows.sort(key=lambda x: abs(float(x.get("last_price") or 0.5) - 0.5))
-        final.extend(rows[:3]); dropped["event_cap"] += max(0, len(rows) - 3)
+        limit = 1 if any(m.get("raw", {}).get("event_market_count") == 2 for m in rows) else 3
+        final.extend(rows[:limit]); dropped["event_cap"] += max(0, len(rows) - limit)
     return final, dropped

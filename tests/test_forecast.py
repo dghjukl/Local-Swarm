@@ -12,6 +12,17 @@ def test_market_normalize_and_filters():
     assert len(kept) == 1 and dropped["not_binary"] == 0
 
 
+def test_polymarket_json_encoded_outcomes_are_binary():
+    raw = {"id": "string-form", "question": "Will the project publish a report this month?",
+           "description": "The official project page decides.", "outcomes": '["No", "Yes"]',
+           "outcomePrices": '["0.40", "0.60"]', "endDate": (datetime.now(timezone.utc) + timedelta(days=14)).isoformat(),
+           "liquidityNum": 2000, "comboStatus": "enabled"}
+    market = normalize_market("polymarket", raw)
+    kept, dropped = filter_markets([market], min_liquidity=1000)
+    assert market["outcomes"] == ["No", "Yes"]
+    assert len(kept) == 1 and dropped["not_binary"] == 0
+
+
 def test_snapshot_resolver_and_scoring(tmp_path):
     path = tmp_path / "batch.jsonl"; assert append_snapshot(path, [{"market_id": "x", "question": "q"}]) == 1; assert append_snapshot(path, [{"market_id": "x", "question": "q"}]) == 0
     assert json.loads(path.read_text())["market"]["market_id"] == "x"
