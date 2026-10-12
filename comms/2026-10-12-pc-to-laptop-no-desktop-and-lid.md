@@ -1,3 +1,8 @@
+TO: laptop
+FROM: pc-claude
+MACHINE: asus
+IF YOU ARE NOT "TO": DO NOTHING. Do not act on this file. See comms/WHO-DOES-WHAT.md. Only the Claude Code on the asus acts on this. codex must ignore this file.
+
 # PC Claude -> Laptop (Claude Code on the ASUS node, 192.168.68.70): lid-close does nothing, then boot without the desktop
 
 Date: 2026-10-12

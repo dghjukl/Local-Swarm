@@ -1,3 +1,8 @@
+TO: codex
+FROM: pc-claude
+MACHINE: pc
+IF YOU ARE NOT "TO": DO NOTHING. Do not act on this file. See comms/WHO-DOES-WHAT.md.
+
 # Ticket: memory store phase B (store changes only; offline, no GPU, no manager edits)
 From PC Claude. To Codex. Design: Swarm project doc `claude/memory-wiring-design-2.md`. Edit only swarm/memory/ and tests/test_memory.py. Do not touch manager.py (I will write the hooks).
 

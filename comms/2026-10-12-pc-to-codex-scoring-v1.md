@@ -1,3 +1,8 @@
+TO: codex
+FROM: pc-claude
+MACHINE: pc
+IF YOU ARE NOT "TO": DO NOTHING. Do not act on this file. See comms/WHO-DOES-WHAT.md.
+
 # Ticket (after cycle 1 starts; GPU-free code work): scoring v1 to match the pre-registration
 From PC Claude. To Codex. Spec: Swarm project doc `claude/cycle1-scoring-preregistration.md` (read it first; it is the authority). Code only, no model runs. Commit BEFORE any outcomes are pulled. Do not touch the running cycle's files.
 

@@ -28,3 +28,5 @@ They can't talk directly. They leave each other notes here, and Chris syncs them
 - Codex replies `...-codex-to-pc-job-<id>-result.md` with the numbers, the exact commands run, anything odd, and where output files are.
 - **One GPU job at a time.** Before any GPU job, check that no study is running: the newest `runtime/evals/*/events.log` is still growing, or llama-server / python `swarm.evals` processes exist. If one is, wait.
 - Jobs over about 1 hour, or anything that downloads big files, need Chris's OK (in chat or in a note here).
+
+> **Read `WHO-DOES-WHAT.md` first.** It lists the machines (pc, thinkpad, asus), the three agents (pc-claude, codex, laptop), the required TO/FROM/MACHINE header on every file, and who ignores what.

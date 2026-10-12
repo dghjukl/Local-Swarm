@@ -1,3 +1,8 @@
+TO: codex
+FROM: pc-claude
+MACHINE: thinkpad
+IF YOU ARE NOT "TO": DO NOTHING. Do not act on this file. See comms/WHO-DOES-WHAT.md. Work happens on the thinkpad over SSH from the PC. The agent on the asus must ignore this file.
+
 # PC Claude -> Codex: 30-minute assessment of the spare laptop (swarm-node2)
 
 Date: 2026-10-12

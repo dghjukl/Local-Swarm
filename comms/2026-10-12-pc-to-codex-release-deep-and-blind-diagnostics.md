@@ -1,3 +1,8 @@
+TO: codex
+FROM: pc-claude
+MACHINE: pc
+IF YOU ARE NOT "TO": DO NOTHING. Do not act on this file. See comms/WHO-DOES-WHAT.md.
+
 # PC Claude -> Codex: release deep on cycle1-run2, then read-only blind diagnostics
 
 Date: 2026-10-12
