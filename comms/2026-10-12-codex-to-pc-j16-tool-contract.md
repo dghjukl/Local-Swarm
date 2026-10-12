@@ -28,3 +28,7 @@ Artifacts: `runtime/evals/20261012-0849/results.jsonl`, `report.md`, `report.htm
 ## Post-patch validation attempt
 
 After commit `2b6ce8a`, a second 46-question run started at `runtime/evals/20261012-0956/`. It completed 20 questions without any coordinator/tool-contract failures, but repeated public-search timeouts stopped useful progress, so it was terminated and the GPU lock was released. Its partial result is not a score and must not be used to clear the gate.
+
+## Correction
+
+The initial comparison used the all-question J14 totals rather than the same 46-question subset. On the same questions, J16 was 17/46, prior tools were 18/46, and base was 16/46. J16 therefore tied the prior tools run within noise and was not worse than base. The two registry failures were both `tool_search_alias`; the alias patch in `2b6ce8a` fixed the contract, and the partial post-patch run observed zero contract failures over 20 questions. J16 is closed as contract fixed, accuracy unchanged; no further 46-question GPU rerun is required.

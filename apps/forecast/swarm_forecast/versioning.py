@@ -4,6 +4,21 @@ from __future__ import annotations
 import hashlib, json, subprocess, time
 from pathlib import Path
 
+
+def git_commit(root) -> str | None:
+    try:
+        return subprocess.check_output(["git", "-C", str(root), "rev-parse", "HEAD"], text=True).strip()
+    except (OSError, subprocess.CalledProcessError):
+        return None
+
+
+def assert_pinned_commit(root, expected: str, *, tag: str | None = None) -> str:
+    actual = git_commit(root)
+    if not actual or (actual != expected and not actual.startswith(expected)):
+        label = f" tag {tag}" if tag else ""
+        raise RuntimeError(f"pinned swarm{label} mismatch: expected {expected}, imported {actual}")
+    return actual
+
 def _sha(path):
     h = hashlib.sha256()
     with open(path, "rb") as f:
@@ -12,8 +27,7 @@ def _sha(path):
 
 def swarm_stamp(swarm_root, config_name="default", config_path=None, model_paths=(), prompt_path=None, app_version="0.1.0"):
     root = Path(swarm_root)
-    try: commit = subprocess.check_output(["git", "-C", str(root), "rev-parse", "HEAD"], text=True).strip()
-    except (OSError, subprocess.CalledProcessError): commit = None
+    commit = git_commit(root)
     try: tag = subprocess.check_output(["git", "-C", str(root), "describe", "--tags", "--exact-match", "HEAD"], text=True, stderr=subprocess.DEVNULL).strip()
     except (OSError, subprocess.CalledProcessError): tag = None
     def files(paths):

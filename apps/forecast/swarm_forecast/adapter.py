@@ -207,6 +207,12 @@ async def real_factory(overrides: dict) -> _RealHandle:
     from swarm.pool import ModelPool
     from swarm.registry import scan_models
     from swarm.tools import DirectResearch
+    from swarm_forecast.versioning import assert_pinned_commit
+
+    app_config = Path(__file__).resolve().parent.parent / "config" / "default.yaml"
+    pinned = __import__("yaml").safe_load(app_config.read_text(encoding="utf-8")).get("swarm", {})
+    swarm_root = Path(__import__("swarm").__file__).resolve().parent.parent
+    assert_pinned_commit(swarm_root, str(pinned.get("pinned_commit", "")), tag=pinned.get("pinned_tag"))
 
     cfg = deep_merge(load_config(), {k: v for k, v in overrides.items() if not k.startswith("_")})
     cards = scan_models()

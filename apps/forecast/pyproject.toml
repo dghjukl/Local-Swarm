@@ -11,6 +11,9 @@ dev = ["pytest>=8"]
 [tool.uv]
 package = true
 
+[tool.setuptools.packages.find]
+include = ["swarm_forecast*"]
+
 [tool.uv.sources]
 # Local development source. Release environments replace this source with the
 # git tag forecast-base-0 recorded in config/default.yaml.

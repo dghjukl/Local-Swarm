@@ -1,8 +1,8 @@
 app_version: "0.1.0"
 swarm:
   dependency: "../.."
-  pinned_tag: "forecast-base-0"
-  pinned_commit: "eb77860a5fbbbb211b609b94069a1515e71bf624"
+  pinned_tag: "forecast-0.1"
+  pinned_commit: "1609e83"
 gpu_lock:
   path: "C:/Users/Chris/Documents/GitHub/.gpu_lock/lock.json"
   stale_after_seconds: 21600

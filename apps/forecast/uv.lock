@@ -411,7 +411,7 @@ wheels = [
 [[package]]
 name = "local-swarm"
 version = "0.1.0"
-source = { editable = "../Local Swarm" }
+source = { editable = "../../" }
 dependencies = [
     { name = "ddgs" },
     { name = "fastapi" },
@@ -865,7 +865,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "local-swarm", editable = "../Local Swarm" },
+    { name = "local-swarm", editable = "../../" },
     { name = "pyyaml", specifier = ">=6.0" },
 ]
 

@@ -1,9 +1,10 @@
 import json
+import subprocess
 import time
 from pathlib import Path
 from swarm_forecast.adapter import forecast
 from swarm_forecast.gpu_lock import acquire, release, status
-from swarm_forecast.versioning import swarm_stamp
+from swarm_forecast.versioning import assert_pinned_commit, swarm_stamp
 
 def test_blind_adapter_rejects_market_fields():
     try: forecast({"question": "q", "prices": [0.5]}, "blind", {})
@@ -32,3 +33,12 @@ def test_versioning_records_git_commit(tmp_path):
     subprocess.run(["git", "-C", str(tmp_path), "-c", "user.email=test@example.com", "-c", "user.name=test", "commit", "-m", "init"], check=True, capture_output=True)
     stamp = swarm_stamp(tmp_path, config_path=tmp_path / "x.txt")
     assert stamp["swarm_commit"] and stamp["config_sha256"]
+
+def test_versioning_rejects_wrong_pinned_commit(tmp_path):
+    import pytest
+    subprocess.run(["git", "init", str(tmp_path)], check=True, capture_output=True)
+    (tmp_path / "x.txt").write_text("x", encoding="utf-8")
+    subprocess.run(["git", "-C", str(tmp_path), "add", "x.txt"], check=True, capture_output=True)
+    subprocess.run(["git", "-C", str(tmp_path), "-c", "user.email=test@example.com", "-c", "user.name=test", "commit", "-m", "init"], check=True, capture_output=True)
+    with pytest.raises(RuntimeError, match="pinned swarm mismatch"):
+        assert_pinned_commit(tmp_path, "wrong")
