@@ -1,0 +1,23 @@
+[project]
+name = "swarm-forecast"
+version = "0.1.0"
+description = "Forecast application built on a pinned Local Swarm checkout"
+requires-python = ">=3.13,<3.14"
+dependencies = ["pyyaml>=6.0", "local-swarm"]
+
+[dependency-groups]
+dev = ["pytest>=8"]
+
+[tool.uv]
+package = true
+
+[tool.uv.sources]
+# Local development source. Release environments replace this source with the
+# git tag forecast-base-0 recorded in config/default.yaml.
+local-swarm = { path = "../..", editable = true }
+
+# Development uses the monorepo root on PYTHONPATH so the swarm package is live.
+# The release lock is the Local Swarm tag forecast-base-0 recorded in config/default.yaml.
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

@@ -1,0 +1,36 @@
+app_version: "0.1.0"
+swarm:
+  dependency: "../.."
+  pinned_tag: "forecast-base-0"
+  pinned_commit: "eb77860a5fbbbb211b609b94069a1515e71bf624"
+gpu_lock:
+  path: "C:/Users/Chris/Documents/GitHub/.gpu_lock/lock.json"
+  stale_after_seconds: 21600
+forecast:
+  default_horizon_days: 60
+  pilot_horizon_days: 90
+
+cycle_rules:
+  mode: gap
+  pool_limit: 300
+  x: 30
+  min_gap: 0.10
+  confirm_margin: 0.05
+  bet_margin: 0.10
+  fee: 0.0
+  seed: 0
+stages:
+  # overrides merged onto the pinned swarm's default config (same models as the swarm's own mgr-ex-base)
+  quick:
+    mode: solo
+    research: {passages_per_subquestion: 15}
+    coordinator: {model: MiMo-V2.6-Distill-Qwen-9B, ctx_per_slot: 24576, parallel: 1}
+    gpu: {keep_reasoning_models: [gpt-oss, MiMo]}
+  deep:
+    mode: manager
+    research: {passages_per_subquestion: 15}
+    coordinator: {model: MiMo-V2.6-Distill-Qwen-9B, ctx_per_slot: 16384, parallel: 1}
+    verifier: {model: Granite-4.1-3B}
+    workers: {team: [Qwen3.5-4B, Gemma-4-E4B-it], ctx_per_slot: 8192}
+    manager: {max_cycles: 6, passages_per_task: 6, pages_per_search: 3, dispatch: both, coordinator_style: think, think_tokens: 1000, verify: false, tools: {enabled: [calc, date_diff, age_on, date_add, weekday, unit_convert], max_calls: 6}}
+    gpu: {keep_reasoning_models: [gpt-oss, MiMo]}
