@@ -1,6 +1,7 @@
 """One forecasting cycle: select -> blind -> pick -> deep -> bets, resumable, with rules fixed in advance."""
 from __future__ import annotations
 
+import hashlib
 import json
 from datetime import date, datetime, timezone
 from pathlib import Path
@@ -23,6 +24,8 @@ DEFAULT_RULES = {
     "bet_margin": 0.10,       # paper bet only if the deep edge is at least this
     "fee": 0.0,
     "seed": 0,
+    "min_side_prob": 0.65,
+    "exclude_uninformed": True,
 }
 
 
@@ -35,6 +38,21 @@ def load_pool(path: str | Path, limit: int | None = None) -> list[dict]:
     return rows[:limit] if limit else rows
 
 
+def _file_sha256(path: Path) -> str | None:
+    if not path.exists():
+        return None
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def record_amendment(cycle_dir: str | Path, old_rules: dict, new_rules: dict, reason: str) -> dict:
+    cycle_dir = Path(cycle_dir)
+    amendment = {"old_rules_hash": config_hash(old_rules), "new_rules_hash": config_hash(new_rules),
+                 "blind_sha256": _file_sha256(cycle_dir / "blind.jsonl"),
+                 "created": datetime.now(timezone.utc).isoformat(), "reason": reason}
+    write_json_atomic(cycle_dir / "amendments.json", amendment)
+    return amendment
+
+
 def preregister(cycle_dir: Path, rules: dict, pool: list[dict], stamps: dict) -> dict:
     """Rules, pool and stages are written before the first forecast; a resumed cycle must match."""
     meta_path = cycle_dir / "meta.json"
@@ -44,8 +62,15 @@ def preregister(cycle_dir: Path, rules: dict, pool: list[dict], stamps: dict) ->
     old = read_json(meta_path)
     if old:
         if old.get("rules_hash") != meta["rules_hash"] or old.get("pool_hash") != meta["pool_hash"]:
-            raise RuntimeError("this cycle was registered with different rules or a different pool; "
-                               "start a new cycle directory instead of changing them")
+            amendment = read_json(cycle_dir / "amendments.json")
+            if (not amendment or amendment.get("old_rules_hash") != old.get("rules_hash") or
+                    amendment.get("new_rules_hash") != meta["rules_hash"] or
+                    amendment.get("blind_sha256") != _file_sha256(cycle_dir / "blind.jsonl") or
+                    (cycle_dir / "deep.jsonl").exists() or (cycle_dir / "picks.json").exists()):
+                raise RuntimeError("this cycle was registered with different rules; a valid pre-deep amendments.json is required")
+            old.update({"rules": rules, "rules_hash": meta["rules_hash"], "amended": amendment})
+            write_json_atomic(meta_path, old)
+            return old
         return old
     write_json_atomic(meta_path, meta)
     return meta
@@ -94,7 +119,11 @@ async def run_cycle(cycle_dir: str | Path, pool: list[dict], rules: dict, quick,
                     summary["gate"] = summary["blind"]["gate"]
                     await quick.close()
                     return summary
-                chosen = selmod.choose_by_gap(blind_log.read(), markets, rules["x"], rules["min_gap"])
+                blind_records = blind_log.read()
+                summary["blind_distribution"] = selmod.probability_distribution(blind_records)
+                summary["blind_uninformed"] = sum(selmod.is_uninformed(r) for r in blind_records)
+                chosen = selmod.choose_by_gap(blind_records, markets, rules["x"], rules["min_gap"],
+                                               rules["min_side_prob"], rules["exclude_uninformed"])
             picks = {"mode": rules["mode"], "picks": chosen, "saved": blindmod.now_iso(),
                      "baselines": {"random": selmod.random_picks(pool, len(chosen), rules["seed"]),
                                    "near_fifty": selmod.near_fifty_picks(pool, len(chosen))}}
@@ -146,6 +175,11 @@ def score_cycle(cycle_dir: str | Path, outcomes: dict[str, str], markets: dict[s
                         "inconsistent": sum(1 for r in blind.values() if r.get("inconsistent")),
                         "stale_suspect": sum(1 for r in deep.values() if r.get("stale_suspect"))}
     bf = fs(blind)
+    out["blind_subgroups"] = {
+        "uninformed": {"n": sum(1 for r in blind.values() if selmod.is_uninformed(r)),
+                       "ids": [i for i, r in blind.items() if selmod.is_uninformed(r)]},
+        "other": {"n": sum(1 for r in blind.values() if r.get("probability") is not None and not selmod.is_uninformed(r))},
+    }
     ids = [x["id"] for x in bf]
     out["blind"] = arm("blind", bf)
     out["market_on_same"] = arm("market", [{"probability": market_p(markets[i]), "outcome": outcomes[i] == "yes"}

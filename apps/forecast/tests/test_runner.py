@@ -109,9 +109,37 @@ def test_gap_picks_and_reasons():
     markets["m1"] = mk(1, 0.90, no_ask=0.11)   # swarm says 0.40 -> no gap: 0.60-0.11 = 0.49
     blind = [{"market_id": "m0", "probability": 0.40, "reasons": ["r0"]}, {"market_id": "m1", "probability": 0.40, "reasons": ["r1"]},
              {"market_id": "m2", "probability": 0.52, "reasons": []}, {"market_id": "m3", "probability": None, "error": "x"}]
-    picks = selmod.choose_by_gap(blind, markets, x=5, min_gap=0.10)
+    picks = selmod.choose_by_gap(blind, markets, x=5, min_gap=0.10, min_side_prob=0.0)
     assert [p["market_id"] for p in picks] == ["m1", "m0"]
     assert picks[0]["side"] == "no" and "r1" in picks[0]["reason"] and picks[0]["rank"] == 1
+
+
+def test_gap_selection_rejects_uninformed_hedge_but_keeps_strong_side():
+    markets = {"hedge": mk("hedge", 0.03), "strong": mk("strong", 0.60, no_ask=0.40)}
+    blind = [
+        {"market_id": "hedge", "probability": 0.55, "reasons": ["no evidence available"], "research_summary": "cannot determine"},
+        {"market_id": "strong", "probability": 0.12, "reasons": ["supported"]},
+    ]
+    picks = selmod.choose_by_gap(blind, markets, x=5)
+    assert [p["market_id"] for p in picks] == ["strong"]
+    assert picks[0]["side"] == "no" and picks[0]["side_probability"] == 0.88
+
+
+def test_amendment_required_and_records_unchanged_blind(tmp_path):
+    pool = [mk(i, 0.5) for i in range(2)]
+    old = {"mode": "gap", "x": 1}
+    new = {**old, "min_side_prob": 0.65, "exclude_uninformed": True}
+    out = tmp_path / "amend"
+    from swarm_forecast.store import write_json_atomic
+    out.mkdir()
+    write_json_atomic(out / "meta.json", {"rules": old, "rules_hash": cyc.config_hash(old), "pool_hash": cyc.config_hash(["m0", "m1"]), "pool_size": 2})
+    (out / "blind.jsonl").write_text('{"market_id":"m0","probability":0.55}\n', encoding="utf-8")
+    with pytest.raises(RuntimeError):
+        cyc.preregister(out, new, pool, {})
+    before = (out / "blind.jsonl").read_bytes()
+    cyc.record_amendment(out, old, new, "selection guard")
+    cyc.preregister(out, new, pool, {})
+    assert (out / "blind.jsonl").read_bytes() == before
 
 
 def test_cycle_gap_mode_end_to_end_resume_and_prereg(tmp_path):
@@ -122,7 +150,7 @@ def test_cycle_gap_mode_end_to_end_resume_and_prereg(tmp_path):
     deep_table = {"m2": 0.40, "m7": 0.45}       # deep still sees the edge
     qcalls, dcalls = [], []
     lock = str(tmp_path / "lock.json")
-    rules = {"x": 3, "min_gap": 0.10, "pool_limit": 10}
+    rules = {"x": 3, "min_gap": 0.10, "pool_limit": 10, "min_side_prob": 0.0}
     out = tmp_path / "cycle1"
     res = asyncio.run(cyc.run_cycle(out, pool, rules, make_session(quick_table, qcalls, tmp_path),
                                     make_session(deep_table, dcalls, tmp_path), lock_path=lock, today="2026-10-12"))
@@ -157,7 +185,7 @@ def test_cycle_killed_mid_deep_resumes_without_redoing(tmp_path):
     pool = [mk(i, 0.1) for i in range(6)]
     quick_table = {f"m{i}": 0.5 for i in range(6)}
     deep_table = {f"m{i}": 0.5 for i in range(6)}
-    rules = {"x": 5, "min_gap": 0.10, "pool_limit": 6}
+    rules = {"x": 5, "min_gap": 0.10, "pool_limit": 6, "min_side_prob": 0.0}
     out = tmp_path / "c"
     lock = str(tmp_path / "lock.json")
     d1 = []
