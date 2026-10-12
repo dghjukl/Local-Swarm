@@ -115,10 +115,12 @@ def test_gap_picks_and_reasons():
 
 
 def test_gap_selection_rejects_uninformed_hedge_but_keeps_strong_side():
-    markets = {"hedge": mk("hedge", 0.03), "strong": mk("strong", 0.60, no_ask=0.40)}
+    markets = {"hedge": mk("hedge", 0.03), "strong": mk("strong", 0.60, no_ask=0.40),
+               "confident_ignorance": mk("confident_ignorance", 0.40, no_ask=0.59)}
     blind = [
         {"market_id": "hedge", "probability": 0.55, "reasons": ["no evidence available"], "research_summary": "cannot determine"},
         {"market_id": "strong", "probability": 0.12, "reasons": ["supported"]},
+        {"market_id": "confident_ignorance", "probability": 0.95, "reasons": ["evidence contains no information about the event"]},
     ]
     picks = selmod.choose_by_gap(blind, markets, x=5)
     assert [p["market_id"] for p in picks] == ["strong"]

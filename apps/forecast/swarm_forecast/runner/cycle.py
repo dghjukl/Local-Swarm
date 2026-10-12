@@ -26,6 +26,7 @@ DEFAULT_RULES = {
     "seed": 0,
     "min_side_prob": 0.65,
     "exclude_uninformed": True,
+    "exclude_retrieval_failures": True,
 }
 
 
@@ -49,6 +50,11 @@ def record_amendment(cycle_dir: str | Path, old_rules: dict, new_rules: dict, re
     amendment = {"old_rules_hash": config_hash(old_rules), "new_rules_hash": config_hash(new_rules),
                  "blind_sha256": _file_sha256(cycle_dir / "blind.jsonl"),
                  "created": datetime.now(timezone.utc).isoformat(), "reason": reason}
+    previous = read_json(cycle_dir / "amendments.json")
+    if previous:
+        history = previous.get("history", []) if isinstance(previous, dict) else []
+        amendment["history"] = history + [previous]
+        amendment["amendment_number"] = int(previous.get("amendment_number", 2)) + 1
     write_json_atomic(cycle_dir / "amendments.json", amendment)
     return amendment
 
@@ -78,7 +84,7 @@ def preregister(cycle_dir: Path, rules: dict, pool: list[dict], stamps: dict) ->
 
 async def run_cycle(cycle_dir: str | Path, pool: list[dict], rules: dict, quick, deep, *, today: str | None = None,
                     refresh=None, llm_json=None, lock_path=None, lock_owner="swarm-forecast", lock_timeout=0,
-                    progress=None) -> dict:
+                    progress=None, stop_after_picks: bool = False) -> dict:
     rules = {**DEFAULT_RULES, **(rules or {})}
     cycle_dir = Path(cycle_dir)
     cycle_dir.mkdir(parents=True, exist_ok=True)
@@ -121,13 +127,29 @@ async def run_cycle(cycle_dir: str | Path, pool: list[dict], rules: dict, quick,
                     return summary
                 blind_records = blind_log.read()
                 summary["blind_distribution"] = selmod.probability_distribution(blind_records)
-                summary["blind_uninformed"] = sum(selmod.is_uninformed(r) for r in blind_records)
+                by_rule = {}
+                for r in blind_records:
+                    reason = selmod.uninformed_reason(r)
+                    if reason:
+                        by_rule.setdefault(reason, []).append(str(r.get("market_id")))
+                summary["blind_uninformed"] = sum(map(len, by_rule.values()))
+                summary["blind_uninformed_by_rule"] = by_rule
                 chosen = selmod.choose_by_gap(blind_records, markets, rules["x"], rules["min_gap"],
-                                               rules["min_side_prob"], rules["exclude_uninformed"])
+                                               rules["min_side_prob"], rules["exclude_uninformed"],
+                                               rules["exclude_retrieval_failures"])
             picks = {"mode": rules["mode"], "picks": chosen, "saved": blindmod.now_iso(),
                      "baselines": {"random": selmod.random_picks(pool, len(chosen), rules["seed"]),
                                    "near_fifty": selmod.near_fifty_picks(pool, len(chosen))}}
             write_json_atomic(picks_path, picks)  # the reasons are on disk before any deep research
+            cycle_report = {"blind_distribution": summary.get("blind_distribution"),
+                            "blind_uninformed": summary.get("blind_uninformed"),
+                            "blind_uninformed_by_rule": summary.get("blind_uninformed_by_rule", {}),
+                            "search_timeout_count": sum("timeout" in json.dumps(r).lower() for r in blind_log.read()),
+                            "picks": picks["picks"]}
+            write_json_atomic(cycle_dir / "cycle_report.json", cycle_report)
+            if stop_after_picks or (cycle_dir / "PAUSE_BEFORE_DEEP").exists():
+                summary["status"] = "paused_before_deep"
+                return summary
             await quick.close()                    # free the GPU for the deep configuration
 
         # ---- deep stage

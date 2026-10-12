@@ -30,6 +30,7 @@ def main(argv=None) -> int:
     c.add_argument("--x", type=int)
     c.add_argument("--limit", type=int)
     c.add_argument("--dry-run", action="store_true")
+    c.add_argument("--stop-after-picks", action="store_true")
     s = sub.add_parser("score")
     s.add_argument("--out", required=True)
     s.add_argument("--pool", required=True)
@@ -62,6 +63,7 @@ def main(argv=None) -> int:
     quick = SwarmSession({**(stages.get("quick") or {}), "_name": "fc-quick"}, save_dir=Path(a.out) / "traces_quick")
     deep = SwarmSession({**(stages.get("deep") or {}), "_name": "fc-deep"}, save_dir=Path(a.out) / "traces_deep")
     res = asyncio.run(cyc.run_cycle(a.out, pool, rules, quick, deep,
-                                    lock_path=(app.get("gpu_lock") or {}).get("path")))
+                                    lock_path=(app.get("gpu_lock") or {}).get("path"),
+                                    stop_after_picks=a.stop_after_picks))
     print(json.dumps(res, indent=1, default=str))
     return 0 if res.get("status") == "ok" else 3

@@ -41,14 +41,25 @@ def choose_by_screen(screened: list[dict], x: int, seed: int = 0) -> list[dict]:
 UNINFORMED_RE = re.compile(
     r"no (specific |direct )?(findings|evidence|information|data|polling)|zero information|"
     r"not (enough|sufficient) (evidence|information)|cannot determine|insufficient", re.I)
+NARROW_RE = re.compile(
+    r"(evidence|passages|sources|findings)( provided| supplied)?( contain| contains| include| includes| offer| offers| has| have)? no (information|data)|"
+    r"no information (about|on|regarding)|zero information|no (polling|data) (exist|exists|available)", re.I)
+
+
+def uninformed_reason(record: dict) -> str | None:
+    p = record.get("probability")
+    first = " ".join((record.get("reasons") or [])[:1]) + " " + record.get("research_summary", "")[:700]
+    if NARROW_RE.search(first):
+        return "narrow_retrieval_failure"
+    if p is not None and 0.40 <= float(p) <= 0.60:
+        text = " ".join([*(record.get("reasons") or []), record.get("research_summary", "")])
+        if UNINFORMED_RE.search(text):
+            return "broad_retrieval_failure"
+    return None
 
 
 def is_uninformed(record: dict) -> bool:
-    p = record.get("probability")
-    if p is None or not 0.40 <= float(p) <= 0.60:
-        return False
-    text = " ".join([*(record.get("reasons") or []), record.get("research_summary", "")])
-    return bool(UNINFORMED_RE.search(text))
+    return uninformed_reason(record) is not None
 
 
 def probability_distribution(records: list[dict]) -> dict:
@@ -62,7 +73,8 @@ def probability_distribution(records: list[dict]) -> dict:
 
 
 def choose_by_gap(blind: list[dict], markets: dict[str, dict], x: int, min_gap: float = 0.10,
-                  min_side_prob: float = 0.65, exclude_uninformed: bool = True) -> list[dict]:
+                  min_side_prob: float = 0.65, exclude_uninformed: bool = True,
+                  exclude_retrieval_failures: bool = True) -> list[dict]:
     """Picks where the blind probability differs from the market's ask by at least min_gap, with a stated reason.
     side 'yes': p - yes_ask; side 'no': (1-p) - no_ask. Only the larger gap of the two counts."""
     cands = []
