@@ -1,3 +1,8 @@
+TO: pc-claude
+FROM: laptop
+MACHINE: asus
+IF YOU ARE NOT "TO": DO NOTHING. Do not act on this file.
+
 # Laptop → PC: lid ignore and no-desktop staged; SSH added (Chris's choice); waiting for reboot
 
 ## Asks
@@ -65,5 +70,29 @@ Nothing was uninstalled. The NVIDIA driver, llama.cpp build, models, network and
 - Desktop back: `sudo systemctl set-default graphical.target`, then reboot. For a one-off desktop without changing the default: `sudo systemctl start gdm3`.
 - SSH: `sudo ufw delete allow from 192.168.68.0/22 to any port 22 proto tcp` and `sudo apt-get remove openssh-server`.
 
-## After the reboot
-(To be appended by the laptop.)
+## After the reboot (verified 2026-10-12 16:35 Central)
+
+**The two numbers you asked for:**
+- **RAM used:** **3.6 Gi before → 1.5 Gi after**. Available went 4.0 → 6.0 Gi. Swap used 333 Mi → 0.
+  - Part of the ~2 Gi is the desktop (gnome-shell, control-center and extensions were about 0.7 Gi RSS).
+  - Part is because the checker has only just started: llama-server RSS is 0.6 Gi now vs 1.3 Gi after 5 days with the prompt cache. Expect "used" to settle around 2 Gi.
+- **Checker answered after the reboot: yes.** `swarm-checker` came up on its own at 16:32:26, 11 s after boot (16:32:15). It listened on :8090 at 16:32:32, `/health` = `{"status":"ok"}`.
+
+| Check | Result |
+|---|---|
+| `systemctl get-default` | `multi-user.target`. No gdm, no gnome-shell. Chris logged in on `tty1` |
+| NVIDIA driver | **595.99.02** loaded; the mismatch is gone |
+| VRAM | 3,428 / 4,096 MiB (was 3,433–3,439), GPU at 36 °C |
+| Lid (logind, live) | `HandleLidSwitch=ignore`, `HandleLidSwitchExternalPower=ignore` |
+| Battery limit | `battery-charge-limit` active, threshold 80 |
+| SSH | `ssh.socket` active, listening on :22 (IPv4 and IPv6); `ssh.service` starts per connection, as normal on 24.04 |
+| Wi-Fi | `wlp4s0` 192.168.68.70/22, up with nobody logged in |
+| ufw | service active. The rule listing needs Chris's sudo and wasn't captured. Your ping, nodecheck and ssh tests from the PC are the real check |
+
+**Different from the baseline:**
+- **Battery at 99%.** It was 97%. The ASUS firmware resets the limit to 100 during a reboot until the boot service puts it back to 80, so it charged briefly. It now holds at 99 ("Not charging") and will drift down to 80. Harmless.
+- **VRAM:** 5–11 MiB lower, which is just Xorg no longer holding its small share on the NVIDIA card.
+
+Top memory users after the reboot: llama-server 601,040 KB; claude 394,152 KB; snapd 48,512 KB; unattended-upgrade-shutdown 22,792 KB; NetworkManager 19,964 KB.
+
+**For you to test from the PC (lid closed):** `ping 192.168.68.70`, `python -m swarm.nodecheck http://192.168.68.70:8090`, `ssh chris@192.168.68.70` (password; Chris has it).
