@@ -1,0 +1,428 @@
+{
+  "summary": {
+    "concurrency": 4,
+    "count": 59,
+    "success": 59,
+    "success_rate": 1.0,
+    "median_seconds": 2.288569585999994,
+    "p95_seconds": 4.053976398000032,
+    "pages_per_minute": 93.57853050233544,
+    "mean_chars": 122989.45762711864,
+    "elapsed": 37.82925678599986
+  },
+  "rows": [
+    {
+      "url": "https://en.wikipedia.org/wiki/Artificial_intelligence",
+      "ok": true,
+      "status": 200,
+      "seconds": 3.7365138419999084,
+      "chars": 188537
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/Machine_learning",
+      "ok": true,
+      "status": 200,
+      "seconds": 4.053976398000032,
+      "chars": 113286
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/Climate_change",
+      "ok": true,
+      "status": 200,
+      "seconds": 4.494546011000011,
+      "chars": 191159
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/Renewable_energy",
+      "ok": true,
+      "status": 200,
+      "seconds": 2.6347879989999683,
+      "chars": 132221
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/Solar_energy",
+      "ok": true,
+      "status": 200,
+      "seconds": 1.3637477869999657,
+      "chars": 60950
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/Wind_power",
+      "ok": true,
+      "status": 200,
+      "seconds": 1.5567803469999717,
+      "chars": 74329
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/Quantum_computing",
+      "ok": true,
+      "status": 200,
+      "seconds": 1.424007741999958,
+      "chars": 91202
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/Computer_science",
+      "ok": true,
+      "status": 200,
+      "seconds": 1.0497026470000037,
+      "chars": 48157
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/SpaceX",
+      "ok": true,
+      "status": 200,
+      "seconds": 1.482865328999992,
+      "chars": 127368
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/NASA",
+      "ok": true,
+      "status": 200,
+      "seconds": 2.288569585999994,
+      "chars": 145427
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/International_Space_Station",
+      "ok": true,
+      "status": 200,
+      "seconds": 3.735208807000049,
+      "chars": 212574
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/Mars",
+      "ok": true,
+      "status": 200,
+      "seconds": 3.8126330540000026,
+      "chars": 124143
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/Moon",
+      "ok": true,
+      "status": 200,
+      "seconds": 3.5437045139999555,
+      "chars": 190246
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/Oceanography",
+      "ok": true,
+      "status": 200,
+      "seconds": 1.4775888619999478,
+      "chars": 33759
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/Earth",
+      "ok": true,
+      "status": 200,
+      "seconds": 2.067856089000088,
+      "chars": 127249
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/Biology",
+      "ok": true,
+      "status": 200,
+      "seconds": 1.1917941740000515,
+      "chars": 24153
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/Genetics",
+      "ok": true,
+      "status": 200,
+      "seconds": 1.2428640589999986,
+      "chars": 68105
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/Evolution",
+      "ok": true,
+      "status": 200,
+      "seconds": 2.92228339899998,
+      "chars": 168981
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/Medicine",
+      "ok": true,
+      "status": 200,
+      "seconds": 1.4461616899999399,
+      "chars": 76306
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/Vaccination",
+      "ok": true,
+      "status": 200,
+      "seconds": 1.3955151729999216,
+      "chars": 66845
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/Public_health",
+      "ok": true,
+      "status": 200,
+      "seconds": 1.638776188999941,
+      "chars": 103081
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/Economics",
+      "ok": true,
+      "status": 200,
+      "seconds": 1.9699745509999502,
+      "chars": 121151
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/Inflation",
+      "ok": true,
+      "status": 200,
+      "seconds": 1.7338499039999533,
+      "chars": 99061
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/Interest_rate",
+      "ok": true,
+      "status": 200,
+      "seconds": 1.0801931400000058,
+      "chars": 29742
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/Stock_market",
+      "ok": true,
+      "status": 200,
+      "seconds": 0.9875622790000307,
+      "chars": 53099
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/Cryptocurrency",
+      "ok": true,
+      "status": 200,
+      "seconds": 1.8255724189999682,
+      "chars": 134585
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/United_States",
+      "ok": true,
+      "status": 200,
+      "seconds": 5.2542135200000075,
+      "chars": 228149
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/Canada",
+      "ok": true,
+      "status": 200,
+      "seconds": 3.6699929410000323,
+      "chars": 157033
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/Mexico",
+      "ok": true,
+      "status": 200,
+      "seconds": 3.8757298579999997,
+      "chars": 161949
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/Brazil",
+      "ok": true,
+      "status": 200,
+      "seconds": 3.3512425819999407,
+      "chars": 175783
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/United_Kingdom",
+      "ok": true,
+      "status": 200,
+      "seconds": 3.590348210000002,
+      "chars": 207596
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/France",
+      "ok": true,
+      "status": 200,
+      "seconds": 3.848158036999962,
+      "chars": 162206
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/Germany",
+      "ok": true,
+      "status": 200,
+      "seconds": 2.8750063379999347,
+      "chars": 113550
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/Italy",
+      "ok": true,
+      "status": 200,
+      "seconds": 3.117438548999985,
+      "chars": 181146
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/Spain",
+      "ok": true,
+      "status": 200,
+      "seconds": 2.3219898029999513,
+      "chars": 164759
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/Japan",
+      "ok": true,
+      "status": 200,
+      "seconds": 2.873677867999959,
+      "chars": 112991
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/China",
+      "ok": true,
+      "status": 200,
+      "seconds": 3.956534310000052,
+      "chars": 119070
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/India",
+      "ok": true,
+      "status": 200,
+      "seconds": 5.030473645999905,
+      "chars": 258092
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/Australia",
+      "ok": true,
+      "status": 200,
+      "seconds": 3.446659696000097,
+      "chars": 136750
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/New_Zealand",
+      "ok": true,
+      "status": 200,
+      "seconds": 3.063021641000205,
+      "chars": 154129
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/South_Africa",
+      "ok": true,
+      "status": 200,
+      "seconds": 2.4065618009999525,
+      "chars": 152594
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/Nigeria",
+      "ok": true,
+      "status": 200,
+      "seconds": 2.6381970580000598,
+      "chars": 173185
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/Egypt",
+      "ok": true,
+      "status": 200,
+      "seconds": 3.6629460799999833,
+      "chars": 170629
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/European_Union",
+      "ok": true,
+      "status": 200,
+      "seconds": 3.905648971999881,
+      "chars": 179731
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/United_Nations",
+      "ok": true,
+      "status": 200,
+      "seconds": 2.9713089849999506,
+      "chars": 104798
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/World_Health_Organization",
+      "ok": true,
+      "status": 200,
+      "seconds": 1.9875250919999417,
+      "chars": 121188
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/NATO",
+      "ok": true,
+      "status": 200,
+      "seconds": 1.376716844000157,
+      "chars": 81129
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/Olympic_Games",
+      "ok": true,
+      "status": 200,
+      "seconds": 2.8548667459999706,
+      "chars": 136931
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/Football",
+      "ok": true,
+      "status": 200,
+      "seconds": 2.170403611999973,
+      "chars": 105897
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/Baseball",
+      "ok": true,
+      "status": 200,
+      "seconds": 2.555144168999959,
+      "chars": 111031
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/Tennis",
+      "ok": true,
+      "status": 200,
+      "seconds": 1.6968263999999635,
+      "chars": 94670
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/Basketball",
+      "ok": true,
+      "status": 200,
+      "seconds": 0.907695418000003,
+      "chars": 74852
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/Chess",
+      "ok": true,
+      "status": 200,
+      "seconds": 2.257606980999981,
+      "chars": 126019
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/Film",
+      "ok": true,
+      "status": 200,
+      "seconds": 2.1530577469998207,
+      "chars": 82058
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/Music",
+      "ok": true,
+      "status": 200,
+      "seconds": 1.8606614190000528,
+      "chars": 105585
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/Literature",
+      "ok": true,
+      "status": 200,
+      "seconds": 1.5265921340001114,
+      "chars": 60623
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/History",
+      "ok": true,
+      "status": 200,
+      "seconds": 2.1455373119999877,
+      "chars": 111420
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/Physics",
+      "ok": true,
+      "status": 200,
+      "seconds": 0.614024531999803,
+      "chars": 63343
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/Chemistry",
+      "ok": true,
+      "status": 200,
+      "seconds": 1.8190619220001736,
+      "chars": 61776
+    }
+  ]
+}
