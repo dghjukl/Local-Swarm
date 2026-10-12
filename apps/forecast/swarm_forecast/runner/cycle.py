@@ -13,6 +13,7 @@ from swarm_forecast.runner import blind as blindmod
 from swarm_forecast.runner import deep as deepmod
 from swarm_forecast.runner import select as selmod
 from swarm_forecast.store import RecordLog, config_hash, read_json, write_json_atomic
+from swarm_forecast.preflight import run_preflight
 
 DEFAULT_RULES = {
     "mode": "gap",            # gap: blind forecast on the pool, pick the biggest gaps to the market
@@ -98,6 +99,7 @@ async def run_cycle(cycle_dir: str | Path, pool: list[dict], rules: dict, quick,
         return {"status": "gpu_busy", "holder": gpu_lock.status(**lk)}
     summary: dict = {"status": "ok", "cycle": cycle_dir.name}
     try:
+        await run_preflight()
         screen_log = RecordLog(cycle_dir / "screen.jsonl")
         blind_log = RecordLog(cycle_dir / "blind.jsonl")
         deep_log = RecordLog(cycle_dir / "deep.jsonl")

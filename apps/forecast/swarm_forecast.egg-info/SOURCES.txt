@@ -5,6 +5,7 @@ swarm_forecast/__main__.py
 swarm_forecast/adapter.py
 swarm_forecast/cli.py
 swarm_forecast/gpu_lock.py
+swarm_forecast/preflight.py
 swarm_forecast/prompts.py
 swarm_forecast/questions.py
 swarm_forecast/refresh.py
@@ -26,6 +27,7 @@ swarm_forecast/runner/blind.py
 swarm_forecast/runner/cycle.py
 swarm_forecast/runner/deep.py
 swarm_forecast/runner/select.py
+tests/test_fetch_extraction.py
 tests/test_fix0.py
 tests/test_forecast.py
 tests/test_phase0e.py

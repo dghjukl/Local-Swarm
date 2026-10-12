@@ -15,9 +15,52 @@ import re
 import time
 from pathlib import Path
 from typing import Any, Awaitable, Callable
+from urllib.parse import urlparse
 
 from swarm_forecast import prompts
 from swarm_forecast.questions import find_leaks
+
+
+BLIND_BLOCKED_DOMAINS = frozenset({
+    "polymarket", "kalshi", "manifold", "metaculus", "predictit",
+    "octagonai", "polymarkettrader", "predictionhunt", "limitless",
+})
+
+
+def _blocked_host(url: str) -> bool:
+    host = (urlparse(url).hostname or "").lower().rstrip(".")
+    labels = host.split(".")
+    return any(label == d or label.startswith(d) for label in labels for d in BLIND_BLOCKED_DOMAINS)
+
+
+class FilteredResearch:
+    """DirectResearch with an explicit blind-mode market-site boundary."""
+
+    def __init__(self):
+        from swarm.tools import DirectResearch
+        self._inner = DirectResearch()
+        self.blind = False
+
+    async def search(self, query: str, n: int = 5) -> list[dict]:
+        hits = await self._inner.search(query, n)
+        return [h for h in hits if not self.blind or not _blocked_host(str(h.get("url", "")))]
+
+    async def news(self, query: str, n: int = 4) -> list[dict]:
+        hits = await self._inner.news(query, n)
+        return [h for h in hits if not self.blind or not _blocked_host(str(h.get("url", "")))]
+
+    async def fetch(self, url: str):
+        if self.blind and _blocked_host(url):
+            from swarm.tools import Doc
+            return Doc(url, "", "", "web", error="blocked blind market domain")
+        return await self._inner.fetch(url)
+
+    async def close(self) -> None:
+        closer = getattr(self._inner, "close", None)
+        if closer:
+            result = closer()
+            if asyncio.iscoroutine(result):
+                await result
 
 
 def deep_merge(base: dict, over: dict) -> dict:
@@ -144,6 +187,15 @@ class SwarmSession:
                      "key_uncertainty": "", "market_may_be_missing": "", "trace_file": "",
                      "swarm_stamp": dict(getattr(self.handle, "stamp", {}) or {}), "error": None}
         try:
+            research_client = getattr(self.handle, "research", None)
+            if research_client is not None:
+                research_client.blind = mode == "blind"
+            swarm_cfg = getattr(self.handle.swarm, "cfg", None)
+            if isinstance(swarm_cfg, dict):
+                if mode == "blind":
+                    swarm_cfg.setdefault("research", {})["block_domains"] = sorted(BLIND_BLOCKED_DOMAINS)
+                else:
+                    swarm_cfg.setdefault("research", {}).pop("block_domains", None)
             self.save_dir.mkdir(parents=True, exist_ok=True)
             events: list = []
 
@@ -180,6 +232,10 @@ class SwarmSession:
             out["trace_file"] = str(trace.get("trace_file") or (trace.get("final") or {}).get("trace") or "")
             out["research_summary"] = answer[:1200]
             out["swarm_seconds"] = ((trace.get("stats") or {}).get("total_seconds"))
+            fetch_events = [e for e in events if e.get("type") == "fetch"]
+            extraction_errors = [e for e in fetch_events if "extraction" in str(e.get("error", "")).lower()]
+            out["fetch_stats"] = {"total": len(fetch_events), "failed": sum(not e.get("ok") for e in fetch_events),
+                                  "extraction_failed": len(extraction_errors)}
             if p is None:
                 out["error"] = "no probability could be extracted"
         except asyncio.CancelledError:
@@ -262,7 +318,7 @@ async def real_factory(overrides: dict) -> _RealHandle:
 
     pool = ModelPool(cfg, cards, emit=quiet)
     pool.set_remote(dict((cfg.get("gpu") or {}).get("remote_models") or {}))
-    research = DirectResearch()
+    research = FilteredResearch()
     sw = Swarm(cfg, pool, cards, research)
     problems = sw.check_roster()
     if problems:

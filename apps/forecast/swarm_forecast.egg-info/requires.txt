@@ -1,2 +1,4 @@
 pyyaml>=6.0
 local-swarm
+trafilatura==2.3.0
+html2text==2025.4.15

@@ -1,0 +1,1 @@
+Research environment defect: web page extraction failed on every fetch (ModuleNotFoundError). See comms/2026-10-12-pc-to-codex-fix-fetch-extraction.md. Do not score until a decision is recorded.
