@@ -1,0 +1,17 @@
+2026-10-12 Phase B1 safety log
+
+Job 0 read-only survey completed. No files were deleted, moved, renamed, or relinked.
+
+GPU preflight:
+- Shared GPU lock: absent.
+- nvidia-smi at preflight: 5% utilization, 2657 MiB used.
+- Active swarm wrapper processes were present: Resident-Interrogator-Pilot.bat, Tool-Step-Numeric.bat, and Search-Open-AB.bat.
+- No llama-server process was visible, but the active wrappers mean the destructive pilot was not started.
+
+Job 1 was blocked before touching Models\\Qwen3-Reranker-4B. Therefore:
+- No source model folder was deleted.
+- No junction was created.
+- No model was loaded or benchmarked.
+- No dangling junction was created.
+
+The ticket requires waiting until the active swarm jobs have finished, followed by a fresh GPU/lock/process check.
