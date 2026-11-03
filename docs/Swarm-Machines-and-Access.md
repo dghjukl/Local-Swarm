@@ -11,6 +11,7 @@ This document describes the physical machines and software/runtime arrangement u
 | Main PC | Windows 11 | Intel i5-14400F, 16 GB RAM, NVIDIA RTX 5060 Ti with 16 GB VRAM | `192.168.68.53` | Holds the repository; runs the swarm, studies, forecast cycles, and GPU work |
 | ThinkPad | Ubuntu Server 26.04 | AMD Ryzen 3 7320U, 4 cores / 8 threads; CPU-only | `thinkpad@192.168.68.71` | Remote CPU worker, benchmark host, and web-fetch/extraction node |
 | ASUS laptop | Ubuntu 24.04 | NVIDIA GTX 1650 Mobile with 4 GB VRAM; 8 GB-class laptop | `192.168.68.70`; checker on port `8090` | Dedicated remote Granite checker/fact-checking service |
+| New desktop PC (added 2026-11-02) | Windows 11 Pro (build 26200) | Hostname `DESKTOP-1ODI27A`; X99 board; 1 Intel Xeon (Family 6 Model 63, ~2.4 GHz); 64 GB RAM (65,375 MB); NVIDIA RTX 5060 Ti 16 GB | `192.168.68.74` (USB Wi-Fi), Windows user `daelf` | Second desktop node: 16 GB GPU plus 64 GB RAM; role not yet assigned |
 
 All three machines are on the same private LAN. The addresses above are local-network addresses, not public Internet addresses.
 
@@ -157,3 +158,11 @@ The ASUS node is not used for repository edits, forecast studies, or general PC 
 - `docs/Laptop-Node.md` — ASUS checker details.
 - `apps/forecast/README.md` — pinned forecast application and swarm dependency.
 - `tools/connect-swarm-nodes.ps1` — reconnect logic used by the desktop launcher.
+
+
+## Machine changes on 2026-11-02 (from Chris, via screenshots)
+
+- Main PC (.53): the RTX 5060 Ti 16 GB was moved out; it now has the **RTX 5060 8 GB** (confirmed by Chris). Older sections above that say 16 GB for the main PC are out of date, and `gpu.vram_budget_mb` in `config/swarm.yaml` (14500) must be lowered before any GPU job runs there.
+- New desktop PC (.74): hostname `DESKTOP-1ODI27A`, Windows 11 Pro build 26200 (installed 2026-10-31), X99 board, one Intel Xeon (Family 6 Model 63, ~2.4 GHz), 64 GB RAM, RTX 5060 Ti with 16311 MiB (driver 621.01, CUDA 13.5).
+- Network: connected over a USB Wi-Fi adapter (AIC8800D80) at `192.168.68.74`, subnet 255.255.252.0, gateway 192.168.68.1. The onboard Realtek GbE port is present but has no cable. A cable and a router reservation are recommended.
+- Windows user `daelf`. Not yet verified: SSH access from the main PC (Chris says all machines are connected by SSH).
